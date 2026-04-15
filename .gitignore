@@ -1,0 +1,30 @@
+# React
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Environment
+.env
+
+# Databases / Runtime files
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Upload artifacts (keep folder placeholders)
+backend/uploads/gallery/*
+backend/uploads/newsletters/*
+backend/uploads/downloads/*
+!backend/uploads/gallery/.gitkeep
+!backend/uploads/newsletters/.gitkeep
+!backend/uploads/downloads/.gitkeep
