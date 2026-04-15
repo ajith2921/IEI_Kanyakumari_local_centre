@@ -6,10 +6,12 @@ const initialForm = {
   summary: "",
   pdf: null,
 };
+const ALLOWED_PDF_TYPES = ["application/pdf"];
 
 export default function AdminNewsletters() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [fileInputKey, setFileInputKey] = useState(0);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,16 +38,60 @@ export default function AdminNewsletters() {
   const resetForm = () => {
     setForm(initialForm);
     setEditingId(null);
+    setFileInputKey((value) => value + 1);
+  };
+
+  const validatePdfFile = (file) => {
+    const extension = file.name.split(".").pop()?.toLowerCase() || "";
+    if (!ALLOWED_PDF_TYPES.includes(file.type) && extension !== "pdf") {
+      return "Only PDF files are allowed.";
+    }
+    return "";
+  };
+
+  const onPdfChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    if (!file) {
+      setForm((prev) => ({ ...prev, pdf: null }));
+      return;
+    }
+
+    const validationError = validatePdfFile(file);
+    if (validationError) {
+      setError(validationError);
+      event.target.value = "";
+      setForm((prev) => ({ ...prev, pdf: null }));
+      return;
+    }
+
+    setError("");
+    setForm((prev) => ({ ...prev, pdf: file }));
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    const title = form.title.trim();
+    const summary = form.summary.trim();
+
+    if (!title) {
+      setError("Title is required.");
+      return;
+    }
+
+    if (form.pdf) {
+      const validationError = validatePdfFile(form.pdf);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+    }
+
     setSaving(true);
     setError("");
     try {
       const data = new FormData();
-      data.append("title", form.title);
-      data.append("summary", form.summary);
+      data.append("title", title);
+      data.append("summary", summary);
       if (form.pdf) {
         data.append("pdf", form.pdf);
       }
@@ -83,6 +129,7 @@ export default function AdminNewsletters() {
   const onEdit = (item) => {
     setEditingId(item.id);
     setForm({ title: item.title, summary: item.summary, pdf: null });
+    setFileInputKey((value) => value + 1);
   };
 
   return (
@@ -99,10 +146,9 @@ export default function AdminNewsletters() {
         />
         <input
           type="file"
+          key={fileInputKey}
           accept="application/pdf"
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, pdf: event.target.files?.[0] || null }))
-          }
+          onChange={onPdfChange}
           className="w-full rounded-lg border border-brand-200 px-3 py-2"
         />
         <textarea

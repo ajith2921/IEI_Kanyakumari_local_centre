@@ -94,7 +94,9 @@ export default function HeroSlider() {
           </div>
 
           <div className="rounded-2xl border border-white/20 bg-white/92 p-4 text-brand-900 shadow-xl md:p-5">
-            <h2 className="mb-4 text-lg font-black text-brand-900">Popular Tasks</h2>
+            <h2 className="mb-4 text-lg font-black text-brand-900" style={{ color: "white" }}>
+              Popular Tasks
+            </h2>
             <div className="grid gap-2">
               {quickActions.map((item) => (
                 <Link

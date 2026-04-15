@@ -33,6 +33,18 @@ origins = [
     for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
     if origin.strip()
 ]
+
+# Keep both loopback variants available in development to avoid CORS friction
+# when frontend runs on 127.0.0.1 but backend env only lists localhost (or vice versa).
+loopback_aliases = {
+    "http://localhost:5173": "http://127.0.0.1:5173",
+    "http://127.0.0.1:5173": "http://localhost:5173",
+}
+for origin in list(origins):
+    alias = loopback_aliases.get(origin)
+    if alias and alias not in origins:
+        origins.append(alias)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

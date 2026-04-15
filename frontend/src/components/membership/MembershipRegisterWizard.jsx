@@ -5,6 +5,7 @@ const PASSWORD_RULE =
   "Password must be 8+ characters and include uppercase, lowercase, number, and special character.";
 const STRONG_PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,64}$/;
 const MOBILE_PATTERN = /^[+]?[0-9\s()-]{7,18}$/;
+const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const initialForm = {
   existing_member: "no",
@@ -69,8 +70,12 @@ export default function MembershipRegisterWizard() {
       if (form.name.trim().length < 2) {
         return "Please enter a valid name.";
       }
-      if (!form.email.trim()) {
+      const email = form.email.trim();
+      if (!email) {
         return "Email is required.";
+      }
+      if (!EMAIL_PATTERN.test(email)) {
+        return "Please enter a valid email address.";
       }
       if (!MOBILE_PATTERN.test(form.mobile.trim())) {
         return "Please enter a valid mobile number.";

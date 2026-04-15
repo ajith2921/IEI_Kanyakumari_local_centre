@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from auth import get_current_active_user
 from database import get_db
 from models import Download, User
-from routes.file_utils import save_upload_file
+from routes.file_utils import delete_local_upload_if_exists, save_upload_file
 from schemas import DownloadOut
 
 router = APIRouter(prefix="/downloads", tags=["Downloads"])
@@ -60,9 +60,12 @@ def update_download(
 
     if pdf:
         try:
-            download.pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "downloads", PDF_TYPES)
+            next_pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "downloads", PDF_TYPES)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        delete_local_upload_if_exists(download.pdf_url, BASE_UPLOAD_DIR)
+        download.pdf_url = next_pdf_url
 
     db.commit()
     db.refresh(download)
@@ -83,5 +86,6 @@ def delete_download(
     if not download:
         raise HTTPException(status_code=404, detail="Download not found")
 
+    delete_local_upload_if_exists(download.pdf_url, BASE_UPLOAD_DIR)
     db.delete(download)
     db.commit()

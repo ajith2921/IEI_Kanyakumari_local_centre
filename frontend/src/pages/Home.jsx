@@ -72,13 +72,19 @@ export default function Home() {
         {members.loading && <SkeletonGrid count={6} />}
         {members.error && <ErrorState message={members.error} onRetry={members.reload} />}
         {!members.loading && !members.error && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {members.data.slice(0, 6).map((member) => (
-              <div key={member.id} className="stagger-in">
-                <MemberCard member={member} />
-              </div>
-            ))}
-          </div>
+          members.data.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {members.data.slice(0, 6).map((member) => (
+                <div key={member.id} className="stagger-in">
+                  <MemberCard member={member} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl border border-brand-100 bg-white p-4 text-sm text-slate-500">
+              Member profiles will appear here once published.
+            </p>
+          )
         )}
       </section>
 
@@ -100,13 +106,19 @@ export default function Home() {
         {activities.loading && <SkeletonGrid count={3} />}
         {activities.error && <ErrorState message={activities.error} onRetry={activities.reload} />}
         {!activities.loading && !activities.error && (
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {activities.data.slice(0, 3).map((activity) => (
-              <div key={activity.id} className="stagger-in">
-                <EventCard activity={activity} />
-              </div>
-            ))}
-          </div>
+          activities.data.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {activities.data.slice(0, 3).map((activity) => (
+                <div key={activity.id} className="stagger-in">
+                  <EventCard activity={activity} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl border border-brand-100 bg-white p-4 text-sm text-slate-500">
+              Upcoming technical activities will be listed here.
+            </p>
+          )
         )}
       </section>
 

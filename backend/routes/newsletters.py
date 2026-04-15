@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from auth import get_current_active_user
 from database import get_db
 from models import Newsletter, User
-from routes.file_utils import save_upload_file
+from routes.file_utils import delete_local_upload_if_exists, save_upload_file
 from schemas import NewsletterOut
 
 router = APIRouter(prefix="/newsletters", tags=["Newsletters"])
@@ -62,7 +62,7 @@ def update_newsletter(
 
     if pdf:
         try:
-            newsletter.pdf_url = save_upload_file(
+            next_pdf_url = save_upload_file(
                 pdf,
                 BASE_UPLOAD_DIR,
                 "newsletters",
@@ -70,6 +70,9 @@ def update_newsletter(
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        delete_local_upload_if_exists(newsletter.pdf_url, BASE_UPLOAD_DIR)
+        newsletter.pdf_url = next_pdf_url
 
     db.commit()
     db.refresh(newsletter)
@@ -90,5 +93,6 @@ def delete_newsletter(
     if not newsletter:
         raise HTTPException(status_code=404, detail="Newsletter not found")
 
+    delete_local_upload_if_exists(newsletter.pdf_url, BASE_UPLOAD_DIR)
     db.delete(newsletter)
     db.commit()
