@@ -1,3 +1,6 @@
+# IEI_Kanyakumari_local_centre
+Official website and management system for IEI Kanyakumari Local Centre
+
 # IEI Institutional Portal
 
 Production-ready full-stack portal built with React and FastAPI for a public institutional website, admin operations, and protected membership services.
