@@ -1,5 +1,8 @@
 import { useState } from "react";
 import SectionHeader from "../components/SectionHeader";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
 import { parseApiError, publicApi } from "../services/api";
 
 const initialForm = {
@@ -76,86 +79,94 @@ export default function Contact() {
       <SectionHeader
         eyebrow="Get in Touch"
         title="Contact Us"
-        description="Use the contact form for support, collaboration, or institutional enquiries."
+        description="Reach us for membership guidance, event enquiries, or institutional collaboration."
       />
 
       <div className="grid gap-6 md:grid-cols-5">
-        <article className="section-card space-y-5 p-7 md:col-span-2">
-          <h3 className="heading-h3 font-black text-brand-800">Office Information</h3>
-          <div className="space-y-3 text-sm text-slate-600">
-            <p>IEI Kanyakumari Local Centre</p>
-            <p>Kanyakumari, Tamil Nadu, India</p>
-            <p>Email: info@iei-kanyakumari.org</p>
-            <p>Phone: +91 00000 00000</p>
+        <Card className="space-y-5 p-7 md:col-span-2">
+          <h3 className="heading-h3 font-semibold text-gray-900">Office Information</h3>
+          <div className="space-y-3 text-sm text-gray-600">
+            <p className="font-semibold text-gray-800">
+              The Institution of Engineers (India)<br />
+              Kanyakumari Local Centre
+            </p>
+            <p>Nagercoil, Kanyakumari District,<br />Tamil Nadu, India</p>
+            <p>
+              Email:{" "}
+              <a href="mailto:ieikanyakumarilc@gmail.com" className="text-blue-600 underline">
+                ieikanyakumarilc@gmail.com
+              </a>
+            </p>
+            <p>
+              Alt:{" "}
+              <a href="mailto:kanyakumarilc@ieindia.org" className="text-blue-600 underline">
+                kanyakumarilc@ieindia.org
+              </a>
+            </p>
+            <p>Phone: <a href="tel:+919443993659" className="text-blue-600">+91-9443993659</a></p>
+            <p>Website:{" "}
+              <a href="https://www.ieikanyakumarilc.org" target="_blank" rel="noreferrer" className="text-blue-600 underline">
+                www.ieikanyakumarilc.org
+              </a>
+            </p>
           </div>
 
           <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-brand-700">
-            Average response time: within 2 business days.
+            <p className="font-semibold mb-1">Office Hours</p>
+            <p>Monday – Saturday: 10:00 AM – 5:30 PM</p>
+            <p>Sunday: Closed</p>
           </div>
-        </article>
+        </Card>
 
-        <form onSubmit={onSubmit} className="section-card grid gap-5 p-7 md:col-span-3 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-semibold text-slate-700">
-            Full Name
-            <input
-              name="name"
-              value={form.name}
-              onChange={onChange}
-              required
-              maxLength={120}
-              placeholder="Enter your name"
-              className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-3"
-            />
-          </label>
-          <label className="space-y-2 text-sm font-semibold text-slate-700">
-            Email Address
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={onChange}
-              required
-              maxLength={120}
-              placeholder="you@example.com"
-              className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-3"
-            />
-          </label>
-          <label className="space-y-2 text-sm font-semibold text-slate-700 md:col-span-2">
-            Phone (optional)
-            <input
-              name="phone"
-              value={form.phone}
-              onChange={onChange}
-              maxLength={30}
-              placeholder="+91"
-              className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-3"
-            />
-          </label>
-          <label className="space-y-2 text-sm font-semibold text-slate-700 md:col-span-2">
-            Message
-            <textarea
-              name="message"
-              value={form.message}
-              onChange={onChange}
-              required
-              rows={6}
-              maxLength={3000}
-              placeholder="How can we help you?"
-              className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-3"
-            />
-          </label>
+        <Card as="form" onSubmit={onSubmit} className="grid gap-5 p-7 md:col-span-3 md:grid-cols-2">
+          <Input
+            label="Full Name"
+            name="name"
+            value={form.name}
+            onChange={onChange}
+            required
+            maxLength={120}
+            placeholder="Enter your name"
+          />
+          <Input
+            label="Email Address"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={onChange}
+            required
+            maxLength={120}
+            placeholder="you@example.com"
+          />
+          <Input
+            label="Phone (optional)"
+            containerClassName="md:col-span-2"
+            name="phone"
+            value={form.phone}
+            onChange={onChange}
+            maxLength={30}
+            placeholder="+91"
+          />
+          <Input
+            as="textarea"
+            label="Message"
+            containerClassName="md:col-span-2"
+            name="message"
+            value={form.message}
+            onChange={onChange}
+            required
+            rows={6}
+            maxLength={3000}
+            placeholder="How can we help you?"
+          />
 
-          <p className="text-xs text-slate-500 md:col-span-2">
+          <p className="text-xs text-gray-500 md:col-span-2">
             By submitting this form, you agree to be contacted by the organization.
           </p>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="focus-ring w-full rounded-lg bg-brand-700 px-5 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-brand-800 disabled:opacity-70 md:col-span-2 md:w-fit"
-          >
+          <Button type="submit" disabled={loading} className="w-full md:col-span-2 md:w-fit">
             {loading ? "Sending..." : "Send Message"}
-          </button>
+          </Button>
           {status.message && (
             <p
               className={`text-sm ${
@@ -165,7 +176,7 @@ export default function Contact() {
               {status.message}
             </p>
           )}
-        </form>
+        </Card>
       </div>
     </section>
   );

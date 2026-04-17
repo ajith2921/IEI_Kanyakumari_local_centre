@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
 import { adminApi, parseApiError, toAbsoluteUploadUrl } from "../services/api";
 
 const initialForm = {
@@ -139,63 +143,59 @@ export default function AdminDownloads() {
 
   return (
     <div>
-      <h2 className="heading-h2 mb-2 font-black text-brand-800">Manage Downloads</h2>
-      <p className="mb-4 text-sm text-slate-600">Upload, update, and organize PDF resources.</p>
+      <h2 className="heading-h2 mb-2 font-semibold text-gray-900">Manage Downloads</h2>
+      <p className="mb-4 text-sm text-gray-600">Upload, update, and organize PDF resources.</p>
 
-      <form
+      <Card
+        as="form"
         onSubmit={onSubmit}
-        className="mb-6 grid gap-3 rounded-xl border border-brand-100 bg-brand-50/30 p-4 md:grid-cols-2"
+        className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 md:grid-cols-2 md:p-5"
       >
-        <input
+        <Input
+          label="Title"
           value={form.title}
           onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
           required
           placeholder="Title"
-          className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2"
         />
-        <input
+        <Input
+          label="PDF File"
           type="file"
           key={fileInputKey}
           accept="application/pdf"
           onChange={onPdfChange}
-          className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2"
+          className="cursor-pointer"
         />
-        <textarea
+        <Input
+          as="textarea"
+          label="Description"
+          containerClassName="md:col-span-2"
           value={form.description}
           onChange={(event) =>
             setForm((prev) => ({ ...prev, description: event.target.value }))
           }
           rows={3}
           placeholder="Description"
-          className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2 md:col-span-2"
         />
         <div className="flex gap-2 md:col-span-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="focus-ring rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-70"
-          >
+          <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : editingId ? "Update File" : "Upload File"}
-          </button>
+          </Button>
           {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="focus-ring rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700"
-            >
+            <Button type="button" onClick={resetForm} variant="secondary">
               Cancel Edit
-            </button>
+            </Button>
           )}
         </div>
-      </form>
+      </Card>
 
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-      {loading && <p className="text-sm text-slate-600">Loading...</p>}
+      {loading && <p className="text-sm text-gray-600">Loading...</p>}
 
       {!loading && (
-        <div className="overflow-auto rounded-xl border border-brand-100">
+        <div className="overflow-auto rounded-2xl border border-slate-200">
           <table className="min-w-full text-sm">
-            <thead className="sticky top-0 bg-brand-100/90 text-left text-brand-800 backdrop-blur">
+            <thead className="sticky top-0 bg-slate-100/95 text-left text-gray-700 backdrop-blur">
               <tr>
                 <th className="px-3 py-2">Title</th>
                 <th className="px-3 py-2">Description</th>
@@ -205,7 +205,7 @@ export default function AdminDownloads() {
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-t border-brand-100">
+                <tr key={item.id} className="border-t border-slate-200">
                   <td className="px-3 py-2">{item.title}</td>
                   <td className="max-w-xs whitespace-pre-wrap break-words px-3 py-2">{item.description}</td>
                   <td className="px-3 py-2">
@@ -220,29 +220,29 @@ export default function AdminDownloads() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(item)}
-                        className="focus-ring rounded border border-brand-200 px-2 py-1 text-xs font-semibold text-brand-700"
-                      >
+                      <Button type="button" onClick={() => onEdit(item)} variant="secondary" size="sm">
                         Edit
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => onDelete(item.id)}
                         disabled={deletingId === item.id}
-                        className="focus-ring rounded border border-red-200 px-2 py-1 text-xs font-semibold text-red-600"
+                        variant="danger"
+                        size="sm"
                       >
                         {deletingId === item.id ? "Deleting..." : "Delete"}
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ))}
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-3 py-3 text-center text-slate-500">
-                    No documents uploaded.
+                  <td colSpan={4} className="px-3 py-6">
+                    <EmptyState
+                      title="No documents uploaded"
+                      description="Upload your first PDF document to show it in the downloads list."
+                    />
                   </td>
                 </tr>
               )}

@@ -3,13 +3,15 @@ import { Link, useParams } from "react-router-dom";
 import ErrorState from "../components/ErrorState";
 import ImageMedia from "../components/ImageMedia";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import { parseApiError, publicApi, toAbsoluteUploadUrl } from "../services/api";
 
 function DetailItem({ label, value, fullWidth = false }) {
   return (
     <div className={fullWidth ? "sm:col-span-2" : ""}>
-      <dt className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">{label}</dt>
-      <dd className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{value || "Not provided"}</dd>
+      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">{label}</dt>
+      <dd className="mt-1 whitespace-pre-wrap text-sm text-gray-700">{value || "Not provided"}</dd>
     </div>
   );
 }
@@ -48,12 +50,13 @@ export default function MemberDetails() {
   if (error) {
     return (
       <section className="page-shell section-block space-y-4">
-        <Link
+        <Button
+          as={Link}
           to="/members"
-          className="focus-ring inline-flex rounded-lg border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+          variant="secondary"
         >
           Back to Members
-        </Link>
+        </Button>
         <ErrorState message={error} onRetry={loadMember} />
       </section>
     );
@@ -62,12 +65,13 @@ export default function MemberDetails() {
   if (!member) {
     return (
       <section className="page-shell section-block space-y-4">
-        <Link
+        <Button
+          as={Link}
           to="/members"
-          className="focus-ring inline-flex rounded-lg border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+          variant="secondary"
         >
           Back to Members
-        </Link>
+        </Button>
         <ErrorState message="Member not found." />
       </section>
     );
@@ -79,41 +83,39 @@ export default function MemberDetails() {
   return (
     <section className="page-shell section-block">
       <div className="mb-4">
-        <Link
+        <Button
+          as={Link}
           to="/members"
-          className="focus-ring inline-flex rounded-lg border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+          variant="secondary"
         >
           Back to Members
-        </Link>
+        </Button>
       </div>
 
-      <article className="section-card overflow-hidden">
+      <Card padded={false} className="overflow-hidden">
         <div className="grid gap-0 md:grid-cols-[280px,1fr]">
-          <div className="h-60 bg-brand-100 md:h-full">
-            {member.image_url ? (
+          <div className="bg-brand-50 p-4 md:p-5">
+            <div className="aspect-square h-full w-full overflow-hidden rounded-xl">
               <ImageMedia
                 src={toAbsoluteUploadUrl(member.image_url)}
                 alt={name}
-                position="50% 15%"
+                fit="cover"
+                position="50% 50%"
                 className="h-full w-full"
                 fallback={
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-400 text-4xl font-black text-white">
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-600 to-blue-500 text-4xl font-semibold text-white">
                     {name.charAt(0).toUpperCase()}
                   </div>
                 }
               />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-400 text-4xl font-black text-white">
-                {name.charAt(0).toUpperCase()}
-              </div>
-            )}
+            </div>
           </div>
 
           <div className="p-5 md:p-6">
-            <p className="inline-flex rounded-md bg-brand-100 px-2.5 py-1 text-sm font-semibold text-brand-700">
+            <p className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700">
               {position}
             </p>
-            <h1 className="mt-2 text-2xl font-black text-brand-900">{name}</h1>
+            <h1 className="mt-2 text-3xl font-semibold text-gray-900">{name}</h1>
 
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
               <DetailItem label="Membership ID" value={member.membership_id} />
@@ -123,7 +125,7 @@ export default function MemberDetails() {
             </dl>
           </div>
         </div>
-      </article>
+      </Card>
     </section>
   );
 }

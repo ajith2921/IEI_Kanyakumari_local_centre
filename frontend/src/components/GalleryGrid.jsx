@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { toAbsoluteUploadUrl } from "../services/api";
+import EmptyState from "./EmptyState";
 import ImageMedia from "./ImageMedia";
+import Card from "./ui/Card";
 
 export default function GalleryGrid({ items }) {
   const [active, setActive] = useState(null);
@@ -17,48 +19,57 @@ export default function GalleryGrid({ items }) {
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {items.length === 0 ? (
+        <EmptyState
+          title="No gallery items yet"
+          description="Published photos will appear in this gallery once available."
+        />
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
         {items.map((item) => (
-          <button
+          <Card
             key={item.id}
-            type="button"
+            as="button"
             onClick={() => setActive(item)}
-            className="section-card interactive-card group overflow-hidden text-left"
+            interactive
+            padded={false}
+            className="group overflow-hidden text-left"
           >
-            <div className="aspect-[4/3] w-full overflow-hidden bg-brand-100">
+            <div className="aspect-[4/3] w-full overflow-hidden bg-brand-50">
               <ImageMedia
                 src={toAbsoluteUploadUrl(item.image_url)}
                 alt={item.title}
                 position="50% 50%"
-                className="h-full w-full transition duration-300 group-hover:scale-105"
+                className="h-full w-full transition-all duration-300 group-hover:scale-105"
                 fallback={
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-700 to-brand-500 px-4 text-center text-sm font-bold text-white">
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-700 to-blue-500 px-4 text-center text-sm font-semibold text-white">
                     Gallery image
                   </div>
                 }
               />
             </div>
             <div className="p-4">
-              <h3 className="text-base font-black text-brand-800">{item.title}</h3>
-              {item.description && <p className="mt-2 text-sm text-slate-600">{item.description}</p>}
+              <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
+              {item.description && <p className="mt-2 text-sm text-gray-600">{item.description}</p>}
             </div>
-          </button>
+          </Card>
         ))}
-      </div>
+        </div>
+      )}
 
       {active && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
           onClick={() => setActive(null)}
         >
           <div
-            className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white"
+            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActive(null)}
-              className="focus-ring absolute right-3 top-3 rounded-lg bg-white/90 px-3 py-1 text-sm font-bold text-brand-700"
+              className="focus-ring absolute right-3 top-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-gray-700"
             >
               Close
             </button>
@@ -77,8 +88,8 @@ export default function GalleryGrid({ items }) {
               />
             </div>
             <div className="p-5">
-              <h3 className="text-xl font-black text-brand-800">{active.title}</h3>
-              {active.description && <p className="mt-2 text-slate-600">{active.description}</p>}
+              <h3 className="text-xl font-semibold text-gray-900">{active.title}</h3>
+              {active.description && <p className="mt-2 text-gray-600">{active.description}</p>}
             </div>
           </div>
         </div>

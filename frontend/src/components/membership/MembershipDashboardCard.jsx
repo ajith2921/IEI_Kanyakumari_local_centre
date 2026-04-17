@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Button from "../ui/Button";
+import Card from "../ui/Card";
 import { useMembershipSession } from "../../context/MembershipSessionContext";
 import { parseApiError, publicApi } from "../../services/api";
 
@@ -62,72 +64,73 @@ export default function MembershipDashboardCard() {
   }, [loadDashboard]);
 
   return (
-    <section className="section-card rounded-2xl border border-brand-100 bg-white p-5">
+    <Card as="section" className="border border-slate-200 bg-white p-5" padded={false}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-sm font-black text-brand-900">Member Dashboard</p>
+        <p className="text-sm font-semibold text-gray-900">Member Dashboard</p>
         {isAuthenticated && (
-          <button
+          <Button
             type="button"
             onClick={loadDashboard}
             disabled={loading}
-            className="focus-ring rounded-md border border-brand-200 px-2.5 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-70"
+            variant="secondary"
+            size="sm"
           >
             {loading ? "Refreshing..." : "Refresh"}
-          </button>
+          </Button>
         )}
       </div>
 
       {!isAuthenticated ? (
-        <p className="text-sm text-slate-600">Sign in to view your profile and CPD summary.</p>
+        <p className="text-sm text-gray-600">Sign in to view your profile and CPD summary.</p>
       ) : (
         <>
-          {loading && <p className="text-sm text-slate-600">Loading member summary...</p>}
+          {loading && <p className="text-sm text-gray-600">Loading member summary...</p>}
           {!loading && error && <p className="text-sm text-red-600">{error}</p>}
 
           {!loading && !error && (
             <>
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="rounded-lg border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
                     Membership Type
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-900">
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
                     {profile?.membership_type || "N/A"}
                   </p>
                 </div>
-                <div className="rounded-lg border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
                     Membership No
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-900">
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
                     {profile?.membership_id || "Pending"}
                   </p>
                 </div>
-                <div className="rounded-lg border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
                     Joined On
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-900">
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
                     {formatDate(profile?.created_at)}
                   </p>
                 </div>
-                <div className="rounded-lg border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
                     Interest Area
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-900">
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
                     {profile?.interest_area || "General Engineering"}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-3 rounded-lg border border-brand-100 bg-brand-50/70 px-3 py-2">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-600">CPD Summary</p>
-                <p className="mt-1 text-sm text-slate-700">
+              <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">CPD Summary</p>
+                <p className="mt-1 text-sm text-gray-700">
                   {cpdRecords.length} record(s), {totalCreditHours} credit hour(s)
                 </p>
                 {latestRecord && (
-                  <p className="mt-1 text-xs text-slate-600">
+                  <p className="mt-1 text-xs text-gray-600">
                     Latest: {latestRecord.title} ({latestRecord.attended_on || "N/A"})
                   </p>
                 )}
@@ -136,6 +139,6 @@ export default function MembershipDashboardCard() {
           )}
         </>
       )}
-    </section>
+    </Card>
   );
 }

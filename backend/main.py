@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
-from auth import hash_password
+from auth import hash_password, verify_password
 from database import Base, SessionLocal, engine
 from models import User
 from routes import (
@@ -177,6 +177,18 @@ def seed_admin_user() -> None:
                     is_active=True,
                 )
             )
+            db.commit()
+            return
+
+        password_matches = False
+        try:
+            password_matches = verify_password(admin_password, admin_user.hashed_password)
+        except Exception:
+            password_matches = False
+
+        if not password_matches:
+            admin_user.hashed_password = hash_password(admin_password)
+            admin_user.is_active = True
             db.commit()
     finally:
         db.close()

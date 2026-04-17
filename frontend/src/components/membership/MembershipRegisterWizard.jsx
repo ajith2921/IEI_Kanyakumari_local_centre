@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import Button from "../ui/Button";
+import Card from "../ui/Card";
+import Input from "../ui/Input";
 import { parseApiError, publicApi } from "../../services/api";
 
 const PASSWORD_RULE =
@@ -27,7 +30,7 @@ function StepChip({ index, title, active, completed }) {
           ? "border-emerald-200 bg-emerald-50 text-emerald-700"
           : active
             ? "border-brand-300 bg-brand-50 text-brand-700"
-            : "border-slate-200 bg-white text-slate-500"
+            : "border-slate-200 bg-white text-gray-500"
       }`}
     >
       Step {index}: {title}
@@ -151,10 +154,10 @@ export default function MembershipRegisterWizard() {
   };
 
   return (
-    <section id="be-member" className="section-card rounded-2xl p-5 md:p-6">
-      <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-600">Apply Membership</p>
-      <h3 className="mt-2 text-2xl font-black text-brand-900">Create Membership Account</h3>
-      <p className="mt-1 text-sm text-slate-600">
+    <Card as="section" id="be-member" className="p-5 md:p-6" padded={false}>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">Apply Membership</p>
+      <h3 className="mt-2 text-2xl font-semibold text-gray-900">Create Membership Account</h3>
+      <p className="mt-1 text-sm text-gray-600">
         Complete the guided registration to access institutional membership services.
       </p>
 
@@ -173,9 +176,9 @@ export default function MembershipRegisterWizard() {
       <form onSubmit={onSubmit} className="mt-5 space-y-4">
         {step === 1 && (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-slate-700">Existing Member?</p>
+            <p className="text-sm font-semibold text-gray-700">Existing Member?</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex items-center gap-2 rounded-lg border border-brand-200 px-3 py-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 rounded-lg border border-brand-200 px-3 py-2 text-sm text-gray-700">
                 <input
                   type="radio"
                   name="existing_member"
@@ -185,7 +188,7 @@ export default function MembershipRegisterWizard() {
                 />
                 Yes
               </label>
-              <label className="flex items-center gap-2 rounded-lg border border-brand-200 px-3 py-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 rounded-lg border border-brand-200 px-3 py-2 text-sm text-gray-700">
                 <input
                   type="radio"
                   name="existing_member"
@@ -198,137 +201,103 @@ export default function MembershipRegisterWizard() {
             </div>
 
             {form.existing_member === "yes" && (
-              <label className="block space-y-1 text-sm font-semibold text-slate-700">
-                Membership Number
-                <input
-                  name="membership_no"
-                  value={form.membership_no}
-                  onChange={onChange}
-                  placeholder="Enter your membership number"
-                  className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-                />
-              </label>
+              <Input
+                label="Membership Number"
+                name="membership_no"
+                value={form.membership_no}
+                onChange={onChange}
+                placeholder="Enter your membership number"
+              />
             )}
           </div>
         )}
 
         {step === 2 && (
           <div className="grid gap-3 md:grid-cols-2">
-            <label className="block space-y-1 text-sm font-semibold text-slate-700 md:col-span-2">
-              Name
-              <input
-                name="name"
-                value={form.name}
-                onChange={onChange}
-                placeholder="Enter full name"
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-              />
-            </label>
-            <label className="block space-y-1 text-sm font-semibold text-slate-700">
-              Email
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={onChange}
-                placeholder="you@example.com"
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-              />
-            </label>
-            <label className="block space-y-1 text-sm font-semibold text-slate-700">
-              Mobile
-              <input
-                type="tel"
-                name="mobile"
-                value={form.mobile}
-                onChange={onChange}
-                placeholder="+91"
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-              />
-            </label>
+            <Input
+              label="Name"
+              containerClassName="md:col-span-2"
+              name="name"
+              value={form.name}
+              onChange={onChange}
+              placeholder="Enter full name"
+            />
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={onChange}
+              placeholder="you@example.com"
+            />
+            <Input
+              label="Mobile"
+              type="tel"
+              name="mobile"
+              value={form.mobile}
+              onChange={onChange}
+              placeholder="+91"
+            />
           </div>
         )}
 
         {step === 3 && (
           <div className="grid gap-3 md:grid-cols-2">
-            <label className="block space-y-1 text-sm font-semibold text-slate-700">
-              Password
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={onChange}
-                placeholder="Create password"
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-                autoComplete="new-password"
-              />
-            </label>
-            <label className="block space-y-1 text-sm font-semibold text-slate-700">
-              Confirm Password
-              <input
-                type="password"
-                name="confirm_password"
-                value={form.confirm_password}
-                onChange={onChange}
-                placeholder="Re-enter password"
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-                autoComplete="new-password"
-              />
-            </label>
-            <label className="block space-y-1 text-sm font-semibold text-slate-700">
-              Membership Type
-              <select
-                name="membership_type"
-                value={form.membership_type}
-                onChange={onChange}
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-              >
-                <option value="AMIE">AMIE</option>
-                <option value="MIE">MIE</option>
-                <option value="FIE">FIE</option>
-              </select>
-            </label>
-            <label className="block space-y-1 text-sm font-semibold text-slate-700">
-              Interest Area
-              <input
-                name="interest_area"
-                value={form.interest_area}
-                onChange={onChange}
-                placeholder="Power systems, structural design, automation..."
-                className="focus-ring w-full rounded-lg border border-brand-200 px-3 py-2.5"
-              />
-            </label>
-            <p className="text-xs text-slate-500 md:col-span-2">{PASSWORD_RULE}</p>
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={onChange}
+              placeholder="Create password"
+              autoComplete="new-password"
+            />
+            <Input
+              label="Confirm Password"
+              type="password"
+              name="confirm_password"
+              value={form.confirm_password}
+              onChange={onChange}
+              placeholder="Re-enter password"
+              autoComplete="new-password"
+            />
+            <Input
+              as="select"
+              label="Membership Type"
+              name="membership_type"
+              value={form.membership_type}
+              onChange={onChange}
+            >
+              <option value="AMIE">AMIE</option>
+              <option value="MIE">MIE</option>
+              <option value="FIE">FIE</option>
+            </Input>
+            <Input
+              label="Interest Area"
+              name="interest_area"
+              value={form.interest_area}
+              onChange={onChange}
+              placeholder="Power systems, structural design, automation..."
+            />
+            <p className="text-xs text-gray-500 md:col-span-2">{PASSWORD_RULE}</p>
           </div>
         )}
 
         <div className="flex flex-wrap gap-2 pt-1">
           {step > 1 && (
-            <button
-              type="button"
-              onClick={prevStep}
-              className="focus-ring rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50"
-            >
+            <Button type="button" onClick={prevStep} variant="secondary">
               Back
-            </button>
+            </Button>
           )}
 
           {step < 3 ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              className="focus-ring rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800"
-            >
+            <Button type="button" onClick={nextStep}>
               Continue
-            </button>
+            </Button>
           ) : (
-            <button
-              type="submit"
-              disabled={loading}
-              className="focus-ring rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-70"
-            >
+            <Button type="submit" disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -338,6 +307,6 @@ export default function MembershipRegisterWizard() {
           </p>
         )}
       </form>
-    </section>
+    </Card>
   );
 }

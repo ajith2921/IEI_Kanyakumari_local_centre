@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Button from "./ui/Button";
 
 const slides = [
   {
@@ -41,10 +42,9 @@ export default function HeroSlider() {
   return (
     <section className="page-shell section-block !pb-10 md:!pb-12">
       <div
-        className="banner-grid relative overflow-hidden rounded-3xl p-6 text-white shadow-[0_24px_60px_-32px_rgba(16,83,168,0.7)] md:p-8 lg:p-10"
+        className="banner-grid relative overflow-hidden rounded-3xl p-6 text-white shadow-[0_24px_60px_-32px_rgba(37,99,235,0.6)] md:p-8 lg:p-10"
         style={{
-          background:
-            "linear-gradient(135deg, #0a3a76 0%, #0d4f9a 58%, #1764be 100%)",
+          background: "linear-gradient(135deg, #312e81 0%, #4338ca 52%, #2563eb 100%)",
         }}
       >
         <div className="absolute -left-16 top-6 h-56 w-56 rounded-full bg-cyan-300/18 blur-2xl" />
@@ -53,10 +53,10 @@ export default function HeroSlider() {
         <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
           <div>
             <div key={slides[active].title} className="hero-reveal">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">
                 Premier Institutional Chapter
               </p>
-              <h1 className="heading-h1 mb-4 min-h-[120px] font-black text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.35)]">
+              <h1 className="heading-h1 mb-4 min-h-[120px] font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.35)]">
                 {slides[active].title}
               </h1>
               <p className="mb-6 max-w-2xl text-base text-blue-50 [text-shadow:0_1px_8px_rgba(0,0,0,0.3)] md:text-lg">
@@ -64,18 +64,22 @@ export default function HeroSlider() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link
+              <Button
+                as={Link}
                 to="/membership-form"
-                className="focus-ring rounded-xl bg-white px-5 py-3 text-sm font-bold text-brand-700 transition hover:-translate-y-0.5 hover:shadow-lg"
+                variant="secondary"
+                className="border-transparent bg-white text-brand-700"
               >
                 Apply for Membership
-              </Link>
-              <Link
+              </Button>
+              <Button
+                as={Link}
                 to="/technical-activities"
-                className="focus-ring rounded-xl border border-cyan-100/60 bg-brand-800/45 px-5 py-3 text-sm font-bold text-cyan-50 transition hover:-translate-y-0.5 hover:bg-brand-700/60"
+                variant="secondary"
+                className="border border-white/60 bg-white/95 text-brand-700 hover:bg-white"
               >
                 Explore Events
-              </Link>
+              </Button>
             </div>
 
             <div className="relative z-10 mt-7 flex gap-2">
@@ -93,8 +97,8 @@ export default function HeroSlider() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/20 bg-white/92 p-4 text-brand-900 shadow-xl md:p-5">
-            <h2 className="mb-4 text-lg font-black text-brand-900" style={{ color: "white" }}>
+          <div className="rounded-2xl border border-white/25 bg-white/92 p-4 text-brand-900 shadow-xl md:p-5">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
               Popular Tasks
             </h2>
             <div className="grid gap-2">
@@ -102,10 +106,10 @@ export default function HeroSlider() {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className="focus-ring rounded-xl border border-brand-100 bg-white px-4 py-3 transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50"
+                  className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-sm"
                 >
-                  <p className="text-sm font-bold text-brand-800">{item.title}</p>
-                  <p className="text-xs text-brand-600">{item.hint}</p>
+                  <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                  <p className="text-xs text-gray-600">{item.hint}</p>
                 </Link>
               ))}
             </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi, parseApiError } from "../services/api";
+import EmptyState from "../components/EmptyState";
+import Button from "../components/ui/Button";
 
 const statuses = ["new", "reviewed", "approved", "rejected"];
 
@@ -56,15 +58,15 @@ export default function AdminMembershipRequests() {
 
   return (
     <div>
-      <h2 className="heading-h2 mb-2 font-black text-brand-800">Membership Requests</h2>
-      <p className="mb-4 text-sm text-slate-600">Update status and maintain membership application records.</p>
+      <h2 className="heading-h2 mb-2 font-semibold text-gray-900">Membership Requests</h2>
+      <p className="mb-4 text-sm text-gray-600">Update status and maintain membership application records.</p>
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-      {loading && <p className="text-sm text-slate-600">Loading...</p>}
+      {loading && <p className="text-sm text-gray-600">Loading...</p>}
 
       {!loading && (
-        <div className="overflow-auto rounded-xl border border-brand-100">
+        <div className="overflow-auto rounded-2xl border border-slate-200">
           <table className="min-w-full text-sm">
-            <thead className="sticky top-0 bg-brand-100/90 text-left text-brand-800 backdrop-blur">
+            <thead className="sticky top-0 bg-slate-100/95 text-left text-gray-700 backdrop-blur">
               <tr>
                 <th className="px-3 py-2">Name</th>
                 <th className="px-3 py-2">Email</th>
@@ -77,7 +79,7 @@ export default function AdminMembershipRequests() {
             </thead>
             <tbody>
               {requests.map((req) => (
-                <tr key={req.id} className="border-t border-brand-100">
+                <tr key={req.id} className="border-t border-slate-200">
                   <td className="px-3 py-2">{req.name}</td>
                   <td className="px-3 py-2">{req.email}</td>
                   <td className="px-3 py-2">{req.phone}</td>
@@ -88,7 +90,7 @@ export default function AdminMembershipRequests() {
                       value={req.status}
                       onChange={(event) => updateStatus(req.id, event.target.value)}
                       disabled={updatingStatusId === req.id}
-                      className="focus-ring rounded border border-brand-200 px-2 py-1"
+                      className="input-base py-1.5"
                     >
                       {statuses.map((status) => (
                         <option key={status} value={status}>
@@ -98,21 +100,25 @@ export default function AdminMembershipRequests() {
                     </select>
                   </td>
                   <td className="px-3 py-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => onDelete(req.id)}
                       disabled={deletingId === req.id}
-                      className="focus-ring rounded border border-red-200 px-2 py-1 text-xs font-semibold text-red-600"
+                      variant="danger"
+                      size="sm"
                     >
                       {deletingId === req.id ? "Deleting..." : "Delete"}
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
               {requests.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-3 text-center text-slate-500">
-                    No membership requests found.
+                  <td colSpan={7} className="px-3 py-6">
+                    <EmptyState
+                      title="No membership requests"
+                      description="New applications will show up here for review."
+                    />
                   </td>
                 </tr>
               )}

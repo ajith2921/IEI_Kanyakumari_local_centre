@@ -1,6 +1,8 @@
 import { Suspense, lazy, useState } from "react";
 import SectionHeader from "../components/SectionHeader";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import { useMembershipSession } from "../context/MembershipSessionContext";
 import { parseApiError, publicApi } from "../services/api";
 
@@ -64,7 +66,7 @@ const memberPortalActions = [
 
 function BenefitItem({ text }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-brand-100 bg-white px-3 py-2.5">
+    <div className="flex items-start gap-2 rounded-xl border border-brand-100 bg-white px-3 py-2.5">
       <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-brand-700">
         <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
           <path
@@ -76,7 +78,7 @@ function BenefitItem({ text }) {
           />
         </svg>
       </span>
-      <p className="text-sm font-semibold text-slate-700">{text}</p>
+      <p className="text-sm font-medium text-gray-700">{text}</p>
     </div>
   );
 }
@@ -155,77 +157,76 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
   };
 
   return (
-    <section className="section-card rounded-2xl border border-brand-100 bg-white p-5">
-      <p className="text-sm font-black text-brand-900">Member-only Portal Actions</p>
+    <Card as="section" className="border border-slate-200 p-5" padded={false}>
+      <p className="text-sm font-semibold text-gray-900">Member-only Portal Actions</p>
       {!isAuthenticated ? (
         <>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-gray-600">
             Sign in to unlock protected services such as profile access, member credentials, and
             downloadable membership resources.
           </p>
-          <a
-            href="#auth-panel"
-            className="focus-ring mt-3 inline-flex rounded-lg border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
-          >
+          <Button as="a" href="#auth-panel" variant="secondary" size="sm" className="mt-3">
             Sign In to Continue
-          </a>
+          </Button>
         </>
       ) : (
         <>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-gray-600">
             Signed in as <span className="font-semibold text-brand-800">{member?.name || "Member"}</span>
           </p>
           <div className="mt-3 grid gap-2">
-            <button
-              type="button"
+            <Button
               onClick={runCertificateDownload}
               disabled={loadingAction === "certificate"}
-              className="focus-ring rounded-lg border border-brand-200 px-3 py-2 text-left text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-70"
+              variant="secondary"
+              className="w-full justify-start text-left"
             >
               {loadingAction === "certificate" ? "Preparing Certificate..." : memberPortalActions[0]}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               onClick={runProfileFetch}
               disabled={loadingAction === "profile"}
-              className="focus-ring rounded-lg border border-brand-200 px-3 py-2 text-left text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-70"
+              variant="secondary"
+              className="w-full justify-start text-left"
             >
               {loadingAction === "profile" ? "Loading Profile..." : memberPortalActions[1]}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               onClick={runCpdFetch}
               disabled={loadingAction === "cpd"}
-              className="focus-ring rounded-lg border border-brand-200 px-3 py-2 text-left text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-70"
+              variant="secondary"
+              className="w-full justify-start text-left"
             >
               {loadingAction === "cpd" ? "Loading CPD History..." : memberPortalActions[2]}
-            </button>
+            </Button>
           </div>
           {profile && (
-            <dl className="mt-3 space-y-1 rounded-lg border border-brand-100 bg-brand-50/70 p-3 text-sm">
+            <dl className="mt-3 space-y-1 rounded-xl border border-brand-100 bg-brand-50/70 p-3 text-sm">
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-600">Membership Type</dt>
-                <dd className="font-semibold text-brand-800">{profile.membership_type || "N/A"}</dd>
+                <dt className="text-gray-600">Membership Type</dt>
+                <dd className="font-semibold text-gray-900">{profile.membership_type || "N/A"}</dd>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-600">Interest Area</dt>
-                <dd className="font-semibold text-brand-800">{profile.interest_area || "N/A"}</dd>
+                <dt className="text-gray-600">Interest Area</dt>
+                <dd className="font-semibold text-gray-900">{profile.interest_area || "N/A"}</dd>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-600">Contact</dt>
-                <dd className="font-semibold text-brand-800">{profile.email || profile.mobile || "N/A"}</dd>
+                <dt className="text-gray-600">Contact</dt>
+                <dd className="font-semibold text-gray-900">{profile.email || profile.mobile || "N/A"}</dd>
               </div>
             </dl>
           )}
 
           {cpdRecords.length > 0 && (
-            <div className="mt-3 rounded-lg border border-brand-100 bg-brand-50/70 p-3">
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-700">CPD History</p>
-              <ul className="mt-2 space-y-2 text-sm text-slate-700">
+            <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50/70 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
+                CPD History
+              </p>
+              <ul className="mt-2 space-y-2 text-sm text-gray-700">
                 {cpdRecords.slice(0, 5).map((record) => (
-                  <li key={record.id} className="rounded-md border border-brand-100 bg-white px-2.5 py-2">
+                  <li key={record.id} className="rounded-lg border border-brand-100 bg-white px-2.5 py-2">
                     <p className="font-semibold text-brand-800">{record.title}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-gray-500">
                       {record.category} | {record.credit_hours} hrs | {record.attended_on}
                     </p>
                   </li>
@@ -240,7 +241,7 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
           )}
         </>
       )}
-    </section>
+    </Card>
   );
 }
 
@@ -250,12 +251,12 @@ export default function MembershipForm() {
   return (
     <section className="page-shell section-block">
       <div className="mb-5 overflow-x-auto">
-        <div className="inline-flex min-w-max gap-2 rounded-xl border border-brand-100 bg-white p-2">
+        <div className="inline-flex min-w-max gap-2 rounded-xl border border-slate-200 bg-white p-2">
           {actionTabs.map((tab) => (
             <a
               key={tab.label}
               href={tab.href}
-              className="focus-ring rounded-lg px-3 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+              className="focus-ring rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-slate-100"
             >
               {tab.label}
             </a>
@@ -265,24 +266,26 @@ export default function MembershipForm() {
 
       <SectionHeader
         eyebrow="Membership Portal"
-        title="Be the part of IEI Kanyakumari Local Centre"
+        title="Be a part of IEI Kanyakumari Local Centre"
         description="Benefits of Corporate Membership"
       />
 
-      <div className="section-card mb-6 rounded-2xl bg-gradient-to-r from-brand-700 to-brand-500 p-6 text-white md:p-8">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-100">Institutional Membership</p>
-        <h2 className="mt-2 text-2xl font-black md:text-3xl">Professional Membership Gateway</h2>
+      <Card className="mb-6 bg-gradient-to-r from-brand-700 to-brand-500 p-6 text-white md:p-8" padded={false}>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
+          Institutional Membership
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold md:text-3xl">Professional Membership Gateway</h2>
         <p className="mt-2 max-w-3xl text-sm text-brand-50 md:text-base">
           Join a structured engineering community with standards-based professional development,
           technical resources, certification pathways, and chapter-level collaboration.
         </p>
-      </div>
+      </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr,0.85fr]">
         <div className="space-y-6">
-          <section id="membership-info" className="section-card rounded-2xl p-5 md:p-6">
-            <h3 className="text-xl font-black text-brand-900">Benefits of Corporate Membership</h3>
-            <p className="mt-1 text-sm text-slate-600">
+          <Card as="section" id="membership-info" className="p-5 md:p-6" padded={false}>
+            <h3 className="text-xl font-semibold text-gray-900">Benefits of Corporate Membership</h3>
+            <p className="mt-1 text-sm text-gray-600">
               Structured services supporting engineering practice, learning, and long-term career growth.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -290,74 +293,74 @@ export default function MembershipForm() {
                 <BenefitItem key={benefit} text={benefit} />
               ))}
             </div>
-          </section>
+          </Card>
 
-          <section id="academics-certification" className="section-card rounded-2xl p-5 md:p-6">
-            <h3 className="text-xl font-black text-brand-900">Academics / Certification</h3>
-            <p className="mt-1 text-sm text-slate-600">
+          <Card as="section" id="academics-certification" className="p-5 md:p-6" padded={false}>
+            <h3 className="text-xl font-semibold text-gray-900">Academics / Certification</h3>
+            <p className="mt-1 text-sm text-gray-600">
               Access guided certification tracks, technical talks, and recognized learning opportunities
               aligned with professional practice.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-slate-800">Structured Learning Pathways</p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-gray-900">Structured Learning Pathways</p>
+                <p className="mt-1 text-sm text-gray-600">
                   Curated orientation and progression resources for AMIE, MIE, and FIE candidates.
                 </p>
               </div>
               <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-slate-800">Certification Support</p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-gray-900">Certification Support</p>
+                <p className="mt-1 text-sm text-gray-600">
                   Official chapter guidance for exams, documentation, and continuing education records.
                 </p>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section id="network-activities" className="section-card rounded-2xl p-5 md:p-6">
-            <h3 className="text-xl font-black text-brand-900">Network / Activities</h3>
-            <p className="mt-1 text-sm text-slate-600">
+          <Card as="section" id="network-activities" className="p-5 md:p-6" padded={false}>
+            <h3 className="text-xl font-semibold text-gray-900">Network / Activities</h3>
+            <p className="mt-1 text-sm text-gray-600">
               Participate in chapter activities, peer exchanges, technical forums, and institutional events.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-slate-800">Technical Chapters</p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-gray-900">Technical Chapters</p>
+                <p className="mt-1 text-sm text-gray-600">
                   Engage with focused engineering domains and collaborative chapter groups.
                 </p>
               </div>
               <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-slate-800">Professional Networking</p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-gray-900">Professional Networking</p>
+                <p className="mt-1 text-sm text-gray-600">
                   Connect with senior professionals, practitioners, and institutional mentors.
                 </p>
               </div>
             </div>
-          </section>
+          </Card>
 
           <Suspense fallback={<LoadingSpinner text="Loading registration module..." />}>
             <MembershipRegisterWizard />
           </Suspense>
 
-          <section className="section-card rounded-2xl p-5 md:p-6">
-            <h3 className="text-xl font-black text-brand-900">Membership Categories</h3>
+          <Card as="section" className="p-5 md:p-6" padded={false}>
+            <h3 className="text-xl font-semibold text-gray-900">Membership Categories</h3>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               {membershipTypes.map((item) => (
                 <article key={item.code} className="rounded-xl border border-brand-100 bg-white p-4">
-                  <p className="inline-flex rounded-md bg-brand-100 px-2 py-1 text-xs font-black text-brand-700">
+                  <p className="inline-flex rounded-md bg-brand-100 px-2 py-1 text-xs font-semibold text-brand-700">
                     {item.code}
                   </p>
-                  <h4 className="mt-2 text-base font-black text-brand-900">{item.title}</h4>
-                  <p className="mt-2 text-sm font-semibold text-slate-700">Eligibility</p>
-                  <p className="text-sm text-slate-600">{item.eligibility}</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-700">Description</p>
-                  <p className="text-sm text-slate-600">{item.description}</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-700">Fees</p>
-                  <p className="text-sm text-slate-600">{item.fees}</p>
+                  <h4 className="mt-2 text-base font-semibold text-gray-900">{item.title}</h4>
+                  <p className="mt-2 text-sm font-semibold text-gray-700">Eligibility</p>
+                  <p className="text-sm text-gray-600">{item.eligibility}</p>
+                  <p className="mt-2 text-sm font-semibold text-gray-700">Description</p>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                  <p className="mt-2 text-sm font-semibold text-gray-700">Fees</p>
+                  <p className="text-sm text-gray-600">{item.fees}</p>
                 </article>
               ))}
             </div>
-          </section>
+          </Card>
         </div>
 
         <div className="space-y-4 xl:sticky xl:top-24 xl:self-start">
@@ -371,12 +374,12 @@ export default function MembershipForm() {
 
           <ProtectedPortalActions isAuthenticated={isAuthenticated} member={member} />
 
-          <div className="section-card rounded-2xl border border-brand-100 bg-white p-5">
-            <p className="text-sm font-black text-brand-900">Portal Support</p>
-            <p className="mt-1 text-sm text-slate-600">
+          <Card className="border border-slate-200 p-5" padded={false}>
+            <p className="text-sm font-semibold text-gray-900">Portal Support</p>
+            <p className="mt-1 text-sm text-gray-600">
               For technical help with account access and membership verification, contact chapter office.
             </p>
-          </div>
+          </Card>
         </div>
       </div>
     </section>

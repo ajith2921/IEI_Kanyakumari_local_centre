@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import ImageMedia from "../components/ImageMedia";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 import { parseApiError, toAbsoluteUploadUrl } from "../services/api";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -35,6 +38,7 @@ export default function ResourceManager({
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
+  const [isDropActive, setIsDropActive] = useState(false);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [previewSource, setPreviewSource] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -127,8 +131,7 @@ export default function ResourceManager({
     return "";
   };
 
-  const onImageFileChange = (event) => {
-    const file = event.target.files?.[0] || null;
+  const assignImageFile = (file) => {
     if (!file) {
       setImageFile(null);
       return;
@@ -137,13 +140,29 @@ export default function ResourceManager({
     const validationError = validateImageFile(file);
     if (validationError) {
       setError(validationError);
-      event.target.value = "";
       setImageFile(null);
       return;
     }
 
     setError("");
     setImageFile(file);
+  };
+
+  const onImageFileChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    assignImageFile(file);
+    if (!file) {
+      event.target.value = "";
+    }
+  };
+
+  const onImageDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDropActive(false);
+
+    const file = event.dataTransfer?.files?.[0] || null;
+    assignImageFile(file);
   };
 
   const onSubmit = async (event) => {
@@ -204,25 +223,27 @@ export default function ResourceManager({
   return (
     <div>
       <div className="mb-4">
-        <h2 className="heading-h2 mb-2 font-black text-brand-800">{title}</h2>
-        <p className="text-sm text-slate-600">
+        <h2 className="heading-h2 mb-2 font-semibold text-gray-900">{title}</h2>
+        <p className="text-sm text-gray-600">
           Add new entries with the form, then edit or delete records from the table.
         </p>
       </div>
 
       <form
         onSubmit={onSubmit}
-        className="mb-6 grid gap-3 rounded-xl border border-brand-100 bg-brand-50/30 p-4 md:grid-cols-2"
+        className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 md:grid-cols-2 md:p-5"
       >
         {fields.map((field) => {
           const isFullWidth = Boolean(field.fullWidth) || field.type === "textarea";
           const colSpanClass = isFullWidth ? "md:col-span-2" : "";
-          const baseClass = `focus-ring w-full rounded-lg border border-brand-200 px-3 py-2 ${colSpanClass}`.trim();
 
           if (field.type === "textarea") {
             return (
-              <textarea
+              <Input
                 key={field.name}
+                as="textarea"
+                label={field.label}
+                containerClassName={colSpanClass}
                 name={field.name}
                 value={form[field.name]}
                 onChange={onChange}
@@ -230,21 +251,22 @@ export default function ResourceManager({
                 required={Boolean(field.required)}
                 minLength={field.minLength}
                 maxLength={field.maxLength}
-                placeholder={field.label}
-                className={baseClass}
+                placeholder={field.placeholder || field.label}
               />
             );
           }
 
           if (field.type === "select") {
             return (
-              <select
+              <Input
                 key={field.name}
+                as="select"
+                label={field.label}
+                containerClassName={colSpanClass}
                 name={field.name}
                 value={form[field.name]}
                 onChange={onChange}
                 required={Boolean(field.required)}
-                className={baseClass}
               >
                 <option value="">{field.placeholder || `Select ${field.label}`}</option>
                 {(field.options || []).map((option) => (
@@ -252,35 +274,58 @@ export default function ResourceManager({
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </Input>
             );
           }
 
           return (
-            <input
+            <Input
               key={field.name}
+              label={field.label}
+              containerClassName={colSpanClass}
               type={field.type || "text"}
               name={field.name}
               value={form[field.name]}
               onChange={onChange}
               required={Boolean(field.required)}
-              placeholder={field.label}
+              placeholder={field.placeholder || field.label}
               minLength={field.minLength}
               maxLength={field.maxLength}
               pattern={field.pattern}
               inputMode={field.inputMode}
               autoComplete={field.autoComplete}
-              className={baseClass}
             />
           );
         })}
 
         {imageUploadEnabled && (
-          <div className="rounded-xl border border-dashed border-brand-200 bg-white p-4 md:col-span-2">
+          <div
+            className={`rounded-2xl border-2 border-dashed bg-white p-4 transition-all duration-300 md:col-span-2 ${
+              isDropActive ? "border-brand-400 bg-brand-50/60" : "border-brand-200"
+            }`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setIsDropActive(true);
+            }}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setIsDropActive(true);
+            }}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setIsDropActive(false);
+            }}
+            onDrop={onImageDrop}
+          >
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold text-brand-800">Image Upload</p>
-                <p className="text-xs text-slate-500">JPG, PNG, or WEBP. File upload overrides URL.</p>
+                <p className="text-xs text-slate-500">
+                  Drag and drop an image or choose a file. JPG, PNG, and WEBP are supported.
+                </p>
                 <p className="mt-1 text-xs font-medium text-brand-700">{imageGuideline}</p>
               </div>
               {imageFile && (
@@ -294,7 +339,7 @@ export default function ResourceManager({
               key={fileInputKey}
               accept="image/jpeg,image/png,image/webp"
               onChange={onImageFileChange}
-              className="focus-ring mb-3 w-full rounded-lg border border-brand-200 px-3 py-2"
+              className="input-base mb-3 cursor-pointer"
             />
             <div className="overflow-hidden rounded-lg bg-slate-50">
               {previewSource ? (
@@ -314,7 +359,7 @@ export default function ResourceManager({
                 </div>
               ) : (
                 <div className="flex aspect-[4/3] items-center justify-center px-4 text-center text-sm text-slate-500">
-                  Select an image file or enter an image URL to preview.
+                  Drop an image here or enter an image URL to preview.
                 </div>
               )}
             </div>
@@ -322,32 +367,24 @@ export default function ResourceManager({
         )}
 
         <div className="flex gap-2 md:col-span-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="focus-ring rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-70"
-          >
+          <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : editingId ? "Update" : "Add"}
-          </button>
+          </Button>
           {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="focus-ring rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700"
-            >
+            <Button type="button" variant="secondary" onClick={resetForm}>
               Cancel Edit
-            </button>
+            </Button>
           )}
         </div>
       </form>
 
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-      {loading && <p className="text-sm text-slate-600">Loading...</p>}
+      {loading && <p className="text-sm text-gray-600">Loading...</p>}
 
       {!loading && (
-        <div className="overflow-auto rounded-xl border border-brand-100">
+        <div className="overflow-auto rounded-2xl border border-slate-200">
           <table className="min-w-full border-collapse text-sm">
-            <thead className="sticky top-0 bg-brand-100/90 text-left text-brand-800 backdrop-blur">
+            <thead className="sticky top-0 bg-slate-100/95 text-left text-gray-700 backdrop-blur">
               <tr>
                 {fields.map((field) => (
                   <th key={field.name} className="px-3 py-2 font-semibold">
@@ -359,18 +396,18 @@ export default function ResourceManager({
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-t border-brand-100">
+                <tr key={item.id} className="border-t border-slate-200">
                   {fields.map((field) => {
                     const value = item[field.name] || "";
                     if (imageUploadEnabled && field.name === imageFieldName) {
                       return (
-                        <td key={field.name} className="px-3 py-2 text-slate-700">
+                        <td key={field.name} className="px-3 py-2 text-gray-700">
                           {value ? (
                             <ImageMedia
                               src={toAbsoluteUploadUrl(String(value))}
                               alt={String(item.title || item.name || "Image")}
                               position={imageThumbPosition}
-                              className="h-12 w-16 rounded object-cover"
+                              className="h-12 w-16 rounded-lg object-cover"
                               fallback={
                                 <div className="flex h-12 w-16 items-center justify-center rounded bg-brand-100 text-[10px] font-semibold text-brand-600">
                                   N/A
@@ -385,7 +422,7 @@ export default function ResourceManager({
                     }
 
                     return (
-                      <td key={field.name} className="px-3 py-2 text-slate-700">
+                      <td key={field.name} className="px-3 py-2 text-gray-700">
                         <span
                           className={field.type === "textarea" ? "line-clamp-3 whitespace-pre-wrap break-words" : "break-words"}
                         >
@@ -396,21 +433,18 @@ export default function ResourceManager({
                   })}
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(item)}
-                        className="focus-ring rounded border border-brand-200 px-2 py-1 text-xs font-semibold text-brand-700"
-                      >
+                      <Button type="button" onClick={() => onEdit(item)} variant="secondary" size="sm">
                         Edit
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => onDelete(item.id)}
                         disabled={deletingId === item.id}
-                        className="focus-ring rounded border border-red-200 px-2 py-1 text-xs font-semibold text-red-600"
+                        variant="danger"
+                        size="sm"
                       >
                         {deletingId === item.id ? "Deleting..." : "Delete"}
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -418,10 +452,13 @@ export default function ResourceManager({
               {items.length === 0 && (
                 <tr>
                   <td
-                    className="px-3 py-3 text-center text-slate-500"
+                    className="px-3 py-6"
                     colSpan={fields.length + 1}
                   >
-                    No entries found.
+                    <EmptyState
+                      title="No entries found"
+                      description="Create your first record using the form above."
+                    />
                   </td>
                 </tr>
               )}

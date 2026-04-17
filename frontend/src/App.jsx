@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
-import About from "./pages/About";
+import Conference from "./pages/Conference";
 import MembersList from "./pages/MembersList";
 import MemberDetails from "./pages/MemberDetails";
 import GalleryPage from "./pages/GalleryPage";
@@ -48,13 +48,15 @@ export default function App() {
         }
       />
       <Route
-        path="/about"
+        path="/conference"
         element={
           <PublicLayout>
-            <About />
+            <Conference />
           </PublicLayout>
         }
       />
+      {/* Redirect old /about links to /conference */}
+      <Route path="/about" element={<Navigate to="/conference" replace />} />
       <Route
         path="/members"
         element={

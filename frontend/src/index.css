@@ -1,19 +1,20 @@
-@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Nunito+Sans:wght@300;400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --surface: #f6f9ff;
-  --surface-alt: #edf5ff;
+  --surface: #f8fafc;
+  --surface-alt: #f1f5f9;
   --surface-raised: #ffffff;
-  --brand: #1053a8;
-  --brand-strong: #0d3f81;
-  --brand-soft: #dbeeff;
-  --text: #0f172a;
-  --text-muted: #475569;
-  --accent: #0891b2;
+  --brand: #4338ca;
+  --brand-strong: #312e81;
+  --brand-soft: #e0e7ff;
+  --text: #111827;
+  --text-muted: #4b5563;
+  --accent: #2563eb;
+  --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
 
   --space-1: 8px;
   --space-2: 16px;
@@ -22,13 +23,13 @@
   --space-5: 40px;
   --space-6: 48px;
 
-  --fs-h1: clamp(2rem, 5vw, 3.25rem);
-  --fs-h2: clamp(1.5rem, 2.8vw, 2.25rem);
-  --fs-h3: clamp(1.125rem, 2vw, 1.5rem);
+  --fs-h1: clamp(2rem, 4.8vw, 3rem);
+  --fs-h2: clamp(1.5rem, 2.4vw, 2rem);
+  --fs-h3: clamp(1.125rem, 1.8vw, 1.375rem);
   --fs-body: 1rem;
 
-  --shadow-soft: 0 10px 30px -20px rgba(14, 65, 134, 0.42);
-  --shadow-hover: 0 18px 35px -20px rgba(16, 83, 168, 0.45);
+  --shadow-soft: 0 18px 38px -30px rgba(15, 23, 42, 0.35);
+  --shadow-hover: 0 24px 40px -28px rgba(15, 23, 42, 0.42);
 }
 
 html,
@@ -43,13 +44,14 @@ html {
 
 body {
   margin: 0;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: var(--fs-body);
   line-height: 1.6;
   color: var(--text);
-  background: radial-gradient(circle at 10% 10%, #e6f2ff 0, transparent 35%),
-    radial-gradient(circle at 85% 20%, #d9efff 0, transparent 34%),
-    linear-gradient(180deg, #f8fbff 0%, #f2f7ff 48%, #ffffff 100%);
+  background:
+    radial-gradient(circle at 12% -8%, rgba(79, 70, 229, 0.12), transparent 38%),
+    radial-gradient(circle at 95% 10%, rgba(37, 99, 235, 0.08), transparent 32%),
+    var(--surface);
 }
 
 h1,
@@ -58,20 +60,21 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Merriweather", serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 .page-shell {
-  @apply mx-auto w-full max-w-[78rem] px-4 md:px-6;
+  @apply mx-auto w-full max-w-7xl px-6 lg:px-8;
 }
 
 .section-card {
-  @apply rounded-2xl border border-brand-100 bg-white shadow-card transition-shadow duration-300;
+  @apply rounded-2xl border border-slate-200/80 bg-white shadow-card transition-all duration-300;
   box-shadow: var(--shadow-soft);
 }
 
 .section-block {
-  @apply py-12 md:py-16;
+  @apply py-8 md:py-10;
+  animation: heroReveal 0.4s ease-out both;
 }
 
 .heading-h1 {
@@ -97,15 +100,15 @@ h6 {
 }
 
 .focus-ring {
-  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2;
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
 }
 
 .eyebrow-chip {
-  @apply inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-brand-700;
+  @apply inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-700;
 }
 
 .interactive-card {
-  @apply transition duration-300 ease-out hover:-translate-y-1 hover:shadow-xl;
+  @apply transition-all duration-300 ease-out hover:-translate-y-1;
   box-shadow: var(--shadow-soft);
 }
 
@@ -125,6 +128,39 @@ h6 {
     ),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+.btn-base {
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 hover:scale-[1.03] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70;
+}
+
+.btn-primary {
+  @apply btn-base text-white;
+  background-image: var(--gradient-primary);
+}
+
+.btn-secondary {
+  @apply btn-base border border-slate-200 bg-white text-slate-700 hover:bg-slate-50;
+}
+
+.btn-danger {
+  @apply btn-base border border-red-200 bg-white text-red-600 hover:bg-red-50;
+}
+
+.input-base {
+  @apply focus-ring w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-300;
+}
+
+.card-base {
+  @apply section-card rounded-2xl bg-white;
+}
+
+.section-fade-in {
+  animation: heroReveal 0.45s ease-out both;
+}
+
+.empty-state {
+  @apply rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600;
 }
 
 .stagger-in {

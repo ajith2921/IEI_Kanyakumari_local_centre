@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi, parseApiError } from "../services/api";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import ErrorState from "../components/ErrorState";
 
 const cards = [
@@ -123,13 +125,13 @@ export default function DashboardHome() {
 
   return (
     <div>
-      <h2 className="heading-h2 mb-2 font-black text-brand-800">Overview</h2>
-      <p className="mb-6 text-slate-600">Manage website content and incoming requests.</p>
+      <h2 className="heading-h2 mb-2 font-semibold text-gray-900">Overview</h2>
+      <p className="mb-6 text-gray-600">Manage website content and incoming requests.</p>
 
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
-            <article key={index} className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
+            <article key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="skeleton h-3 w-2/3" />
               <div className="skeleton mt-3 h-8 w-1/2" />
             </article>
@@ -141,21 +143,21 @@ export default function DashboardHome() {
       {!loading && !error && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {cards.map((card) => (
-            <article
+            <Card
               key={card.key}
-              className="rounded-xl border border-brand-100 bg-brand-50/40 p-4"
+              className="p-4"
             >
-              <p className="text-sm font-semibold text-brand-700">{card.label}</p>
-              <p className="mt-2 text-3xl font-black text-brand-900">{counts[card.key] ?? 0}</p>
-            </article>
+              <p className="text-sm font-medium text-brand-700">{card.label}</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{counts[card.key] ?? 0}</p>
+            </Card>
           ))}
         </div>
       )}
 
-      <div className="mt-8 rounded-xl border border-brand-100 bg-brand-50/30 p-4 md:p-5">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-black text-brand-900">Image Quality Audit</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Image Quality Audit</h3>
             <p className="text-sm text-brand-700">
               Automatically scans member, gallery, activity, and facility images for ratio and crop risks.
             </p>
@@ -189,9 +191,9 @@ export default function DashboardHome() {
         )}
 
         {!auditLoading && !auditError && auditReport.items.length > 0 && (
-          <div className="overflow-auto rounded-lg border border-brand-100 bg-white">
+          <div className="overflow-auto rounded-2xl border border-slate-200 bg-white">
             <table className="min-w-full text-sm">
-              <thead className="bg-brand-100/70 text-left text-brand-800">
+              <thead className="bg-slate-100/95 text-left text-gray-700">
                 <tr>
                   <th className="px-3 py-2">Entity</th>
                   <th className="px-3 py-2">Item</th>
@@ -204,9 +206,9 @@ export default function DashboardHome() {
                 {auditReport.items.slice(0, 20).map((item) => {
                   const key = `${item.entity}:${item.id}`;
                   return (
-                    <tr key={key} className="border-t border-brand-100 align-top">
+                    <tr key={key} className="border-t border-slate-200 align-top">
                       <td className="px-3 py-2 font-semibold capitalize text-brand-800">{item.entity}</td>
-                      <td className="px-3 py-2 text-slate-700">{item.label}</td>
+                      <td className="px-3 py-2 text-gray-700">{item.label}</td>
                       <td className="px-3 py-2">
                         <div className="flex flex-wrap gap-1">
                           {item.issues.map((issue) => (
@@ -219,19 +221,20 @@ export default function DashboardHome() {
                           ))}
                         </div>
                       </td>
-                      <td className="max-w-sm px-3 py-2 text-slate-600">{item.suggestion}</td>
+                      <td className="max-w-sm px-3 py-2 text-gray-600">{item.suggestion}</td>
                       <td className="px-3 py-2">
                         {item.auto_fix_available ? (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => onAutoFix(item.entity, item.id)}
                             disabled={autoFixingKey === key}
-                            className="focus-ring rounded border border-brand-200 px-2 py-1 text-xs font-semibold text-brand-700"
+                            variant="secondary"
+                            size="sm"
                           >
                             {autoFixingKey === key ? "Fixing..." : "Auto-Fix"}
-                          </button>
+                          </Button>
                         ) : (
-                          <span className="text-xs text-slate-500">Re-upload needed</span>
+                          <span className="text-xs text-gray-500">Re-upload needed</span>
                         )}
                       </td>
                     </tr>
