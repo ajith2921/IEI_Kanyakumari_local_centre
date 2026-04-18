@@ -5,7 +5,6 @@ import { SkeletonGrid } from "../components/Skeletons";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 import ImageMedia from "../components/ImageMedia";
-import Card from "../components/ui/Card";
 
 export default function Facilities() {
   const { data, loading, error, reload } = useFetchList(publicApi.getFacilities);
@@ -23,33 +22,31 @@ export default function Facilities() {
 
       {!loading && !error && (
         data.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
-            {data.map((facility, index) => (
-              <Card
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            {data.map((facility) => (
+              <article
                 key={facility.id}
-                interactive
-                padded={false}
-                className={`group overflow-hidden ${index < 3 ? "stagger-in" : ""}`}
+                className="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
               >
-                <div className="aspect-[4/3] w-full overflow-hidden bg-brand-50">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-gray-50">
                   <ImageMedia
                     src={toAbsoluteUploadUrl(facility.image_url)}
                     alt={facility.name}
                     fit="cover"
                     position="50% 50%"
-                    className="h-full w-full transition-all duration-300 group-hover:scale-105"
+                    className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
                     fallback={
-                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-brand-700 to-blue-500 text-sm font-semibold text-white">
+                      <div className="flex h-full items-center justify-center bg-gray-50 text-sm text-gray-300">
                         Facility
                       </div>
                     }
                   />
                 </div>
-                <div className="space-y-2 p-5">
-                  <h3 className="heading-h3 font-semibold text-gray-900">{facility.name}</h3>
-                  <p className="line-clamp-4 text-sm text-gray-600">{facility.description}</p>
+                <div className="space-y-1.5 p-5">
+                  <h3 className="text-sm font-semibold text-gray-900">{facility.name}</h3>
+                  <p className="line-clamp-3 text-sm leading-relaxed text-gray-500">{facility.description}</p>
                 </div>
-              </Card>
+              </article>
             ))}
           </div>
         ) : (

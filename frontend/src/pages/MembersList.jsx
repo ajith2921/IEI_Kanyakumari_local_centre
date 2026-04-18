@@ -4,34 +4,22 @@ import ErrorState from "../components/ErrorState";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 
-/* ═══════════════════════════════════════════════════════
-   AVATAR FALLBACK — initials, IEI navy flat style
-═══════════════════════════════════════════════════════ */
+/* ── AVATAR FALLBACK ──────────────────────────────────── */
 function AvatarFallback({ name }) {
   const initial = (name || "M").trim().charAt(0).toUpperCase();
   return (
     <div
       aria-hidden="true"
-      className="flex h-full w-full items-center justify-center select-none"
-      style={{
-        backgroundColor: "#1f3c88",
-        color: "#ffffff",
-        fontFamily: '"Arial", "Helvetica Neue", Helvetica, sans-serif',
-        fontSize: "1.6rem",
-        fontWeight: "bold",
-      }}
+      className="flex h-full w-full select-none items-center justify-center bg-gray-900 text-2xl font-semibold text-white"
     >
       {initial}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   PROFILE IMAGE — circular, face-correct framing
-═══════════════════════════════════════════════════════ */
+/* ── PROFILE IMAGE ────────────────────────────────────── */
 function ProfileImage({ src, name }) {
   const [error, setError] = useState(false);
-
   if (!src || error) return <AvatarFallback name={name} />;
 
   return (
@@ -41,24 +29,12 @@ function ProfileImage({ src, name }) {
       loading="lazy"
       decoding="async"
       onError={() => setError(true)}
-      className="h-full w-full object-cover object-center"
-      style={{ display: "block" }}
+      className="block h-full w-full object-cover object-center"
     />
   );
 }
 
-/* shared text styles ─────────────────────────────────── */
-const FONT_SERIF  = '"Times New Roman", Georgia, serif';
-const FONT_SANS   = '"Arial", "Helvetica Neue", Helvetica, sans-serif';
-const CLR_NAVY    = "#1f3c88";
-const CLR_MAROON  = "#8B0000";
-const CLR_BODY    = "#333333";
-const CLR_MUTED   = "#666666";
-const CLR_SILVER  = "#c0c0c0";
-
-/* ═══════════════════════════════════════════════════════
-   MEMBER ROW — IEI document style
-═══════════════════════════════════════════════════════ */
+/* ── MEMBER ROW ───────────────────────────────────────── */
 function MemberRow({ member, isLast }) {
   const name         = member.name?.trim()                     || "Member";
   const position     = member.position?.trim()                 || "Member";
@@ -70,129 +46,45 @@ function MemberRow({ member, isLast }) {
 
   return (
     <article
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",         /* vertically center image to text     */
-        justifyContent: "space-between",
-        gap: "24px",
-        paddingTop: "20px",
-        paddingBottom: "20px",
-        borderBottom: isLast ? "none" : `1px solid ${CLR_SILVER}`,
-      }}
-      className="flex-col sm:flex-row"
+      className={`flex flex-col items-center gap-6 py-6 sm:flex-row sm:justify-between ${
+        isLast ? "" : "border-b border-gray-100"
+      }`}
     >
-      {/* ── LEFT TEXT (70%) ──────────────────────────────── */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-
-        {/* Position / Designation */}
-        <p style={{
-          fontFamily: FONT_SANS,
-          fontSize: "18px",
-          fontWeight: "bold",
-          color: CLR_MAROON,
-          letterSpacing: "0.02em",
-          lineHeight: 1.2,
-          marginBottom: "6px",       /* 6px gap between role and name      */
-        }}>
-          {position}
-        </p>
-
-        {/* Name row + optional Membership No — most prominent element */}
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "8px", marginBottom: "8px" }}>
-          <h2
-            className="break-words"
-            style={{
-              fontFamily: FONT_SANS,
-              fontSize: "21px",
-              fontWeight: "bold",
-              color: CLR_NAVY,
-              lineHeight: 1.25,
-              margin: 0,
-            }}
-          >
-            {name}
-          </h2>
+      {/* Text */}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-gray-500">{position}</p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-2">
+          <h2 className="break-words text-lg font-semibold text-gray-900">{name}</h2>
           {membershipId && (
-            <span style={{
-              fontFamily: FONT_SANS,
-              fontSize: "16px",
-              fontWeight: "600",
-              color: CLR_NAVY,        /* same blue as name                  */
-              whiteSpace: "nowrap",
-            }}>
+            <span className="whitespace-nowrap text-xs font-medium text-gray-400">
               M.No.&thinsp;{membershipId}
             </span>
           )}
         </div>
-
-        {/* Address */}
         {address && (
-          <p
-            className="break-words"
-            style={{
-              fontFamily: FONT_SERIF,
-              fontSize: "15px",
-              color: "#444444",
-              lineHeight: 1.6,
-              whiteSpace: "pre-line",
-              marginTop: 0,           /* already offset by name's marginBottom */
-            }}
-          >
+          <p className="mt-2 whitespace-pre-line break-words text-sm leading-relaxed text-gray-500">
             {address}
           </p>
         )}
-
-        {/* Email */}
         {email && (
-          <p style={{
-            fontFamily: FONT_SERIF,
-            fontSize: "15px",
-            color: CLR_BODY,
-            marginTop: "5px",
-            lineHeight: 1.4,
-          }}>
-            <span style={{ color: CLR_MUTED }}>Email:&nbsp;</span>
-            <a
-              href={`mailto:${email}`}
-              className="break-all"
-              style={{
-                color: "#0077cc",
-                textDecoration: "underline",
-              }}
-            >
+          <p className="mt-1 text-sm text-gray-500">
+            <span className="text-gray-300">Email:&nbsp;</span>
+            <a href={`mailto:${email}`} className="break-all text-blue-500 underline underline-offset-2">
               {email}
             </a>
           </p>
         )}
-
-        {/* Phone */}
         {phone && (
-          <p style={{
-            fontFamily: FONT_SERIF,
-            fontSize: "15px",
-            color: "#333333",
-            marginTop: "4px",
-            lineHeight: 1.4,
-          }}>
-            <span style={{ color: CLR_MUTED }}>Ph:&nbsp;</span>
+          <p className="mt-0.5 text-sm text-gray-500">
+            <span className="text-gray-300">Ph:&nbsp;</span>
             {phone}
           </p>
         )}
       </div>
 
-      {/* ── RIGHT IMAGE (~30%) — vertically centered via parent alignItems:center */}
-      <div style={{ flexShrink: 0 }}>
-        <div
-          style={{
-            width: "130px",
-            height: "130px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            border: `1px solid ${CLR_SILVER}`,
-            backgroundColor: "#e8e8e8",
-          }}
-        >
+      {/* Image */}
+      <div className="flex-shrink-0">
+        <div className="h-28 w-28 overflow-hidden rounded-full border border-gray-100 bg-gray-50">
           <ProfileImage src={imgSrc} name={name} />
         </div>
       </div>
@@ -200,45 +92,22 @@ function MemberRow({ member, isLast }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   ROW SKELETON — IEI-matched loading placeholder
-═══════════════════════════════════════════════════════ */
+/* ── ROW SKELETON ─────────────────────────────────────── */
 function RowSkeleton() {
   return (
-    <div
-      className="animate-pulse"
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        gap: "20px",
-        paddingTop: "18px",
-        paddingBottom: "18px",
-        borderBottom: "1px solid #c0c0c0",
-      }}
-    >
-      {/* left text placeholders */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "7px" }}>
-        <div style={{ height: "10px", width: "120px",  backgroundColor: "#d8d8d8" }} />
-        <div style={{ height: "14px", width: "200px", backgroundColor: "#c8c8c8" }} />
-        <div style={{ height: "11px", width: "280px", backgroundColor: "#d8d8d8" }} />
-        <div style={{ height: "11px", width: "180px", backgroundColor: "#d8d8d8" }} />
+    <div className="flex animate-pulse items-start justify-between gap-5 border-b border-gray-100 py-5">
+      <div className="flex flex-1 flex-col gap-2">
+        <div className="h-2.5 w-28 rounded bg-gray-100" />
+        <div className="h-3.5 w-48 rounded bg-gray-200" />
+        <div className="h-2.5 w-64 rounded bg-gray-100" />
+        <div className="h-2.5 w-44 rounded bg-gray-100" />
       </div>
-      {/* right circle placeholder */}
-      <div style={{
-        width: "110px",
-        height: "110px",
-        flexShrink: 0,
-        borderRadius: "50%",
-        backgroundColor: "#d0d0d0",
-      }} />
+      <div className="h-24 w-24 flex-shrink-0 rounded-full bg-gray-200" />
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   OFFICE BEARERS — static IEI document section
-═══════════════════════════════════════════════════════ */
+/* ── OFFICE BEARERS ───────────────────────────────────── */
 const OFFICE_BEARERS = [
   { role: "Chairman",                  name: "Dr. M. Marsaline Beno"       },
   { role: "Honorary Secretary",        name: "Dr. J. Prakash Arul Jose"    },
@@ -248,204 +117,63 @@ const OFFICE_BEARERS = [
 
 function OfficeBearersSection() {
   return (
-    <section style={{ marginTop: "40px" }}>
-      {/* Section heading rule */}
-      <div style={{ marginBottom: "14px" }}>
-        <div style={{ height: "3px", backgroundColor: CLR_MAROON }} />
-        <div style={{ height: "1px", backgroundColor: CLR_MAROON, marginTop: "2px" }} />
-        <p style={{
-          fontFamily: FONT_SANS,
-          fontSize: "15px",
-          fontWeight: "bold",
-          color: CLR_MAROON,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          marginTop: "10px",
-          marginBottom: "2px",
-        }}>
-          Office Bearers (2025 – 2027)
-        </p>
-        <p style={{
-          fontFamily: FONT_SERIF,
-          fontSize: "13px",
-          color: CLR_MUTED,
-          fontStyle: "italic",
-        }}>
-          Executive Leadership
-        </p>
+    <section className="mt-16">
+      <div className="mb-6 border-b border-gray-100 pb-4">
+        <p className="eyebrow-chip mb-0.5">Office Bearers (2025–2027)</p>
+        <p className="text-xs italic text-gray-400">Executive Leadership</p>
       </div>
 
-      {/* Bearers list */}
       {OFFICE_BEARERS.map((bearer, idx) => (
         <div
           key={bearer.role}
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: "14px",
-            paddingTop: "10px",
-            paddingBottom: "10px",
-            borderBottom:
-              idx < OFFICE_BEARERS.length - 1
-                ? `1px solid ${CLR_SILVER}`
-                : "none",
-          }}
+          className={`flex items-baseline gap-4 py-3 ${
+            idx < OFFICE_BEARERS.length - 1 ? "border-b border-gray-100" : ""
+          }`}
         >
-          {/* Role */}
-          <span style={{
-            fontFamily: FONT_SANS,
-            fontSize: "13px",
-            fontWeight: "bold",
-            color: CLR_MAROON,
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
-            minWidth: "220px",
-            flexShrink: 0,
-          }}>
+          <span className="min-w-[200px] flex-shrink-0 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             {bearer.role}
           </span>
-          {/* Name */}
-          <span style={{
-            fontFamily: FONT_SANS,
-            fontSize: "16px",
-            fontWeight: "bold",
-            color: CLR_NAVY,
-          }}>
-            {bearer.name}
-          </span>
+          <span className="text-sm font-semibold text-gray-900">{bearer.name}</span>
         </div>
       ))}
-
-      <div style={{ height: "3px", backgroundColor: CLR_MAROON, marginTop: "2px" }} />
-      <div style={{ height: "1px", backgroundColor: CLR_MAROON, marginTop: "2px" }} />
     </section>
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   DIVISION-WISE COMMITTEE MEMBERS — static section
-═══════════════════════════════════════════════════════ */
+/* ── DIVISION-WISE COMMITTEE ──────────────────────────── */
 const DIVISIONS = [
-  {
-    division: "Civil Engineering Division",
-    members: [
-      "Dr. J. Prakash Arul Jose",
-      "Er. S. Natarajan",
-      "Er. A. Rajakumar",
-      "Er. K. Sivakumar",
-      "Er. P. Gopal",
-    ],
-  },
-  {
-    division: "Electrical Engineering Division",
-    members: [
-      "Dr. M. Marsaline Beno",
-      "Er. V. Muthum Perumal",
-      "Dr. T. Sree Renga Raja",
-      "Er. V. Sivathanu Pillai",
-    ],
-  },
-  {
-    division: "Mechanical Engineering Division",
-    members: [
-      "Dr. A. Megalingam",
-      "Er. M.A. Perumal",
-      "Dr. Jenix Rino J",
-    ],
-  },
-  {
-    division: "Computer / IT Division",
-    members: ["Dr. S. Arumuga Perumal"],
-  },
-  {
-    division: "Electronics & Communication Division",
-    members: ["Dr. A. Albert Raj"],
-  },
-  {
-    division: "Chemical Engineering Division",
-    members: ["Dr. Rimal Isaac R.S."],
-  },
-  {
-    division: "Environmental Engineering Division",
-    members: ["Er. Ganesh Kumar", "Dr. V. Karthikeyan"],
-  },
-  {
-    division: "Applied Science / Management",
-    members: ["Dr. N. Azhagesan"],
-  },
+  { division: "Civil Engineering Division", members: ["Dr. J. Prakash Arul Jose", "Er. S. Natarajan", "Er. A. Rajakumar", "Er. K. Sivakumar", "Er. P. Gopal"] },
+  { division: "Electrical Engineering Division", members: ["Dr. M. Marsaline Beno", "Er. V. Muthum Perumal", "Dr. T. Sree Renga Raja", "Er. V. Sivathanu Pillai"] },
+  { division: "Mechanical Engineering Division", members: ["Dr. A. Megalingam", "Er. M.A. Perumal", "Dr. Jenix Rino J"] },
+  { division: "Computer / IT Division", members: ["Dr. S. Arumuga Perumal"] },
+  { division: "Electronics & Communication Division", members: ["Dr. A. Albert Raj"] },
+  { division: "Chemical Engineering Division", members: ["Dr. Rimal Isaac R.S."] },
+  { division: "Environmental Engineering Division", members: ["Er. Ganesh Kumar", "Dr. V. Karthikeyan"] },
+  { division: "Applied Science / Management", members: ["Dr. N. Azhagesan"] },
 ];
 
 function DivisionMembersSection() {
   return (
-    <section style={{ marginTop: "36px" }}>
-      {/* Section heading */}
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ height: "3px", backgroundColor: CLR_MAROON }} />
-        <div style={{ height: "1px", backgroundColor: CLR_MAROON, marginTop: "2px" }} />
-        <p style={{
-          fontFamily: FONT_SANS,
-          fontSize: "15px",
-          fontWeight: "bold",
-          color: CLR_MAROON,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          marginTop: "10px",
-        }}>
-          Committee Members
-        </p>
+    <section className="mt-16">
+      <div className="mb-6 border-b border-gray-100 pb-4">
+        <p className="eyebrow-chip">Committee Members by Division</p>
       </div>
 
-      {/* Division grid — 2 columns on desktop */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-        gap: "0",
-      }}>
+      <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
         {DIVISIONS.map((div, dIdx) => (
           <div
             key={div.division}
-            style={{
-              padding: "14px 0",
-              borderBottom: `1px solid ${CLR_SILVER}`,
-              borderRight: dIdx % 2 === 0 ? `1px solid ${CLR_SILVER}` : "none",
-              paddingRight: dIdx % 2 === 0 ? "24px" : "0",
-              paddingLeft: dIdx % 2 === 1 ? "24px" : "0",
-            }}
+            className={`border-b border-gray-100 py-5 ${
+              dIdx % 2 === 0 ? "md:border-r md:border-gray-100 md:pr-8" : "md:pl-8"
+            }`}
           >
-            {/* Division title */}
-            <p style={{
-              fontFamily: FONT_SANS,
-              fontSize: "13px",
-              fontWeight: "bold",
-              color: CLR_NAVY,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-              marginBottom: "8px",
-            }}>
+            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
               {div.division}
             </p>
-
-            {/* Members list */}
-            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            <ul className="space-y-0.5">
               {div.members.map((member) => (
-                <li
-                  key={member}
-                  style={{
-                    fontFamily: FONT_SERIF,
-                    fontSize: "14px",
-                    color: "#333333",
-                    lineHeight: 1.7,
-                    paddingLeft: "12px",
-                    position: "relative",
-                  }}
-                >
-                  {/* bullet */}
-                  <span style={{
-                    position: "absolute",
-                    left: 0,
-                    color: CLR_MAROON,
-                    fontWeight: "bold",
-                  }}>›</span>
+                <li key={member} className="flex items-center gap-2 py-1 text-sm text-gray-600">
+                  <span className="text-gray-300">›</span>
                   {member}
                 </li>
               ))}
@@ -453,119 +181,35 @@ function DivisionMembersSection() {
           </div>
         ))}
       </div>
-
-      <div style={{ height: "3px", backgroundColor: CLR_MAROON, marginTop: "2px" }} />
-      <div style={{ height: "1px", backgroundColor: CLR_MAROON, marginTop: "2px" }} />
     </section>
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   INSTITUTIONAL HEADER
-═══════════════════════════════════════════════════════ */
+/* ── INSTITUTIONAL HEADER ─────────────────────────────── */
 function InstitutionalHeader() {
   return (
-    <header className="w-full text-center py-6 px-4 mb-4"
-            style={{ backgroundColor: "#f3f3f3" }}>
-
-      {/* ── TOP RULE: thick + thin flat lines ──────────── */}
-      <div className="mb-4">
-        <div style={{ height: "3px", backgroundColor: "#8B0000" }} />
-        <div style={{ height: "1px", backgroundColor: "#8B0000", marginTop: "2px" }} />
-      </div>
-
-      {/* ── LINE 1: Institution Name ────────────────────── */}
-      <p
-        className="leading-snug"
-        style={{
-          fontFamily: '"Times New Roman", Georgia, serif',
-          fontSize: "clamp(1.15rem, 3vw, 1.75rem)",
-          fontWeight: "bold",
-          color: "#1a1a1a",
-          letterSpacing: "0.02em",
-        }}
-      >
+    <header className="mb-12 border-b border-gray-100 pb-8">
+      <p className="eyebrow-chip mb-3">Committee · Term 2025–2027</p>
+      <h1 className="heading-h1 text-gray-900">
         The Institution of Engineers (India)
-      </p>
-
-      {/* ── LINE 2: Established subtitle ───────────────── */}
-      <p
-        className="mt-1"
-        style={{
-          fontFamily: '"Times New Roman", Georgia, serif',
-          fontSize: "clamp(0.78rem, 1.8vw, 0.95rem)",
-          fontStyle: "italic",
-          color: "#555555",
-          letterSpacing: "0.01em",
-        }}
-      >
-        (Established 1920, Incorporated by Royal Charter 1935)
-      </p>
-
-      {/* ── THIN MID RULE ───────────────────────────────── */}
-      <div
-        className="mx-auto my-3"
-        style={{
-          height: "1px",
-          backgroundColor: "#c0c0c0",
-          maxWidth: "560px",
-        }}
-      />
-
-      {/* ── LINE 3: Local Centre heading (h1) ──────────── */}
-      <h1
-        className="leading-tight"
-        style={{
-          fontFamily: '"Arial", "Helvetica Neue", Helvetica, sans-serif',
-          fontSize: "clamp(1.4rem, 4vw, 2.2rem)",
-          fontWeight: "bold",
-          color: "#1f3c88",
-          letterSpacing: "0.01em",
-          marginTop: "4px",
-          marginBottom: "4px",
-        }}
-      >
-        Kanyakumari Local Centre
       </h1>
-
-      {/* ── LINE 4: Section title ───────────────────────── */}
-      <p
-        style={{
-          fontFamily: '"Arial", "Helvetica Neue", Helvetica, sans-serif',
-          fontSize: "clamp(0.85rem, 2vw, 1.05rem)",
-          fontWeight: "600",
-          color: "#8B0000",
-          letterSpacing: "0.02em",
-          marginTop: "6px",
-        }}
-      >
-        Committee Members List for the term 2025 – 2027
-      </p>
-
-      {/* ── BOTTOM RULE: thin + thick flat lines ───────── */}
-      <div className="mt-4">
-        <div style={{ height: "1px", backgroundColor: "#8B0000" }} />
-        <div style={{ height: "3px", backgroundColor: "#8B0000", marginTop: "2px" }} />
-      </div>
+      <p className="mt-2 text-lg text-gray-400">Kanyakumari Local Centre</p>
     </header>
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   PAGE — MembersList
-═══════════════════════════════════════════════════════ */
+/* ── PAGE — MembersList ───────────────────────────────── */
 export default function MembersList() {
   const { data, loading, error, reload } = useFetchList(publicApi.getMembers);
 
   return (
-    /* Institutional off-white background */
-    <div className="min-h-screen" style={{ backgroundColor: "#f3f3f3" }}>
-      <main className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-10">
+    <div className="min-h-screen bg-white">
+      <main className="page-shell py-20">
 
         {/* ① Institutional header */}
         <InstitutionalHeader />
 
-        {/* ② Loading state — row-shaped skeletons */}
+        {/* ② Loading state */}
         {loading && (
           <div className="mt-6">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -581,10 +225,10 @@ export default function MembersList() {
           </div>
         )}
 
-        {/* ④ Members document list */}
+        {/* ④ Members list */}
         {!loading && !error && (
           data.length > 0 ? (
-            <section aria-label="Committee members" className="mt-5">
+            <section aria-label="Committee members" className="mt-2">
               {data.map((member, idx) => (
                 <MemberRow
                   key={member.id ?? idx}
@@ -603,22 +247,14 @@ export default function MembersList() {
           )
         )}
 
-        {/* ⑤ OFFICE BEARERS — static section ─────────────── */}
+        {/* ⑤ Office Bearers */}
         <OfficeBearersSection />
 
-        {/* ⑥ COMMITTEE MEMBERS BY DIVISION — static ──────── */}
+        {/* ⑥ Committee Members by Division */}
         <DivisionMembersSection />
 
         {/* ⑦ Footer attestation */}
-        <footer style={{
-          marginTop: "32px",
-          borderTop: `1px solid ${CLR_SILVER}`,
-          paddingTop: "12px",
-          textAlign: "center",
-          fontSize: "11px",
-          color: "#888888",
-          fontFamily: FONT_SERIF,
-        }}>
+        <footer className="mt-12 border-t border-gray-100 pt-4 text-center text-[11px] text-gray-300">
           Official Committee Members List &middot; The Institution of Engineers (India)
           &middot; Kanyakumari Local Centre
         </footer>

@@ -66,8 +66,8 @@ const memberPortalActions = [
 
 function BenefitItem({ text }) {
   return (
-    <div className="flex items-start gap-2 rounded-xl border border-brand-100 bg-white px-3 py-2.5">
-      <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+    <div className="flex items-start rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-500">
         <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
           <path
             d="M5 10.5L8.2 13.5L15 6.5"
@@ -78,7 +78,7 @@ function BenefitItem({ text }) {
           />
         </svg>
       </span>
-      <p className="text-sm font-medium text-gray-700">{text}</p>
+      <p className="ml-3 text-sm font-medium text-gray-600">{text}</p>
     </div>
   );
 }
@@ -131,7 +131,7 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
     try {
       const response = await publicApi.downloadMembershipCertificate();
       const contentDisposition = response.headers?.["content-disposition"] || "";
-      const filenameMatch = /filename=\"?([^\";]+)\"?/.exec(contentDisposition);
+      const filenameMatch = /filename=\"?([^";]+)\"?/.exec(contentDisposition);
       const filename = filenameMatch?.[1] || "membership-certificate.txt";
 
       const blob = new Blob([response.data], {
@@ -157,11 +157,11 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
   };
 
   return (
-    <Card as="section" className="border border-slate-200 p-5" padded={false}>
+    <Card as="section" className="p-5" padded={false}>
       <p className="text-sm font-semibold text-gray-900">Member-only Portal Actions</p>
       {!isAuthenticated ? (
         <>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1.5 text-sm text-gray-500">
             Sign in to unlock protected services such as profile access, member credentials, and
             downloadable membership resources.
           </p>
@@ -171,14 +171,16 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
         </>
       ) : (
         <>
-          <p className="mt-1 text-sm text-gray-600">
-            Signed in as <span className="font-semibold text-brand-800">{member?.name || "Member"}</span>
+          <p className="mt-1.5 text-sm text-gray-500">
+            Signed in as{" "}
+            <span className="font-semibold text-gray-900">{member?.name || "Member"}</span>
           </p>
-          <div className="mt-3 grid gap-2">
+          <div className="mt-3 grid gap-4">
             <Button
               onClick={runCertificateDownload}
               disabled={loadingAction === "certificate"}
               variant="secondary"
+              size="sm"
               className="w-full justify-start text-left"
             >
               {loadingAction === "certificate" ? "Preparing Certificate..." : memberPortalActions[0]}
@@ -187,6 +189,7 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
               onClick={runProfileFetch}
               disabled={loadingAction === "profile"}
               variant="secondary"
+              size="sm"
               className="w-full justify-start text-left"
             >
               {loadingAction === "profile" ? "Loading Profile..." : memberPortalActions[1]}
@@ -195,38 +198,37 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
               onClick={runCpdFetch}
               disabled={loadingAction === "cpd"}
               variant="secondary"
+              size="sm"
               className="w-full justify-start text-left"
             >
               {loadingAction === "cpd" ? "Loading CPD History..." : memberPortalActions[2]}
             </Button>
           </div>
           {profile && (
-            <dl className="mt-3 space-y-1 rounded-xl border border-brand-100 bg-brand-50/70 p-3 text-sm">
-              <div className="flex items-center justify-between gap-2">
-                <dt className="text-gray-600">Membership Type</dt>
+            <dl className="mt-4 space-y-1.5 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-gray-500">Membership Type</dt>
                 <dd className="font-semibold text-gray-900">{profile.membership_type || "N/A"}</dd>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <dt className="text-gray-600">Interest Area</dt>
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-gray-500">Interest Area</dt>
                 <dd className="font-semibold text-gray-900">{profile.interest_area || "N/A"}</dd>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <dt className="text-gray-600">Contact</dt>
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-gray-500">Contact</dt>
                 <dd className="font-semibold text-gray-900">{profile.email || profile.mobile || "N/A"}</dd>
               </div>
             </dl>
           )}
 
           {cpdRecords.length > 0 && (
-            <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50/70 p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
-                CPD History
-              </p>
-              <ul className="mt-2 space-y-2 text-sm text-gray-700">
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="eyebrow-chip mb-3">CPD History</p>
+              <ul className="space-y-2 text-sm text-gray-700">
                 {cpdRecords.slice(0, 5).map((record) => (
-                  <li key={record.id} className="rounded-lg border border-brand-100 bg-white px-2.5 py-2">
-                    <p className="font-semibold text-brand-800">{record.title}</p>
-                    <p className="text-xs text-gray-500">
+                  <li key={record.id} className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                    <p className="font-semibold text-gray-900">{record.title}</p>
+                    <p className="text-xs text-gray-400">
                       {record.category} | {record.credit_hours} hrs | {record.attended_on}
                     </p>
                   </li>
@@ -235,7 +237,7 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
             </div>
           )}
           {statusMessage && (
-            <p className={`mt-3 text-sm ${statusType === "error" ? "text-red-600" : "text-emerald-600"}`}>
+            <p className={`mt-3 text-sm ${statusType === "error" ? "text-gray-500" : "text-[#3B82F6]"}`}>
               {statusMessage}
             </p>
           )}
@@ -247,16 +249,24 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
 
 export default function MembershipForm() {
   const { isAuthenticated, member } = useMembershipSession();
+  const [activeTab, setActiveTab] = useState(0);
 
   return (
     <section className="page-shell section-block">
-      <div className="mb-5 overflow-x-auto">
-        <div className="inline-flex min-w-max gap-2 rounded-xl border border-slate-200 bg-white p-2">
-          {actionTabs.map((tab) => (
+
+      {/* ── Tab Navigation ─────────────────────────────── */}
+      <div className="mb-8 overflow-x-auto">
+        <div className="inline-flex min-w-max rounded-xl border border-gray-200 bg-gray-50 p-1">
+          {actionTabs.map((tab, index) => (
             <a
               key={tab.label}
               href={tab.href}
-              className="focus-ring rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-slate-100"
+              onClick={() => setActiveTab(index)}
+              className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 ${
+                activeTab === index
+                  ? "bg-gray-900 text-white shadow-sm"
+                  : "text-gray-500 hover:bg-white hover:text-gray-900"
+              }`}
             >
               {tab.label}
             </a>
@@ -270,99 +280,108 @@ export default function MembershipForm() {
         description="Benefits of Corporate Membership"
       />
 
-      <Card className="mb-6 bg-gradient-to-r from-brand-700 to-brand-500 p-6 text-white md:p-8" padded={false}>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
-          Institutional Membership
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold md:text-3xl">Professional Membership Gateway</h2>
-        <p className="mt-2 max-w-3xl text-sm text-brand-50 md:text-base">
+      {/* ── Membership Gateway Banner ──────────────────── */}
+      <div id="be-member" className="mb-8 rounded-2xl border border-gray-200 bg-gray-50 p-8">
+        <p className="eyebrow-chip mb-3">Institutional Membership</p>
+        <h2 className="text-2xl font-semibold text-gray-900 md:text-3xl">
+          Professional Membership Gateway
+        </h2>
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-500">
           Join a structured engineering community with standards-based professional development,
           technical resources, certification pathways, and chapter-level collaboration.
         </p>
-      </Card>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr,0.85fr]">
         <div className="space-y-6">
-          <Card as="section" id="membership-info" className="p-5 md:p-6" padded={false}>
-            <h3 className="text-xl font-semibold text-gray-900">Benefits of Corporate Membership</h3>
-            <p className="mt-1 text-sm text-gray-600">
+
+          {/* Benefits */}
+          <Card as="section" id="membership-info" className="p-6" padded={false}>
+            <h3 className="text-xl font-medium text-gray-900">Benefits of Corporate Membership</h3>
+            <p className="mt-1.5 text-sm text-gray-500">
               Structured services supporting engineering practice, learning, and long-term career growth.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {membershipBenefits.map((benefit) => (
                 <BenefitItem key={benefit} text={benefit} />
               ))}
             </div>
           </Card>
 
-          <Card as="section" id="academics-certification" className="p-5 md:p-6" padded={false}>
-            <h3 className="text-xl font-semibold text-gray-900">Academics / Certification</h3>
-            <p className="mt-1 text-sm text-gray-600">
+          {/* Academics */}
+          <Card as="section" id="academics-certification" className="p-6" padded={false}>
+            <h3 className="text-xl font-medium text-gray-900">Academics / Certification</h3>
+            <p className="mt-1.5 text-sm text-gray-500">
               Access guided certification tracks, technical talks, and recognized learning opportunities
               aligned with professional practice.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-gray-900">Structured Learning Pathways</p>
-                <p className="mt-1 text-sm text-gray-600">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Structured Learning Pathways</p>
+                <p className="mt-1.5 text-sm text-gray-500">
                   Curated orientation and progression resources for AMIE, MIE, and FIE candidates.
                 </p>
               </div>
-              <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-gray-900">Certification Support</p>
-                <p className="mt-1 text-sm text-gray-600">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Certification Support</p>
+                <p className="mt-1.5 text-sm text-gray-500">
                   Official chapter guidance for exams, documentation, and continuing education records.
                 </p>
               </div>
             </div>
           </Card>
 
-          <Card as="section" id="network-activities" className="p-5 md:p-6" padded={false}>
-            <h3 className="text-xl font-semibold text-gray-900">Network / Activities</h3>
-            <p className="mt-1 text-sm text-gray-600">
+          {/* Network */}
+          <Card as="section" id="network-activities" className="p-6" padded={false}>
+            <h3 className="text-xl font-medium text-gray-900">Network / Activities</h3>
+            <p className="mt-1.5 text-sm text-gray-500">
               Participate in chapter activities, peer exchanges, technical forums, and institutional events.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-gray-900">Technical Chapters</p>
-                <p className="mt-1 text-sm text-gray-600">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Technical Chapters</p>
+                <p className="mt-1.5 text-sm text-gray-500">
                   Engage with focused engineering domains and collaborative chapter groups.
                 </p>
               </div>
-              <div className="rounded-xl border border-brand-100 bg-white p-4">
-                <p className="text-sm font-semibold text-gray-900">Professional Networking</p>
-                <p className="mt-1 text-sm text-gray-600">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Professional Networking</p>
+                <p className="mt-1.5 text-sm text-gray-500">
                   Connect with senior professionals, practitioners, and institutional mentors.
                 </p>
               </div>
             </div>
           </Card>
 
+          {/* Registration Wizard */}
           <Suspense fallback={<LoadingSpinner text="Loading registration module..." />}>
             <MembershipRegisterWizard />
           </Suspense>
 
-          <Card as="section" className="p-5 md:p-6" padded={false}>
-            <h3 className="text-xl font-semibold text-gray-900">Membership Categories</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {/* Membership Categories */}
+          <Card as="section" className="p-6" padded={false}>
+            <h3 className="text-xl font-medium text-gray-900">Membership Categories</h3>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
               {membershipTypes.map((item) => (
-                <article key={item.code} className="rounded-xl border border-brand-100 bg-white p-4">
-                  <p className="inline-flex rounded-md bg-brand-100 px-2 py-1 text-xs font-semibold text-brand-700">
+                <article key={item.code} className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                  <p className="inline-flex rounded-md bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-600">
                     {item.code}
                   </p>
-                  <h4 className="mt-2 text-base font-semibold text-gray-900">{item.title}</h4>
-                  <p className="mt-2 text-sm font-semibold text-gray-700">Eligibility</p>
-                  <p className="text-sm text-gray-600">{item.eligibility}</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-700">Description</p>
-                  <p className="text-sm text-gray-600">{item.description}</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-700">Fees</p>
-                  <p className="text-sm text-gray-600">{item.fees}</p>
+                  <h4 className="mt-3 text-sm font-medium text-gray-900">{item.title}</h4>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Eligibility</p>
+                  <p className="text-sm text-gray-500">{item.eligibility}</p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Description</p>
+                  <p className="text-sm text-gray-500">{item.description}</p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Fees</p>
+                  <p className="text-sm text-gray-500">{item.fees}</p>
                 </article>
               ))}
             </div>
           </Card>
+
         </div>
 
+        {/* Sidebar */}
         <div className="space-y-4 xl:sticky xl:top-24 xl:self-start">
           <Suspense fallback={<LoadingSpinner text="Loading member access panel..." />}>
             <MembershipAuthPanel />
@@ -374,9 +393,9 @@ export default function MembershipForm() {
 
           <ProtectedPortalActions isAuthenticated={isAuthenticated} member={member} />
 
-          <Card className="border border-slate-200 p-5" padded={false}>
-            <p className="text-sm font-semibold text-gray-900">Portal Support</p>
-            <p className="mt-1 text-sm text-gray-600">
+          <Card className="p-5" padded={false}>
+            <p className="text-sm font-medium text-gray-900">Portal Support</p>
+            <p className="mt-1.5 text-sm text-gray-500">
               For technical help with account access and membership verification, contact chapter office.
             </p>
           </Card>

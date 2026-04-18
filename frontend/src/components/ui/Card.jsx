@@ -16,7 +16,7 @@ export default function Card({
       className={joinClasses(
         "card-base",
         interactive ? "interactive-card" : "",
-        padded ? "p-5 md:p-6" : "",
+        padded ? "p-6 md:p-8" : "",
         className
       )}
     >

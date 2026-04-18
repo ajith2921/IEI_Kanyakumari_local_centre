@@ -6,13 +6,13 @@ const variantClasses = {
   primary: "btn-primary",
   secondary: "btn-secondary",
   danger: "btn-danger",
-  ghost: "btn-base text-slate-600 hover:bg-slate-100",
+  ghost: "btn-base border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 shadow-none",
 };
 
 const sizeClasses = {
-  sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2 text-sm",
-  lg: "px-5 py-2.5 text-sm",
+  sm: "!h-11 !px-5 !text-sm",
+  md: "",
+  lg: "!h-11 !px-5 !text-sm",
 };
 
 export default function Button({
@@ -32,7 +32,7 @@ export default function Button({
       className={joinClasses(
         "focus-ring",
         variantClasses[variant] || variantClasses.primary,
-        sizeClasses[size] || sizeClasses.md,
+        sizeClasses[size] || "",
         className
       )}
     >

@@ -20,12 +20,10 @@ const slides = [
   },
 ];
 
-const quickActions = [
-  { to: "/technical-activities", title: "View Events", hint: "Workshops and lectures" },
-  { to: "/members", title: "Check Members", hint: "Leadership and office bearers" },
-  { to: "/links-downloads", title: "Download Resources", hint: "Official documents" },
-  { to: "/contact", title: "Contact Organization", hint: "Send your query" },
-  { to: "/membership-form", title: "Apply Membership", hint: "Submit application" },
+const stats = [
+  { value: "100+", label: "Active Members" },
+  { value: "50+", label: "Events Conducted" },
+  { value: "8", label: "Engineering Divisions" },
 ];
 
 export default function HeroSlider() {
@@ -35,85 +33,103 @@ export default function HeroSlider() {
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % slides.length);
     }, 5000);
-
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <section className="page-shell section-block !pb-10 md:!pb-12">
-      <div
-        className="banner-grid relative overflow-hidden rounded-3xl p-6 text-white shadow-[0_24px_60px_-32px_rgba(37,99,235,0.6)] md:p-8 lg:p-10"
-        style={{
-          background: "linear-gradient(135deg, #312e81 0%, #4338ca 52%, #2563eb 100%)",
-        }}
-      >
-        <div className="absolute -left-16 top-6 h-56 w-56 rounded-full bg-cyan-300/18 blur-2xl" />
-        <div className="absolute -right-16 bottom-0 h-72 w-72 rounded-full bg-sky-300/12 blur-2xl" />
+    <section className="relative overflow-hidden border-b border-gray-200 bg-white">
+      {/* Subtle dot-grid background */}
+      <div className="dot-grid pointer-events-none absolute inset-0 opacity-40" />
 
-        <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
+      <div className="page-shell relative py-24 lg:py-28">
+        <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+
+          {/* Left: Text content */}
           <div>
-            <div key={slides[active].title} className="hero-reveal">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">
-                Premier Institutional Chapter
-              </p>
-              <h1 className="heading-h1 mb-4 min-h-[120px] font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.35)]">
+            <p className="eyebrow-chip mb-5">
+              Premier Institutional Chapter · Est. 1920
+            </p>
+            <div key={active} className="animate-fade-up">
+              <h1
+                className="heading-h1 mb-6 text-gray-900"
+                style={{ minHeight: "7rem" }}
+              >
                 {slides[active].title}
               </h1>
-              <p className="mb-6 max-w-2xl text-base text-blue-50 [text-shadow:0_1px_8px_rgba(0,0,0,0.3)] md:text-lg">
+              <p className="mb-8 max-w-xl text-base leading-relaxed text-gray-500">
                 {slides[active].subtitle}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                as={Link}
-                to="/membership-form"
-                variant="secondary"
-                className="border-transparent bg-white text-brand-700"
-              >
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button as={Link} to="/membership-form">
                 Apply for Membership
               </Button>
-              <Button
-                as={Link}
-                to="/technical-activities"
-                variant="secondary"
-                className="border border-white/60 bg-white/95 text-brand-700 hover:bg-white"
-              >
+              <Button as={Link} to="/technical-activities" variant="secondary">
                 Explore Events
               </Button>
             </div>
 
-            <div className="relative z-10 mt-7 flex gap-2">
+            {/* Slide dots */}
+            <div className="mt-10 flex gap-2">
               {slides.map((slide, index) => (
                 <button
                   key={slide.title}
                   type="button"
                   onClick={() => setActive(index)}
-                  className={`focus-ring h-2.5 rounded-full transition ${
-                    index === active ? "w-10 bg-white" : "w-5 bg-white/45"
+                  className={`focus-ring h-1 rounded-full transition-all duration-300 ${
+                    index === active ? "w-8 bg-gray-900" : "w-2 bg-gray-200"
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
+
+            {/* Stats strip */}
+            <div className="mt-12 flex gap-10 border-t border-gray-100 pt-8">
+              {stats.map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl font-semibold tracking-tight text-gray-900">
+                    {stat.value}
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-400">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-white/25 bg-white/92 p-4 text-brand-900 shadow-xl md:p-5">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
-              Popular Tasks
-            </h2>
-            <div className="grid gap-2">
-              {quickActions.map((item) => (
+          {/* Right: Quick actions card */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <p className="eyebrow-chip mb-5">Quick Access</p>
+            <div className="grid gap-2.5">
+              {[
+                { to: "/technical-activities", title: "View Events", hint: "Workshops and lectures" },
+                { to: "/members", title: "Check Members", hint: "Leadership and office bearers" },
+                { to: "/links-downloads", title: "Download Resources", hint: "Official documents" },
+                { to: "/contact", title: "Contact Organization", hint: "Send your query" },
+                { to: "/membership-form", title: "Apply Membership", hint: "Submit application" },
+              ].map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-sm"
+                  className="focus-ring group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3.5 transition-all duration-200 hover:border-gray-200 hover:bg-white hover:shadow-sm"
                 >
-                  <p className="text-sm font-semibold text-gray-900">{item.title}</p>
-                  <p className="text-xs text-gray-600">{item.hint}</p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                    <p className="text-xs text-gray-400">{item.hint}</p>
+                  </div>
+                  <svg
+                    className="h-4 w-4 flex-shrink-0 text-gray-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-500"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </Link>
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </section>

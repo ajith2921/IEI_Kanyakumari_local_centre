@@ -8,10 +8,10 @@ const primaryLinks = [
   { to: "/technical-activities", label: "Events" },
   { to: "/members", label: "Committee" },
   { to: "/gallery", label: "Gallery" },
-  { to: "/contact", label: "Contact" },
 ];
 
 const moreLinks = [
+  { to: "/contact", label: "Contact" },
   { to: "/newsletter", label: "Newsletter" },
   { to: "/facilities", label: "Facilities" },
   { to: "/links-downloads", label: "Resources" },
@@ -23,14 +23,21 @@ function NavItem({ to, label, onClick }) {
       to={to}
       onClick={onClick}
       className={({ isActive }) =>
-        `rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 ${
+        `relative rounded-lg px-3 py-2 text-[13px] transition-colors duration-200 ${
           isActive
-            ? "bg-brand-600 text-white shadow-sm"
-            : "text-gray-700 hover:bg-slate-100 hover:text-gray-900"
+            ? "font-medium text-gray-900"
+            : "font-normal text-gray-500 hover:text-gray-900"
         }`
       }
     >
-      {label}
+      {({ isActive }) => (
+        <>
+          {label}
+          {isActive && (
+            <span className="absolute -bottom-[13px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-gray-900" />
+          )}
+        </>
+      )}
     </NavLink>
   );
 }
@@ -61,26 +68,33 @@ function MoreDropdown() {
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className={`rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 ${
+        className={`flex items-center gap-1 rounded-lg px-3 py-2 text-[13px] transition-colors duration-200 ${
           isChildActive
-            ? "bg-brand-600 text-white shadow-sm"
-            : "text-gray-700 hover:bg-slate-100 hover:text-gray-900"
+            ? "font-medium text-gray-900"
+            : "font-normal text-gray-500 hover:text-gray-900"
         }`}
       >
-        More ▾
+        More
+        <svg
+          className={`h-3 w-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          viewBox="0 0 12 12"
+          fill="none"
+        >
+          <path d="M3 4.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 min-w-[160px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+        <div className="absolute right-0 top-full z-50 mt-3 min-w-[180px] rounded-xl border border-gray-200 bg-white p-1 shadow-lg animate-fade-in">
           {moreLinks.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `block px-4 py-2 text-sm transition ${
+                `block rounded-lg px-3 py-2 text-[13px] transition-colors duration-200 ${
                   isActive
-                    ? "bg-brand-50 font-semibold text-brand-700"
-                    : "text-gray-700 hover:bg-slate-50 hover:text-gray-900"
+                    ? "bg-gray-50 font-medium text-gray-900"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                 }`
               }
             >
@@ -95,6 +109,7 @@ function MoreDropdown() {
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -110,110 +125,92 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
+  /* scroll shadow */
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-xl">
+    <header
+      className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur transition-all duration-200 ${
+        scrolled ? "border-transparent nav-scrolled" : "border-gray-200"
+      }`}
+    >
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-700 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
       >
         Skip to main content
       </a>
 
-      {/* Top info bar */}
-      <div className="hidden border-b border-slate-200/70 bg-slate-50/80 md:block">
-        <div className="page-shell flex items-center justify-between py-1.5 text-xs font-medium text-gray-600">
-          <p>The Institution of Engineers (India) — Kanyakumari Local Centre</p>
-          <div className="flex items-center gap-4">
-            <a
-              href="https://wa.me/919443993659"
-              target="_blank"
-              rel="noreferrer"
-              className="transition hover:text-green-700"
-            >
-              WhatsApp
-            </a>
-            <Link to="/links-downloads" className="transition hover:text-gray-900">
-              Downloads
-            </Link>
-            <Link to="/newsletter" className="transition hover:text-gray-900">
-              Newsletter
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* Main nav bar */}
-      <div className="page-shell flex items-center justify-between py-2.5">
-        <Link to="/" className="flex flex-col leading-tight">
-          <span className="whitespace-nowrap text-[15px] font-bold text-gray-900">
-            IEI Kanyakumari Local Centre
-          </span>
-          <span className="text-[11px] font-medium text-gray-500">
-            Engineering Excellence · Innovation · Ethics
+      <div className="page-shell flex items-center justify-between py-3">
+        <Link to="/" className="flex items-center gap-3 leading-tight">
+          <img
+            src="https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png"
+            alt="Institution of Engineers (India) logo"
+            className="h-8 w-8 flex-shrink-0 rounded-full border border-gray-100 bg-white object-contain p-0.5"
+            loading="eager"
+            decoding="async"
+            referrerPolicy="no-referrer"
+          />
+          <span className="flex flex-col">
+            <span className="text-sm font-semibold tracking-tight text-gray-900">
+              IEI Kanyakumari
+            </span>
+            <span className="text-[11px] text-gray-400">
+              Local Centre
+            </span>
           </span>
         </Link>
 
         <button
           type="button"
-          className="focus-ring rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-slate-50 lg:hidden"
+          className="focus-ring rounded-lg border border-gray-200 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-50 lg:hidden"
           onClick={() => setOpen((prev) => !prev)}
         >
-          {open ? "✕ Close" : "☰ Menu"}
+          {open ? "Close" : "Menu"}
         </button>
 
-        <nav className="hidden items-center gap-0.5 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {primaryLinks.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
           <MoreDropdown />
-          <Button
-            as={Link}
-            to="/membership-form"
-            size="sm"
-            className="ml-2"
-          >
-            Membership
-          </Button>
-          <Button
-            as={Link}
-            to="/admin/login"
-            variant="secondary"
-            size="sm"
-          >
-            Admin
-          </Button>
+          <div className="ml-3 flex items-center gap-2.5 border-l border-gray-200 pl-3">
+            <Button as={Link} to="/membership-form" size="sm">
+              Membership
+            </Button>
+            <Button as={Link} to="/admin/login" variant="secondary" size="sm">
+              Admin
+            </Button>
+          </div>
         </nav>
       </div>
 
       {/* Mobile drawer */}
       {open && (
-        <div className="border-t border-slate-200 bg-white/95 lg:hidden">
-          <div className="page-shell grid gap-2 py-3">
+        <div className="animate-fade-in border-t border-gray-100 bg-white lg:hidden">
+          <div className="page-shell grid gap-1 py-4">
             {primaryLinks.map((item) => (
               <NavItem key={item.to} {...item} onClick={() => setOpen(false)} />
             ))}
-            <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <p className="mb-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
               More
             </p>
             {moreLinks.map((item) => (
               <NavItem key={item.to} {...item} onClick={() => setOpen(false)} />
             ))}
-            <Button
-              as={Link}
-              to="/membership-form"
-              onClick={() => setOpen(false)}
-              className="mt-2"
-            >
-              Membership
-            </Button>
-            <Button
-              as={Link}
-              to="/admin/login"
-              onClick={() => setOpen(false)}
-              variant="secondary"
-            >
-              Admin
-            </Button>
+            <div className="mt-4 grid gap-2.5">
+              <Button as={Link} to="/membership-form" onClick={() => setOpen(false)}>
+                Membership
+              </Button>
+              <Button as={Link} to="/admin/login" onClick={() => setOpen(false)} variant="secondary">
+                Admin
+              </Button>
+            </div>
           </div>
         </div>
       )}

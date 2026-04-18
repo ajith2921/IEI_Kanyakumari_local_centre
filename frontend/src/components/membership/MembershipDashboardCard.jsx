@@ -64,9 +64,9 @@ export default function MembershipDashboardCard() {
   }, [loadDashboard]);
 
   return (
-    <Card as="section" className="border border-slate-200 bg-white p-5" padded={false}>
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-gray-900">Member Dashboard</p>
+    <Card as="section" className="border border-gray-200 bg-white p-5" padded={false}>
+      <div className="mb-2 flex items-center justify-between gap-4">
+        <p className="text-sm font-medium text-gray-900">Member Dashboard</p>
         {isAuthenticated && (
           <Button
             type="button"
@@ -85,37 +85,37 @@ export default function MembershipDashboardCard() {
       ) : (
         <>
           {loading && <p className="text-sm text-gray-600">Loading member summary...</p>}
-          {!loading && error && <p className="text-sm text-red-600">{error}</p>}
+          {!loading && error && <p className="text-sm text-gray-500">{error}</p>}
 
           {!loading && !error && (
             <>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                     Membership Type
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
                     {profile?.membership_type || "N/A"}
                   </p>
                 </div>
-                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                     Membership No
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
                     {profile?.membership_id || "Pending"}
                   </p>
                 </div>
-                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                     Joined On
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
                     {formatDate(profile?.created_at)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                     Interest Area
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
@@ -124,9 +124,9 @@ export default function MembershipDashboardCard() {
                 </div>
               </div>
 
-              <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">CPD Summary</p>
-                <p className="mt-1 text-sm text-gray-700">
+              <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">CPD Summary</p>
+                <p className="mt-1 text-sm text-gray-600">
                   {cpdRecords.length} record(s), {totalCreditHours} credit hour(s)
                 </p>
                 {latestRecord && (

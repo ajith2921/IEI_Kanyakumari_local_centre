@@ -4,14 +4,13 @@ import ErrorState from "../components/ErrorState";
 import ImageMedia from "../components/ImageMedia";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Button from "../components/ui/Button";
-import Card from "../components/ui/Card";
 import { parseApiError, publicApi, toAbsoluteUploadUrl } from "../services/api";
 
 function DetailItem({ label, value, fullWidth = false }) {
   return (
     <div className={fullWidth ? "sm:col-span-2" : ""}>
-      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">{label}</dt>
-      <dd className="mt-1 whitespace-pre-wrap text-sm text-gray-700">{value || "Not provided"}</dd>
+      <dt className="eyebrow-chip mb-1">{label}</dt>
+      <dd className="whitespace-pre-wrap text-sm text-gray-600">{value || "Not provided"}</dd>
     </div>
   );
 }
@@ -50,13 +49,7 @@ export default function MemberDetails() {
   if (error) {
     return (
       <section className="page-shell section-block space-y-4">
-        <Button
-          as={Link}
-          to="/members"
-          variant="secondary"
-        >
-          Back to Members
-        </Button>
+        <Button as={Link} to="/members" variant="secondary" size="sm">← Back to Members</Button>
         <ErrorState message={error} onRetry={loadMember} />
       </section>
     );
@@ -65,13 +58,7 @@ export default function MemberDetails() {
   if (!member) {
     return (
       <section className="page-shell section-block space-y-4">
-        <Button
-          as={Link}
-          to="/members"
-          variant="secondary"
-        >
-          Back to Members
-        </Button>
+        <Button as={Link} to="/members" variant="secondary" size="sm">← Back to Members</Button>
         <ErrorState message="Member not found." />
       </section>
     );
@@ -82,20 +69,15 @@ export default function MemberDetails() {
 
   return (
     <section className="page-shell section-block">
-      <div className="mb-4">
-        <Button
-          as={Link}
-          to="/members"
-          variant="secondary"
-        >
-          Back to Members
-        </Button>
+      <div className="mb-8">
+        <Button as={Link} to="/members" variant="secondary" size="sm">← Back to Members</Button>
       </div>
 
-      <Card padded={false} className="overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="grid gap-0 md:grid-cols-[280px,1fr]">
-          <div className="bg-brand-50 p-4 md:p-5">
-            <div className="aspect-square h-full w-full overflow-hidden rounded-xl">
+          {/* Photo */}
+          <div className="bg-gray-50/60 p-6">
+            <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-100">
               <ImageMedia
                 src={toAbsoluteUploadUrl(member.image_url)}
                 alt={name}
@@ -103,7 +85,7 @@ export default function MemberDetails() {
                 position="50% 50%"
                 className="h-full w-full"
                 fallback={
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-600 to-blue-500 text-4xl font-semibold text-white">
+                  <div className="flex h-full w-full items-center justify-center bg-gray-50 text-4xl font-semibold text-gray-300">
                     {name.charAt(0).toUpperCase()}
                   </div>
                 }
@@ -111,21 +93,20 @@ export default function MemberDetails() {
             </div>
           </div>
 
-          <div className="p-5 md:p-6">
-            <p className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700">
-              {position}
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-900">{name}</h1>
+          {/* Details */}
+          <div className="p-6 md:p-8">
+            <p className="eyebrow-chip mb-2">{position}</p>
+            <h1 className="heading-h2 text-gray-900">{name}</h1>
 
-            <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+            <dl className="mt-8 grid gap-6 sm:grid-cols-2">
               <DetailItem label="Membership ID" value={member.membership_id} />
-              <DetailItem label="Email" value={member.email} />
-              <DetailItem label="Mobile" value={member.mobile} />
-              <DetailItem label="Address" value={member.address} fullWidth />
+              <DetailItem label="Email"         value={member.email} />
+              <DetailItem label="Mobile"        value={member.mobile} />
+              <DetailItem label="Address"       value={member.address} fullWidth />
             </dl>
           </div>
         </div>
-      </Card>
+      </div>
     </section>
   );
 }

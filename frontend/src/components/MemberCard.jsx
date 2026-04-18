@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { toAbsoluteUploadUrl } from "../services/api";
 import ImageMedia from "./ImageMedia";
-import Button from "./ui/Button";
 import Card from "./ui/Card";
 
 export default function MemberCard({ member }) {
@@ -10,32 +9,32 @@ export default function MemberCard({ member }) {
   const initial = name.charAt(0).toUpperCase();
 
   return (
-    <Card interactive padded={false} className="group flex h-full flex-col overflow-hidden">
-      <div className="p-4 pb-0 md:p-5 md:pb-0">
-        <div className="aspect-square w-full overflow-hidden rounded-xl bg-slate-100">
-          <ImageMedia
-            src={toAbsoluteUploadUrl(member.image_url)}
-            alt={name}
-            fit="cover"
-            position="50% 50%"
-            className="h-full w-full transition-all duration-300 group-hover:scale-105"
-            fallback={
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-600 to-blue-500 text-3xl font-semibold text-white">
-                {initial || "M"}
-              </div>
-            }
-          />
+    <Link to={`/members/${member.id}`} className="focus-ring block h-full rounded-2xl">
+      <Card interactive padded={false} className="group flex h-full flex-col overflow-hidden">
+        <div className="p-5 pb-0">
+          <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
+            <ImageMedia
+              src={toAbsoluteUploadUrl(member.image_url)}
+              alt={name}
+              fit="cover"
+              position="50% 50%"
+              className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
+              fallback={
+                <div className="flex h-full w-full items-center justify-center bg-gray-50 text-3xl font-semibold text-gray-300">
+                  {initial || "M"}
+                </div>
+              }
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex flex-1 flex-col gap-2 p-4 md:p-5">
-        <h3 className="text-xl font-semibold leading-tight text-gray-900">{name}</h3>
-        <p className="text-sm text-gray-600">{position}</p>
-        <div className="mt-auto pt-3">
-          <Button as={Link} to={`/members/${member.id}`} variant="secondary" className="w-full sm:w-auto">
-            View Details
-          </Button>
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="text-base font-semibold leading-tight text-gray-900">{name}</h3>
+          <p className="mt-1 text-sm text-gray-400">{position}</p>
+          <p className="mt-auto pt-4 text-xs font-medium text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
+            View Profile →
+          </p>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 }

@@ -24,20 +24,21 @@ function sanitizePayload(payload) {
 }
 
 function validatePayload(payload) {
-  if (payload.name.length < 2) {
-    return "Please enter a valid name (at least 2 characters).";
-  }
-  if (!payload.email) {
-    return "Email address is required.";
-  }
-  if (payload.phone && !PHONE_PATTERN.test(payload.phone)) {
-    return "Please enter a valid phone number.";
-  }
-  if (payload.message.length < 10) {
-    return "Message should be at least 10 characters long.";
-  }
+  if (payload.name.length < 2) return "Please enter a valid name (at least 2 characters).";
+  if (!payload.email) return "Email address is required.";
+  if (payload.phone && !PHONE_PATTERN.test(payload.phone)) return "Please enter a valid phone number.";
+  if (payload.message.length < 10) return "Message should be at least 10 characters long.";
   return "";
 }
+
+const officeInfo = [
+  { label: "Organisation", value: "The Institution of Engineers (India)\nKanyakumari Local Centre" },
+  { label: "Address",      value: "Nagercoil, Kanyakumari District,\nTamil Nadu, India" },
+  { label: "Email",        value: "ieikanyakumarilc@gmail.com",  href: "mailto:ieikanyakumarilc@gmail.com" },
+  { label: "Alt Email",    value: "kanyakumarilc@ieindia.org",   href: "mailto:kanyakumarilc@ieindia.org" },
+  { label: "Phone",        value: "+91-9443993659",              href: "tel:+919443993659" },
+  { label: "Website",      value: "www.ieikanyakumarilc.org",    href: "https://www.ieikanyakumarilc.org", external: true },
+];
 
 export default function Contact() {
   const [form, setForm] = useState(initialForm);
@@ -46,9 +47,7 @@ export default function Contact() {
 
   const onChange = (event) => {
     const { name, value } = event.target;
-    if (status.message) {
-      setStatus({ type: "", message: "" });
-    }
+    if (status.message) setStatus({ type: "", message: "" });
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -60,7 +59,6 @@ export default function Contact() {
       setStatus({ type: "error", message: validationError });
       return;
     }
-
     setLoading(true);
     setStatus({ type: "", message: "" });
     try {
@@ -83,99 +81,107 @@ export default function Contact() {
       />
 
       <div className="grid gap-6 md:grid-cols-5">
-        <Card className="space-y-5 p-7 md:col-span-2">
-          <h3 className="heading-h3 font-semibold text-gray-900">Office Information</h3>
-          <div className="space-y-3 text-sm text-gray-600">
-            <p className="font-semibold text-gray-800">
-              The Institution of Engineers (India)<br />
-              Kanyakumari Local Centre
-            </p>
-            <p>Nagercoil, Kanyakumari District,<br />Tamil Nadu, India</p>
-            <p>
-              Email:{" "}
-              <a href="mailto:ieikanyakumarilc@gmail.com" className="text-blue-600 underline">
-                ieikanyakumarilc@gmail.com
-              </a>
-            </p>
-            <p>
-              Alt:{" "}
-              <a href="mailto:kanyakumarilc@ieindia.org" className="text-blue-600 underline">
-                kanyakumarilc@ieindia.org
-              </a>
-            </p>
-            <p>Phone: <a href="tel:+919443993659" className="text-blue-600">+91-9443993659</a></p>
-            <p>Website:{" "}
-              <a href="https://www.ieikanyakumarilc.org" target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                www.ieikanyakumarilc.org
-              </a>
-            </p>
+
+        {/* Office Information */}
+        <Card className="space-y-6 md:col-span-2" padded={false}>
+          <div className="p-6">
+            <h3 className="mb-6 text-sm font-semibold text-gray-900">Office Information</h3>
+            <dl className="space-y-5">
+              {officeInfo.map((item) => (
+                <div key={item.label}>
+                  <dt className="eyebrow-chip mb-0.5">{item.label}</dt>
+                  <dd className="text-sm text-gray-600">
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noreferrer" : undefined}
+                        className="text-gray-600 underline underline-offset-2 transition-colors duration-200 hover:text-gray-900"
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      <span className="whitespace-pre-line">{item.value}</span>
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-brand-700">
-            <p className="font-semibold mb-1">Office Hours</p>
+          <div className="border-t border-gray-100 bg-gray-50/60 p-5 text-sm text-gray-500">
+            <p className="mb-1 font-semibold text-gray-900">Office Hours</p>
             <p>Monday – Saturday: 10:00 AM – 5:30 PM</p>
             <p>Sunday: Closed</p>
           </div>
         </Card>
 
-        <Card as="form" onSubmit={onSubmit} className="grid gap-5 p-7 md:col-span-3 md:grid-cols-2">
-          <Input
-            label="Full Name"
-            name="name"
-            value={form.name}
-            onChange={onChange}
-            required
-            maxLength={120}
-            placeholder="Enter your name"
-          />
-          <Input
-            label="Email Address"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={onChange}
-            required
-            maxLength={120}
-            placeholder="you@example.com"
-          />
-          <Input
-            label="Phone (optional)"
-            containerClassName="md:col-span-2"
-            name="phone"
-            value={form.phone}
-            onChange={onChange}
-            maxLength={30}
-            placeholder="+91"
-          />
-          <Input
-            as="textarea"
-            label="Message"
-            containerClassName="md:col-span-2"
-            name="message"
-            value={form.message}
-            onChange={onChange}
-            required
-            rows={6}
-            maxLength={3000}
-            placeholder="How can we help you?"
-          />
+        {/* Contact Form */}
+        <Card as="form" onSubmit={onSubmit} className="grid gap-5 md:col-span-3 md:grid-cols-2" padded={false}>
+          <div className="p-6 pb-0 md:col-span-2">
+            <h3 className="text-sm font-semibold text-gray-900">Send a Message</h3>
+          </div>
+          <div className="px-6 md:col-span-1">
+            <Input
+              label="Full Name"
+              name="name"
+              value={form.name}
+              onChange={onChange}
+              required
+              maxLength={120}
+              placeholder="Enter your name"
+            />
+          </div>
+          <div className="px-6 md:col-span-1">
+            <Input
+              label="Email Address"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={onChange}
+              required
+              maxLength={120}
+              placeholder="you@example.com"
+            />
+          </div>
+          <div className="px-6 md:col-span-2">
+            <Input
+              label="Phone (optional)"
+              name="phone"
+              value={form.phone}
+              onChange={onChange}
+              maxLength={30}
+              placeholder="+91"
+            />
+          </div>
+          <div className="px-6 md:col-span-2">
+            <Input
+              as="textarea"
+              label="Message"
+              name="message"
+              value={form.message}
+              onChange={onChange}
+              required
+              rows={6}
+              maxLength={3000}
+              placeholder="How can we help you?"
+            />
+          </div>
 
-          <p className="text-xs text-gray-500 md:col-span-2">
+          <p className="px-6 text-xs text-gray-300 md:col-span-2">
             By submitting this form, you agree to be contacted by the organization.
           </p>
 
-          <Button type="submit" disabled={loading} className="w-full md:col-span-2 md:w-fit">
-            {loading ? "Sending..." : "Send Message"}
-          </Button>
-          {status.message && (
-            <p
-              className={`text-sm ${
-                status.type === "success" ? "text-emerald-600" : "text-red-600"
-              } md:col-span-2`}
-            >
-              {status.message}
-            </p>
-          )}
+          <div className="px-6 pb-6 md:col-span-2">
+            <Button type="submit" disabled={loading}>
+              {loading ? "Sending..." : "Send Message"}
+            </Button>
+            {status.message && (
+              <p className={`mt-3 text-sm ${status.type === "success" ? "text-blue-500" : "text-gray-500"}`}>
+                {status.message}
+              </p>
+            )}
+          </div>
         </Card>
       </div>
     </section>

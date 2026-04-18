@@ -25,55 +25,55 @@ export default function GalleryGrid({ items }) {
           description="Published photos will appear in this gallery once available."
         />
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
-        {items.map((item) => (
-          <Card
-            key={item.id}
-            as="button"
-            onClick={() => setActive(item)}
-            interactive
-            padded={false}
-            className="group overflow-hidden text-left"
-          >
-            <div className="aspect-[4/3] w-full overflow-hidden bg-brand-50">
-              <ImageMedia
-                src={toAbsoluteUploadUrl(item.image_url)}
-                alt={item.title}
-                position="50% 50%"
-                className="h-full w-full transition-all duration-300 group-hover:scale-105"
-                fallback={
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-700 to-blue-500 px-4 text-center text-sm font-semibold text-white">
-                    Gallery image
-                  </div>
-                }
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
-              {item.description && <p className="mt-2 text-sm text-gray-600">{item.description}</p>}
-            </div>
-          </Card>
-        ))}
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {items.map((item) => (
+            <Card
+              key={item.id}
+              as="button"
+              onClick={() => setActive(item)}
+              interactive
+              padded={false}
+              className="group overflow-hidden text-left"
+            >
+              <div className="aspect-[4/3] w-full overflow-hidden bg-gray-50">
+                <ImageMedia
+                  src={toAbsoluteUploadUrl(item.image_url)}
+                  alt={item.title}
+                  position="50% 50%"
+                  className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
+                  fallback={
+                    <div className="flex h-full w-full items-center justify-center bg-gray-50 text-sm text-gray-300">
+                      Gallery image
+                    </div>
+                  }
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-semibold text-gray-900">{item.title}</h3>
+                {item.description && <p className="mt-1.5 text-sm text-gray-500">{item.description}</p>}
+              </div>
+            </Card>
+          ))}
         </div>
       )}
 
       {active && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in"
           onClick={() => setActive(null)}
         >
           <div
-            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActive(null)}
-              className="focus-ring absolute right-3 top-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-gray-700"
+              className="focus-ring absolute right-3 top-3 z-10 rounded-lg border border-gray-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-gray-600 backdrop-blur transition-colors duration-200 hover:bg-gray-50"
             >
               Close
             </button>
-            <div className="flex h-[70vh] w-full items-center justify-center bg-slate-50">
+            <div className="flex h-[70vh] w-full items-center justify-center bg-gray-50">
               <ImageMedia
                 src={toAbsoluteUploadUrl(active.image_url)}
                 alt={active.title}
@@ -81,15 +81,15 @@ export default function GalleryGrid({ items }) {
                 position="50% 50%"
                 className="h-full w-full"
                 fallback={
-                  <div className="flex h-full w-full items-center justify-center px-6 text-center text-sm font-semibold text-slate-500">
+                  <div className="flex h-full w-full items-center justify-center px-6 text-center text-sm text-gray-400">
                     This image is unavailable.
                   </div>
                 }
               />
             </div>
             <div className="p-5">
-              <h3 className="text-xl font-semibold text-gray-900">{active.title}</h3>
-              {active.description && <p className="mt-2 text-gray-600">{active.description}</p>}
+              <h3 className="text-base font-semibold text-gray-900">{active.title}</h3>
+              {active.description && <p className="mt-1.5 text-sm text-gray-500">{active.description}</p>}
             </div>
           </div>
         </div>

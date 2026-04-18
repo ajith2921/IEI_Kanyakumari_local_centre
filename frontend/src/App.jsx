@@ -28,7 +28,7 @@ import AdminMembershipRequests from "./admin/AdminMembershipRequests";
 
 function PublicLayout({ children }) {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen bg-white text-gray-900">
       <Navbar />
       <main id="main-content">{children}</main>
       <Footer />

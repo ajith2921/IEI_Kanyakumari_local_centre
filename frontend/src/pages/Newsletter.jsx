@@ -3,7 +3,6 @@ import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import { SkeletonRows } from "../components/Skeletons";
 import Button from "../components/ui/Button";
-import Card from "../components/ui/Card";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 
@@ -25,18 +24,33 @@ export default function Newsletter() {
         data.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
             {data.map((item) => (
-              <Card key={item.id} interactive className="p-6 md:p-7">
-                <p className="mb-3 inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-brand-700">
-                  {new Date(item.published_at).toLocaleDateString()}
+              <article
+                key={item.id}
+                className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-6 transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
+              >
+                <p className="inline-flex self-start rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-400">
+                  {new Date(item.published_at).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </p>
-                <h3 className="heading-h3 mb-3 font-semibold text-gray-900">{item.title}</h3>
-                <p className="mb-5 line-clamp-5 leading-relaxed text-gray-600">{item.summary}</p>
+                <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
+                <p className="flex-1 line-clamp-5 text-sm leading-relaxed text-gray-500">{item.summary}</p>
                 {item.pdf_url && (
-                  <Button as="a" href={toAbsoluteUploadUrl(item.pdf_url)} target="_blank" rel="noreferrer">
-                    Open PDF
-                  </Button>
+                  <div className="mt-auto">
+                    <Button
+                      as="a"
+                      href={toAbsoluteUploadUrl(item.pdf_url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      size="sm"
+                    >
+                      Open PDF
+                    </Button>
+                  </div>
                 )}
-              </Card>
+              </article>
             ))}
           </div>
         ) : (

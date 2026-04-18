@@ -101,20 +101,20 @@ export default function MembershipAuthPanel() {
   if (isAuthenticated) {
     return (
       <Card as="aside" id="auth-panel" className="p-5 md:p-6" padded={false}>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">Member Access</p>
-        <h3 className="mt-2 text-xl font-semibold text-gray-900">Welcome Back</h3>
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Member Access</p>
+        <h3 className="mt-2 text-xl font-medium text-gray-900">Welcome Back</h3>
         <p className="mt-1 text-sm text-gray-600">You are signed in to the membership portal.</p>
 
-        <dl className="mt-4 space-y-2 rounded-xl border border-brand-100 bg-brand-50/70 p-4 text-sm">
-          <div className="flex items-center justify-between gap-2">
+        <dl className="mt-4 space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+          <div className="flex items-center justify-between gap-4">
             <dt className="font-semibold text-gray-600">Name</dt>
             <dd className="font-semibold text-gray-900">{member?.name || "Member"}</dd>
           </div>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-4">
             <dt className="font-semibold text-gray-600">Category</dt>
             <dd className="font-semibold text-gray-900">{member?.membership_type || "N/A"}</dd>
           </div>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-4">
             <dt className="font-semibold text-gray-600">Membership No</dt>
             <dd className="font-semibold text-gray-900">{member?.membership_id || "Pending"}</dd>
           </div>
@@ -134,7 +134,7 @@ export default function MembershipAuthPanel() {
         {status.message && (
           <p
             className={`mt-3 text-sm ${
-              status.type === "success" ? "text-emerald-600" : "text-red-600"
+              status.type === "success" ? "text-[#3B82F6]" : "text-gray-500"
             }`}
           >
             {status.message}
@@ -146,13 +146,13 @@ export default function MembershipAuthPanel() {
 
   return (
     <Card as="aside" id="auth-panel" className="p-5 md:p-6" padded={false}>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">Member Access</p>
-      <h3 className="mt-2 text-xl font-semibold text-gray-900">Portal Sign In</h3>
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Member Access</p>
+      <h3 className="mt-2 text-xl font-medium text-gray-900">Portal Sign In</h3>
       <p className="mt-1 text-sm text-gray-600">
         Access your membership profile, application updates, and institutional services.
       </p>
 
-      <div className="mt-4 grid grid-cols-2 rounded-xl border border-brand-200 bg-brand-50 p-1">
+      <div className="mt-4 grid grid-cols-2 rounded-xl border border-gray-200 bg-gray-50 p-1">
         <Button
           type="button"
           onClick={() => {
@@ -160,8 +160,8 @@ export default function MembershipAuthPanel() {
             clearStatus();
           }}
           variant="ghost"
-          className={`w-full rounded-md px-3 py-2 text-sm font-semibold ${
-            activeTab === "login" ? "bg-white text-brand-800 shadow-sm" : "text-brand-600 hover:bg-brand-100"
+          className={`w-full rounded-md px-3 py-2 text-sm font-medium ${
+            activeTab === "login" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:bg-white hover:text-gray-900"
           }`}
         >
           Login
@@ -173,8 +173,8 @@ export default function MembershipAuthPanel() {
             clearStatus();
           }}
           variant="ghost"
-          className={`w-full rounded-md px-3 py-2 text-sm font-semibold ${
-            activeTab === "forgot" ? "bg-white text-brand-800 shadow-sm" : "text-brand-600 hover:bg-brand-100"
+          className={`w-full rounded-md px-3 py-2 text-sm font-medium ${
+            activeTab === "forgot" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:bg-white hover:text-gray-900"
           }`}
         >
           Forgot Password
@@ -221,7 +221,7 @@ export default function MembershipAuthPanel() {
       )}
 
       {status.message && (
-        <p className={`mt-3 text-sm ${status.type === "success" ? "text-emerald-600" : "text-red-600"}`}>
+        <p className={`mt-3 text-sm ${status.type === "success" ? "text-[#3B82F6]" : "text-gray-500"}`}>
           {status.message}
         </p>
       )}

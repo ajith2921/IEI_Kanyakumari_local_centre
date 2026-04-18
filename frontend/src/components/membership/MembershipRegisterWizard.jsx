@@ -27,10 +27,10 @@ function StepChip({ index, title, active, completed }) {
     <div
       className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
         completed
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          ? "border-gray-200 bg-gray-50 text-gray-700"
           : active
-            ? "border-brand-300 bg-brand-50 text-brand-700"
-            : "border-slate-200 bg-white text-gray-500"
+            ? "border-gray-200 bg-white text-gray-900"
+            : "border-gray-200 bg-white text-gray-500"
       }`}
     >
       Step {index}: {title}
@@ -155,13 +155,13 @@ export default function MembershipRegisterWizard() {
 
   return (
     <Card as="section" id="be-member" className="p-5 md:p-6" padded={false}>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">Apply Membership</p>
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Apply Membership</p>
       <h3 className="mt-2 text-2xl font-semibold text-gray-900">Create Membership Account</h3>
       <p className="mt-1 text-sm text-gray-600">
         Complete the guided registration to access institutional membership services.
       </p>
 
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
         {progress.map((item) => (
           <StepChip
             key={item}
@@ -176,9 +176,9 @@ export default function MembershipRegisterWizard() {
       <form onSubmit={onSubmit} className="mt-5 space-y-4">
         {step === 1 && (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-gray-700">Existing Member?</p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex items-center gap-2 rounded-lg border border-brand-200 px-3 py-2 text-sm text-gray-700">
+            <p className="text-sm font-medium text-gray-600">Existing Member?</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600">
                 <input
                   type="radio"
                   name="existing_member"
@@ -186,9 +186,9 @@ export default function MembershipRegisterWizard() {
                   checked={form.existing_member === "yes"}
                   onChange={onChange}
                 />
-                Yes
+                <span className="ml-3">Yes</span>
               </label>
-              <label className="flex items-center gap-2 rounded-lg border border-brand-200 px-3 py-2 text-sm text-gray-700">
+              <label className="flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600">
                 <input
                   type="radio"
                   name="existing_member"
@@ -196,7 +196,7 @@ export default function MembershipRegisterWizard() {
                   checked={form.existing_member === "no"}
                   onChange={onChange}
                 />
-                No
+                <span className="ml-3">No</span>
               </label>
             </div>
 
@@ -213,7 +213,7 @@ export default function MembershipRegisterWizard() {
         )}
 
         {step === 2 && (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <Input
               label="Name"
               containerClassName="md:col-span-2"
@@ -242,7 +242,7 @@ export default function MembershipRegisterWizard() {
         )}
 
         {step === 3 && (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <Input
               label="Password"
               type="password"
@@ -283,7 +283,7 @@ export default function MembershipRegisterWizard() {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-4 pt-1">
           {step > 1 && (
             <Button type="button" onClick={prevStep} variant="secondary">
               Back
@@ -302,7 +302,7 @@ export default function MembershipRegisterWizard() {
         </div>
 
         {status.message && (
-          <p className={`text-sm ${status.type === "success" ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`text-sm ${status.type === "success" ? "text-[#3B82F6]" : "text-gray-500"}`}>
             {status.message}
           </p>
         )}

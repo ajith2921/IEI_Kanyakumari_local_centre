@@ -23,8 +23,8 @@ export default function Input({
   }
 
   return (
-    <label className={joinClasses("block space-y-2 text-sm font-medium text-slate-700", containerClassName)}>
-      <span>{label}</span>
+    <label className={joinClasses("block space-y-1.5 text-sm font-medium text-gray-600", containerClassName)}>
+      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">{label}</span>
       {control}
     </label>
   );
