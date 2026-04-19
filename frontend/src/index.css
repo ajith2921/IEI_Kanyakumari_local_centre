@@ -193,6 +193,20 @@ h1, h2, h3, h4, h5, h6 {
   animation: fadeIn 0.4s ease both;
 }
 
+@keyframes navbarMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.navbar-marquee-track {
+  animation: navbarMarquee 7s linear infinite;
+  will-change: transform;
+}
+
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.10s; }
 .stagger-3 { animation-delay: 0.15s; }
@@ -205,5 +219,9 @@ h1, h2, h3, h4, h5, h6 {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+
+  .navbar-marquee-track {
+    transform: translateX(0) !important;
   }
 }

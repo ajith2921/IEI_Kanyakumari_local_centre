@@ -55,10 +55,14 @@ const focusAreas = [
   "Community Engineering Solutions",
 ];
 
+const chairmanMessage =
+  '"Engineering is not just a profession — it is the foundation of progress. Our centre is dedicated to empowering engineers, motivating students, strengthening institutions, and serving society through innovative ideas and technical excellence. We invite all engineers, professionals, industries, and students to actively engage with KKLC and become part of a meaningful professional network."';
+
 export default function Home() {
   const members = useFetchList(publicApi.getMembers);
   const activities = useFetchList(publicApi.getActivities);
   const newsletters = useFetchList(publicApi.getNewsletters);
+  const cleanChairmanMessage = chairmanMessage.replace(/\s+/g, " ").trim();
 
   return (
     <>
@@ -67,21 +71,21 @@ export default function Home() {
 
       {/* ── WELCOME — gray-50 bg ─────────────────────────── */}
       <section className="bg-gray-50/60">
-        <div className="page-shell py-20">
-          <div className="grid gap-12 md:grid-cols-2 md:items-start">
+        <div className="page-shell pb-10 pt-12 sm:pb-14 sm:pt-16">
+          <div className="grid gap-8 md:grid-cols-2 md:items-start md:gap-10">
             {/* Welcome text */}
-            <div>
-              <p className="eyebrow-chip mb-4">Welcome</p>
-              <h2 className="heading-h2 mb-6 text-gray-900">
+            <div className="max-w-2xl">
+              <h2 className="mb-3 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+                Welcome
+              </h2>
+              <p className="mb-5 max-w-[24ch] text-2xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-3xl lg:text-4xl">
                 The Institution of Engineers (India) —{" "}
                 <span className="text-gray-400">Kanyakumari Local Centre</span>
-              </h2>
-              <p className="mb-4 text-base leading-relaxed text-gray-500">
-                IEI KKLC is a dynamic professional body committed to advancing engineering excellence,
-                innovation, technical leadership, and societal development. We serve engineers,
-                academicians, and students across Kanyakumari District and surrounding regions.
               </p>
-              <p className="mb-8 text-sm leading-relaxed text-gray-400">
+              <p className="mb-3 max-w-[62ch] text-[15px] leading-7 text-gray-600 sm:text-base">
+                IEI KKLC is a dynamic professional body committed to advancing engineering excellence, innovation, technical leadership, and societal development. We serve engineers, academicians, and students across Kanyakumari District and surrounding regions.
+              </p>
+              <p className="mb-6 max-w-[62ch] text-sm leading-7 text-gray-500 sm:mb-7 sm:text-[15px]">
                 We strive to build a strong engineering ecosystem through knowledge sharing,
                 professional networking, industry collaboration, and community service.
               </p>
@@ -91,12 +95,14 @@ export default function Home() {
             </div>
 
             {/* Focus areas */}
-            <div>
-              <p className="eyebrow-chip mb-5">Our Focus Areas</p>
-              <ul className="grid gap-3">
+            <div className="rounded-2xl border border-gray-200 bg-white/90 p-6 shadow-sm sm:p-7">
+              <h3 className="mb-4 text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+                Our Focus Areas
+              </h3>
+              <ul className="grid gap-2.5 sm:gap-3">
                 {focusAreas.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm text-gray-500">
-                    <span className="h-1 w-1 flex-shrink-0 rounded-full bg-gray-300" />
+                  <li key={item} className="flex items-start gap-3 text-sm leading-6 text-gray-600">
+                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-gray-400" />
                     {item}
                   </li>
                 ))}
@@ -108,19 +114,19 @@ export default function Home() {
 
       {/* ── CHAIRMAN'S MESSAGE — white bg ─────────────────── */}
       <section className="bg-white">
-        <div className="page-shell py-20">
-          <div className="max-w-3xl">
-            <p className="eyebrow-chip mb-5">Chairman's Message</p>
-            <blockquote className="mb-8 border-l-2 border-gray-200 pl-6 text-lg leading-relaxed text-gray-500 italic">
-              "Engineering is not just a profession — it is the foundation of progress. Our centre is
-              dedicated to empowering engineers, motivating students, strengthening institutions, and
-              serving society through innovative ideas and technical excellence. We invite all engineers,
-              professionals, industries, and students to actively engage with KKLC and become part of a
-              meaningful professional network."
-            </blockquote>
-            <div>
-              <p className="text-sm font-semibold text-gray-900">Dr. M. Marsaline Beno</p>
-              <p className="mt-0.5 text-xs text-gray-400">Chairman, IEI Kanyakumari Local Centre</p>
+        <div className="page-shell pb-10 pt-12 sm:pb-14 sm:pt-16">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="mb-5 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+              Chairman&apos;s Message
+            </h2>
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/60 p-6 sm:p-8">
+              <blockquote className="mb-4 mr-auto max-w-[66ch] text-left text-[17px] leading-8 text-gray-600 italic sm:mb-5 sm:text-lg">
+                {cleanChairmanMessage}
+              </blockquote>
+              <div className="mt-5 text-left">
+                <p className="text-sm font-semibold text-gray-900">Dr. M. Marsaline Beno</p>
+                <p className="mt-0.5 text-xs text-gray-400">Chairman, IEI Kanyakumari Local Centre</p>
+              </div>
             </div>
           </div>
         </div>
@@ -151,26 +157,28 @@ export default function Home() {
 
       {/* ── ABOUT — white bg ──────────────────────────────── */}
       <section className="bg-white">
-        <div className="page-shell py-20">
+        <div className="page-shell pb-10 pt-12 sm:pb-14 sm:pt-16">
           <SectionHeader
             eyebrow="Who We Are"
             title="About IEI Kanyakumari Local Centre"
             description="A vibrant institutional platform dedicated to engineering excellence, networking, and professional contribution."
+            contentWidthClassName="max-w-none"
+            className="mb-7 sm:mb-9"
           />
-          <p className="mb-12 max-w-3xl text-sm leading-relaxed text-gray-500">
+          <p className="mb-8 max-w-none text-[15px] leading-7 text-gray-600 sm:mb-10 sm:text-base">
             IEI Kanyakumari Local Centre serves as a hub for engineers, educators, and students,
             focusing on technical competence and community impact. Our programs bridge academia and
             industry, enabling members to stay relevant in evolving technologies while upholding ethical
             and professional standards.
           </p>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-5 sm:gap-6 md:grid-cols-3">
             {aboutPillars.map((item) => (
               <div
                 key={item.title}
-                className="rounded-2xl border border-gray-100 bg-gray-50/60 p-6 transition-all duration-200 hover:border-gray-200 hover:bg-white hover:shadow-sm"
+                className="h-full rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-sm"
               >
-                <h3 className="mb-2 text-sm font-semibold text-gray-900">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-500">{item.detail}</p>
+                <h3 className="mb-2 text-base font-semibold text-gray-900">{item.title}</h3>
+                <p className="text-sm leading-6 text-gray-600">{item.detail}</p>
               </div>
             ))}
           </div>

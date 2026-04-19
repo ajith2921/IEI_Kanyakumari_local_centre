@@ -17,24 +17,28 @@ const moreLinks = [
   { to: "/links-downloads", label: "Resources" },
 ];
 
-function NavItem({ to, label, onClick }) {
+function NavItem({ to, label, onClick, mobile = false }) {
   return (
     <NavLink
       to={to}
       onClick={onClick}
       className={({ isActive }) =>
         `relative rounded-lg px-3 py-2 text-[13px] transition-colors duration-200 ${
-          isActive
-            ? "font-medium text-gray-900"
-            : "font-normal text-gray-500 hover:text-gray-900"
+          mobile
+            ? isActive
+              ? "bg-gray-100 font-medium text-gray-900"
+              : "font-normal text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            : isActive
+              ? "font-medium text-gray-900"
+              : "font-normal text-gray-500 hover:text-gray-900"
         }`
       }
     >
       {({ isActive }) => (
         <>
           {label}
-          {isActive && (
-            <span className="absolute -bottom-[13px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-gray-900" />
+          {!mobile && isActive && (
+            <span className="absolute -bottom-[11px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-gray-900" />
           )}
         </>
       )}
@@ -68,7 +72,7 @@ function MoreDropdown() {
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className={`flex items-center gap-1 rounded-lg px-3 py-2 text-[13px] transition-colors duration-200 ${
+        className={`inline-flex h-11 items-center gap-1 rounded-lg px-3.5 text-[13px] transition-colors duration-200 ${
           isChildActive
             ? "font-medium text-gray-900"
             : "font-normal text-gray-500 hover:text-gray-900"
@@ -146,40 +150,43 @@ export default function Navbar() {
       </a>
 
       {/* Main nav bar */}
-      <div className="page-shell flex items-center justify-between py-3">
+      <div className="page-shell flex items-center justify-between py-2.5 sm:py-3">
         <Link to="/" className="flex items-center gap-3 leading-tight">
           <img
             src="https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png"
             alt="Institution of Engineers (India) logo"
-            className="h-8 w-8 flex-shrink-0 rounded-full border border-gray-100 bg-white object-contain p-0.5"
+            className="h-12 w-12 flex-shrink-0 rounded-full border border-gray-100 bg-white object-contain p-1 sm:h-14 sm:w-14"
             loading="eager"
             decoding="async"
             referrerPolicy="no-referrer"
           />
           <span className="flex flex-col">
-            <span className="text-sm font-semibold tracking-tight text-gray-900">
-              IEI Kanyakumari
+            <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-gray-900">
+              IEI Kanyakumari Local Centre
             </span>
-            <span className="text-[11px] text-gray-400">
-              Local Centre
+            <span className="mt-1 inline-flex w-[152px] overflow-hidden rounded-full border border-gray-200 bg-gray-50 px-2 py-[2px] text-[10px] text-gray-500 sm:w-[170px]">
+              <span className="navbar-marquee-track inline-flex whitespace-nowrap font-medium">
+                <span className="pr-8">(Established in 2025)</span>
+                <span className="pr-8" aria-hidden="true">(Established in 2025)</span>
+              </span>
             </span>
           </span>
         </Link>
 
         <button
           type="button"
-          className="focus-ring rounded-lg border border-gray-200 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-50 lg:hidden"
+          className="focus-ring h-11 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-50 lg:hidden"
           onClick={() => setOpen((prev) => !prev)}
         >
           {open ? "Close" : "Menu"}
         </button>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {primaryLinks.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
           <MoreDropdown />
-          <div className="ml-3 flex items-center gap-2.5 border-l border-gray-200 pl-3">
+          <div className="ml-2.5 flex h-11 items-center gap-2 border-l border-gray-200 pl-3">
             <Button as={Link} to="/membership-form" size="sm">
               Membership
             </Button>
@@ -195,13 +202,13 @@ export default function Navbar() {
         <div className="animate-fade-in border-t border-gray-100 bg-white lg:hidden">
           <div className="page-shell grid gap-1 py-4">
             {primaryLinks.map((item) => (
-              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} />
+              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
             ))}
             <p className="mb-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
               More
             </p>
             {moreLinks.map((item) => (
-              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} />
+              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
             ))}
             <div className="mt-4 grid gap-2.5">
               <Button as={Link} to="/membership-form" onClick={() => setOpen(false)}>

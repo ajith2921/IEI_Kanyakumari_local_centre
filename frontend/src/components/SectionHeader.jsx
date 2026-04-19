@@ -1,7 +1,14 @@
-export default function SectionHeader({ eyebrow, title, description, action }) {
+export default function SectionHeader({
+  eyebrow,
+  title,
+  description,
+  action,
+  className = "",
+  contentWidthClassName = "max-w-2xl",
+}) {
   return (
-    <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
-      <div className="max-w-2xl">
+    <div className={`mb-14 flex flex-wrap items-end justify-between gap-6 ${className}`.trim()}>
+      <div className={contentWidthClassName}>
         {eyebrow && (
           <p className="eyebrow-chip mb-3">{eyebrow}</p>
         )}
