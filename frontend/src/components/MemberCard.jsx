@@ -6,7 +6,6 @@ import Card from "./ui/Card";
 export default function MemberCard({ member }) {
   const name = member.name?.trim() || "Member";
   const position = member.position?.trim() || "Member";
-  const initial = name.charAt(0).toUpperCase();
 
   return (
     <Link to="/members" className="focus-ring block h-full rounded-2xl">
@@ -20,8 +19,22 @@ export default function MemberCard({ member }) {
               position="50% 50%"
               className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
               fallback={
-                <div className="flex h-full w-full items-center justify-center bg-gray-50 text-3xl font-semibold text-gray-300">
-                  {initial || "M"}
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-200 via-slate-100 to-white text-slate-500">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-12 w-12"
+                    role="img"
+                    aria-label={`${name} profile placeholder`}
+                  >
+                    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
+                    <path
+                      d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </div>
               }
             />

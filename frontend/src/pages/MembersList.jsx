@@ -27,13 +27,20 @@ function getDivisionLabel(position) {
 
 /* ── AVATAR FALLBACK ──────────────────────────────────── */
 function AvatarFallback({ name }) {
-  const initial = (name || "M").trim().charAt(0).toUpperCase();
   return (
     <div
       aria-hidden="true"
-      className="flex h-full w-full select-none items-center justify-center bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-2xl font-semibold text-white"
+      className="flex h-full w-full select-none items-center justify-center bg-gradient-to-br from-slate-200 via-slate-100 to-white text-slate-500"
     >
-      {initial}
+      <svg viewBox="0 0 24 24" fill="none" className="h-12 w-12" role="img" aria-label={`${name || "Member"} profile placeholder`}>
+        <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
+        <path
+          d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+      </svg>
     </div>
   );
 }

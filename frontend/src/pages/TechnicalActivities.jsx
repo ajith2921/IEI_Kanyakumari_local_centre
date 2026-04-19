@@ -1,50 +1,86 @@
-import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import EventCard from "../components/EventCard";
 import SectionHeader from "../components/SectionHeader";
 import { SkeletonGrid } from "../components/Skeletons";
-import Button from "../components/ui/Button";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi } from "../services/api";
 
-const ACTIVITY_CATEGORIES = [
-  {
-    title: "Technical Programmes",
-    items: ["Engineers Day Celebrations", "National Conferences", "Expert Talks", "Industry Interaction Sessions"],
-  },
-  {
-    title: "Student Events",
-    items: ["Coding Challenges", "Robotics Contests", "Project Expos", "Technical Quizzes", "Innovation Competitions"],
-  },
-  {
-    title: "Professional Development",
-    items: ["Career Guidance Sessions", "Soft Skills Workshops", "Entrepreneurship Awareness", "Research Methodology Workshops"],
-  },
-  {
-    title: "Social Outreach",
-    items: ["Rural Technology Awareness", "Sustainability Programmes", "Engineering for Society Initiatives"],
-  },
+const HEADING_ORDER = [
+  "Technical Programmes",
+  "Student Events",
+  "Professional Development",
+  "Social Outreach",
 ];
+const OTHER_HEADING = "Other Activities";
 
-function ActivityCategory({ title, items }) {
-  return (
-    <div className="border-b border-gray-100 py-6 last:border-0">
-      <p className="eyebrow-chip mb-3">{title}</p>
-      <ul className="space-y-2.5">
-        {items.map((item) => (
-          <li key={item} className="flex items-start gap-3 text-sm text-gray-500">
-            <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-gray-300" />
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+function getActivityHeading(activity) {
+  const description = String(activity?.description || "").trim();
+  const [prefix] = description.split(" - ");
+  const heading = String(prefix || "").trim();
+  return HEADING_ORDER.includes(heading) ? heading : OTHER_HEADING;
+}
+
+function getActivityTime(activity) {
+  const eventDateText = String(activity?.event_date || "").trim();
+  if (!eventDateText) {
+    return Number.NaN;
+  }
+
+  const parsed = Date.parse(eventDateText);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
+function isUpcomingActivity(activity, todayStartMs) {
+  const activityTime = getActivityTime(activity);
+  return Number.isFinite(activityTime) && activityTime >= todayStartMs;
 }
 
 export default function TechnicalActivities() {
   const { data, loading, error, reload } = useFetchList(publicApi.getActivities);
+  const todayStartMs = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.getTime();
+  }, []);
+
+  const upcomingActivities = useMemo(
+    () =>
+      data
+        .filter((activity) => isUpcomingActivity(activity, todayStartMs))
+        .slice()
+        .sort((left, right) => getActivityTime(left) - getActivityTime(right)),
+    [data, todayStartMs]
+  );
+
+  const conductedActivities = useMemo(
+    () => data.filter((activity) => !isUpcomingActivity(activity, todayStartMs)),
+    [data, todayStartMs]
+  );
+
+  const groupedActivities = useMemo(() => {
+    const grouped = new Map();
+
+    HEADING_ORDER.forEach((heading) => grouped.set(heading, []));
+    grouped.set(OTHER_HEADING, []);
+
+    conductedActivities.forEach((activity) => {
+      const heading = getActivityHeading(activity);
+      grouped.get(heading).push(activity);
+    });
+
+    const orderedSections = HEADING_ORDER
+      .map((heading) => ({ heading, activities: grouped.get(heading) }))
+      .filter((section) => section.activities.length > 0);
+
+    const otherActivities = grouped.get(OTHER_HEADING);
+    if (otherActivities.length > 0) {
+      orderedSections.push({ heading: OTHER_HEADING, activities: otherActivities });
+    }
+
+    return orderedSections;
+  }, [conductedActivities]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -57,62 +93,67 @@ export default function TechnicalActivities() {
           <p className="mt-3 text-sm text-gray-400">IEI Kanyakumari Local Centre</p>
         </header>
 
-        {/* ── Admin-published events (API) ───────────── */}
+        {/* ── Upcoming events (API) ───────────────────── */}
         <section className="mb-20">
           <SectionHeader
-            eyebrow="Published by Admin"
-            title="Upcoming Events"
-            description="Live events added by the IEI KKLC team."
+            eyebrow="Upcoming Events"
+            title="Upcoming Conference"
+            description="Upcoming conferences and events from the IEI KKLC team."
           />
-          {loading && <SkeletonGrid count={3} />}
+          {loading && <SkeletonGrid count={1} />}
           {error && <ErrorState message={error} onRetry={reload} />}
           {!loading && !error && (
-            data.length > 0 ? (
+            upcomingActivities.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                {data.map((activity) => (
+                {upcomingActivities.map((activity) => (
                   <EventCard key={activity.id} activity={activity} />
                 ))}
               </div>
             ) : (
               <EmptyState
-                title="No events published yet"
-                description="Upcoming workshop and chapter events will appear here."
+                title="No upcoming events yet"
+                description="Upcoming conferences and events will appear here once scheduled."
               />
             )
           )}
         </section>
 
-        {/* ── Major Activities Conducted ─────────────── */}
+        {/* ── Conducted activities (API) ──────────────── */}
         <section className="mb-20">
-          <div className="mb-8 border-b border-gray-100 pb-4">
-            <p className="eyebrow-chip">Major Activities Conducted</p>
-          </div>
-          <div className="grid gap-0 md:grid-cols-2">
-            {ACTIVITY_CATEGORIES.map((cat, idx) => (
-              <div
-                key={cat.title}
-                className={`${idx % 2 === 0 ? "md:border-r md:border-gray-100 md:pr-8" : "md:pl-8"}`}
-              >
-                <ActivityCategory title={cat.title} items={cat.items} />
-              </div>
-            ))}
-          </div>
-        </section>
+          <SectionHeader
+            eyebrow="Conducted by IEI KKLC"
+            title="Major Activities Conducted"
+            description="These are activities conducted by the IEI KKLC team."
+          />
+          {!loading && !error && (
+            groupedActivities.length > 0 ? (
+              <div className="space-y-10">
+                {groupedActivities.map((section) => (
+                  <section key={section.heading}>
+                    <div className="mb-5 flex items-center justify-between gap-3 border-b border-gray-100 pb-2">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 sm:text-base">
+                        {section.heading}
+                      </h3>
+                      <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-500">
+                        {section.activities.length}
+                      </span>
+                    </div>
 
-        {/* ── SUSTAIN-TECH 2026 pointer ──────────────── */}
-        <section className="mb-12">
-          <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-gray-100 bg-gray-50/60 p-8">
-            <div>
-              <p className="eyebrow-chip mb-2">Upcoming Conference</p>
-              <h2 className="text-lg font-semibold text-gray-900">SUSTAIN-TECH 2026</h2>
-              <p className="mt-1.5 text-sm text-gray-500">
-                30–31 October 2026 · International Conference on Sustainable Science & Technology
-              </p>
-            </div>
-            <Button as={Link} to="/conference" variant="secondary" size="sm">
-              View Full Details
-            </Button>
-          </div>
+                    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+                      {section.activities.map((activity) => (
+                        <EventCard key={activity.id} activity={activity} />
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="No conducted activities published yet"
+                description="Conducted events will appear here after they are added by the admin team."
+              />
+            )
+          )}
         </section>
 
       </main>
