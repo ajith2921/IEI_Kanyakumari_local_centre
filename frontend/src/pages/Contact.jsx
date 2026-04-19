@@ -78,6 +78,7 @@ export default function Contact() {
         eyebrow="Get in Touch"
         title="Contact Us"
         description="Reach us for membership guidance, event enquiries, or institutional collaboration."
+        titleAs="h1"
       />
 
       <div className="grid gap-6 md:grid-cols-5">
@@ -168,7 +169,7 @@ export default function Contact() {
             />
           </div>
 
-          <p className="px-6 text-xs text-gray-300 md:col-span-2">
+          <p className="px-6 text-xs text-gray-500 md:col-span-2">
             By submitting this form, you agree to be contacted by the organization.
           </p>
 
@@ -177,7 +178,7 @@ export default function Contact() {
               {loading ? "Sending..." : "Send Message"}
             </Button>
             {status.message && (
-              <p className={`mt-3 text-sm ${status.type === "success" ? "text-blue-500" : "text-gray-500"}`}>
+              <p className={`mt-3 text-sm ${status.type === "success" ? "text-emerald-600" : "text-rose-600"}`}>
                 {status.message}
               </p>
             )}
