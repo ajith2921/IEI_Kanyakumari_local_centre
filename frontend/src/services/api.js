@@ -67,7 +67,6 @@ export const authApi = {
 
 export const publicApi = {
   getMembers: () => api.get("/members"),
-  getMemberById: (id) => api.get(`/members/${id}`),
   getGallery: () => api.get("/gallery"),
   getNewsletters: () => api.get("/newsletters"),
   getActivities: () => api.get("/activities"),

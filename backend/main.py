@@ -9,7 +9,7 @@ from sqlalchemy import inspect, text
 
 from auth import hash_password, verify_password
 from database import Base, SessionLocal, engine
-from models import User
+from models import Member, User
 from routes import (
     activities,
     auth,
@@ -54,6 +54,63 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
+
+PROGRAM_OFFICE_BEARERS = [
+    {"role": "Chairman", "name": "Dr. M. Marsaline Beno"},
+    {"role": "Honorary Secretary", "name": "Dr. J. Prakash Arul Jose"},
+    {"role": "Honorary Joint Secretary", "name": "Dr. A. Megalingam"},
+    {"role": "Immediate Past Chairman", "name": "Er. S. Bright Selvin"},
+]
+
+PROGRAM_DIVISIONS = [
+    {
+        "division": "Civil Engineering Division",
+        "members": [
+            "Dr. J. Prakash Arul Jose",
+            "Er. S. Natarajan",
+            "Er. A. Rajakumar",
+            "Er. K. Sivakumar",
+            "Er. P. Gopal",
+        ],
+    },
+    {
+        "division": "Electrical Engineering Division",
+        "members": [
+            "Dr. M. Marsaline Beno",
+            "Er. V. Muthum Perumal",
+            "Dr. T. Sree Renga Raja",
+            "Er. V. Sivathanu Pillai",
+        ],
+    },
+    {
+        "division": "Mechanical Engineering Division",
+        "members": [
+            "Dr. A. Megalingam",
+            "Er. M.A. Perumal",
+            "Dr. Jenix Rino J",
+        ],
+    },
+    {
+        "division": "Computer / IT Division",
+        "members": ["Dr. S. Arumuga Perumal"],
+    },
+    {
+        "division": "Electronics & Communication Division",
+        "members": ["Dr. A. Albert Raj"],
+    },
+    {
+        "division": "Chemical Engineering Division",
+        "members": ["Dr. Rimal Isaac R.S."],
+    },
+    {
+        "division": "Environmental Engineering Division",
+        "members": ["Er. Ganesh Kumar", "Dr. V. Karthikeyan"],
+    },
+    {
+        "division": "Applied Science / Management",
+        "members": ["Dr. N. Azhagesan"],
+    },
+]
 
 
 def migrate_members_table() -> None:
@@ -194,7 +251,88 @@ def seed_admin_user() -> None:
         db.close()
 
 
+def _env_flag(name: str, default: str = "true") -> bool:
+    value = (os.getenv(name, default) or "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def seed_members_from_program_data() -> None:
+    if not _env_flag("AUTO_SEED_MEMBERS", "true"):
+        return
+
+    ordered_records: list[dict[str, str]] = []
+    seen_names: set[str] = set()
+
+    for office in PROGRAM_OFFICE_BEARERS:
+        member_name = office["name"]
+        if member_name in seen_names:
+            continue
+        seen_names.add(member_name)
+        ordered_records.append(
+            {
+                "name": member_name,
+                "position": office["role"],
+            }
+        )
+
+    for division in PROGRAM_DIVISIONS:
+        division_label = division["division"]
+        for member_name in division["members"]:
+            if member_name in seen_names:
+                continue
+            seen_names.add(member_name)
+            ordered_records.append(
+                {
+                    "name": member_name,
+                    "position": f"{division_label} Committee Member",
+                }
+            )
+
+    db = SessionLocal()
+    try:
+        existing_names = {name for (name,) in db.query(Member.name).all()}
+        if len(existing_names) >= len(ordered_records):
+            return
+
+        seed_address = "IEI Kanyakumari Local Centre"
+        members_to_insert: list[Member] = []
+
+        for index, record in enumerate(ordered_records, start=1):
+            member_name = record["name"]
+            if member_name in existing_names:
+                continue
+
+            membership_code = f"IEI-KKLC-{index:03d}"
+            position = record["position"]
+
+            members_to_insert.append(
+                Member(
+                    name=member_name,
+                    designation=position,
+                    organization=seed_address,
+                    bio=membership_code,
+                    position=position,
+                    membership_id=membership_code,
+                    address=seed_address,
+                    email="",
+                    mobile="",
+                    password_hash="",
+                    membership_type="",
+                    interest_area="",
+                    legacy_image_url="",
+                    image="",
+                )
+            )
+
+        if members_to_insert:
+            db.add_all(members_to_insert)
+            db.commit()
+    finally:
+        db.close()
+
+
 seed_admin_user()
+seed_members_from_program_data()
 
 upload_dir = Path(__file__).resolve().parent / "uploads"
 upload_dir.mkdir(parents=True, exist_ok=True)

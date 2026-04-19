@@ -4,7 +4,6 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Conference from "./pages/Conference";
 import MembersList from "./pages/MembersList";
-import MemberDetails from "./pages/MemberDetails";
 import GalleryPage from "./pages/GalleryPage";
 import Newsletter from "./pages/Newsletter";
 import Facilities from "./pages/Facilities";
@@ -62,14 +61,6 @@ export default function App() {
         element={
           <PublicLayout>
             <MembersList />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/members/:id"
-        element={
-          <PublicLayout>
-            <MemberDetails />
           </PublicLayout>
         }
       />

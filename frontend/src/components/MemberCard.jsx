@@ -9,7 +9,7 @@ export default function MemberCard({ member }) {
   const initial = name.charAt(0).toUpperCase();
 
   return (
-    <Link to={`/members/${member.id}`} className="focus-ring block h-full rounded-2xl">
+    <Link to="/members" className="focus-ring block h-full rounded-2xl">
       <Card interactive padded={false} className="group flex h-full flex-col overflow-hidden">
         <div className="p-5 pb-0">
           <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
@@ -31,7 +31,7 @@ export default function MemberCard({ member }) {
           <h3 className="text-base font-semibold leading-tight text-gray-900">{name}</h3>
           <p className="mt-1 text-sm text-gray-400">{position}</p>
           <p className="mt-auto pt-4 text-xs font-medium text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
-            View Profile →
+            View Committee →
           </p>
         </div>
       </Card>
