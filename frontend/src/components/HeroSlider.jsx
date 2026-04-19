@@ -20,13 +20,13 @@ const slides = [
   },
 ];
 
-const stats = [
+const defaultStats = [
   { value: "100+", label: "Active Members" },
   { value: "50+", label: "Events Conducted" },
   { value: "8", label: "Engineering Divisions" },
 ];
 
-export default function HeroSlider() {
+export default function HeroSlider({ stats = defaultStats }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function HeroSlider() {
       {/* Subtle dot-grid background */}
       <div className="dot-grid pointer-events-none absolute inset-0 opacity-40" />
 
-      <div className="page-shell relative py-24 lg:py-28">
+      <div className="page-shell relative pb-24 pt-12 sm:pt-14 lg:pb-28 lg:pt-16">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
 
           {/* Left: Text content */}

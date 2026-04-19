@@ -58,16 +58,44 @@ const focusAreas = [
 const chairmanMessage =
   '"Engineering is not just a profession — it is the foundation of progress. Our centre is dedicated to empowering engineers, motivating students, strengthening institutions, and serving society through innovative ideas and technical excellence. We invite all engineers, professionals, industries, and students to actively engage with KKLC and become part of a meaningful professional network."';
 
+function getDivisionCount(membersList) {
+  const divisions = new Set();
+
+  membersList.forEach((member) => {
+    const position = String(member?.position || "").trim();
+    const match = position.match(/^(.*)\s+Committee Member$/i);
+    if (match?.[1]) {
+      divisions.add(match[1].trim());
+    }
+  });
+
+  return divisions.size;
+}
+
 export default function Home() {
   const members = useFetchList(publicApi.getMembers);
   const activities = useFetchList(publicApi.getActivities);
   const newsletters = useFetchList(publicApi.getNewsletters);
   const cleanChairmanMessage = chairmanMessage.replace(/\s+/g, " ").trim();
+  const heroStats = [
+    {
+      value: members.loading ? "..." : String(members.data.length),
+      label: "Active Members",
+    },
+    {
+      value: activities.loading ? "..." : String(activities.data.length),
+      label: "Events Conducted",
+    },
+    {
+      value: members.loading ? "..." : String(getDivisionCount(members.data)),
+      label: "Engineering Divisions",
+    },
+  ];
 
   return (
     <>
       {/* ── HERO ────────────────────────────────────────── */}
-      <HeroSlider />
+      <HeroSlider stats={heroStats} />
 
       {/* ── WELCOME — gray-50 bg ─────────────────────────── */}
       <section className="bg-gray-50/60">

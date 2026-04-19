@@ -300,9 +300,6 @@ export default function Conference() {
           </div>
         </section>
 
-        <footer className="mt-14 border-t border-slate-200 pt-6 text-center text-[11px] tracking-[0.08em] text-slate-400">
-          IEI Kanyakumari Local Centre · Conferences & Seminars
-        </footer>
       </main>
     </div>
   );

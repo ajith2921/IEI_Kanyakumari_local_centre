@@ -115,9 +115,6 @@ export default function TechnicalActivities() {
           </div>
         </section>
 
-        <footer className="border-t border-gray-100 pt-5 text-center text-[11px] text-gray-300">
-          IEI Kanyakumari Local Centre · Events & Technical Activities
-        </footer>
       </main>
     </div>
   );
