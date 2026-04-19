@@ -7,7 +7,14 @@ import {
   publicApi,
 } from "../services/api";
 
-const MembershipSessionContext = createContext(null);
+const CONTEXT_GLOBAL_KEY = "__ieiMembershipSessionContext";
+const globalScope = globalThis;
+const MembershipSessionContext =
+  globalScope[CONTEXT_GLOBAL_KEY] || createContext(null);
+
+if (!globalScope[CONTEXT_GLOBAL_KEY]) {
+  globalScope[CONTEXT_GLOBAL_KEY] = MembershipSessionContext;
+}
 
 function readStoredMember() {
   const raw = localStorage.getItem(MEMBERSHIP_USER_KEY);
