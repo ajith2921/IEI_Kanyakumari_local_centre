@@ -15,6 +15,30 @@ function buildEmptyForm(fields) {
   }, {});
 }
 
+function isFieldVisible(field, form) {
+  if (typeof field.visibleWhen !== "function") {
+    return true;
+  }
+
+  try {
+    return Boolean(field.visibleWhen(form));
+  } catch {
+    return true;
+  }
+}
+
+function isFieldRequired(field, form) {
+  if (typeof field.requiredWhen === "function") {
+    try {
+      return Boolean(field.requiredWhen(form));
+    } catch {
+      return Boolean(field.required);
+    }
+  }
+
+  return Boolean(field.required);
+}
+
 export default function ResourceManager({
   title,
   fields,
@@ -35,6 +59,7 @@ export default function ResourceManager({
   const imageGuideline = imageUploadConfig?.guideline || "Recommended size: 400x300";
 
   const emptyForm = useMemo(() => buildEmptyForm(fields), [fields]);
+  const tableFields = useMemo(() => fields.filter((field) => !field.formOnly), [fields]);
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
@@ -47,6 +72,10 @@ export default function ResourceManager({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const imageFieldValue = String(form[imageFieldName] || "");
+  const visibleFields = useMemo(
+    () => fields.filter((field) => isFieldVisible(field, form)),
+    [fields, form]
+  );
 
   useEffect(() => {
     if (!imageUploadEnabled) {
@@ -98,10 +127,17 @@ export default function ResourceManager({
     setImageFile(null);
     setFileInputKey((value) => value + 1);
     setForm(
-      fields.reduce((acc, field) => {
-        acc[field.name] = item[field.name] || "";
-        return acc;
-      }, {})
+      fields.reduce(
+        (acc, field) => {
+          const mappedValue =
+            typeof field.mapFromItem === "function"
+              ? field.mapFromItem(item)
+              : item[field.name];
+          acc[field.name] = mappedValue ?? "";
+          return acc;
+        },
+        { ...emptyForm }
+      )
     );
   };
 
@@ -167,11 +203,41 @@ export default function ResourceManager({
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    const normalizedForm = fields.reduce((acc, field) => {
+    const trimmedForm = fields.reduce((acc, field) => {
       const value = form[field.name];
       acc[field.name] = typeof value === "string" ? value.trim() : value;
       return acc;
     }, {});
+
+    const normalizedForm = fields.reduce((acc, field) => {
+      const value = trimmedForm[field.name];
+      const normalizedValue =
+        typeof field.normalizeValue === "function"
+          ? field.normalizeValue(value, trimmedForm)
+          : value;
+      acc[field.name] = typeof normalizedValue === "string" ? normalizedValue.trim() : normalizedValue;
+      return acc;
+    }, {});
+
+    for (const field of fields) {
+      if (!isFieldVisible(field, normalizedForm)) {
+        continue;
+      }
+
+      if (!isFieldRequired(field, normalizedForm)) {
+        continue;
+      }
+
+      const value = normalizedForm[field.name];
+      if (value == null || String(value).trim() === "") {
+        setError(`${field.label} is required.`);
+        return;
+      }
+    }
+
+    const payloadEntries = fields
+      .filter((field) => !field.excludeFromPayload)
+      .map((field) => [field.name, normalizedForm[field.name]]);
 
     if (imageUploadEnabled) {
       const imageUrl = String(normalizedForm[imageFieldName] || "").trim();
@@ -196,7 +262,7 @@ export default function ResourceManager({
       const payload = imageUploadEnabled
         ? (() => {
             const data = new FormData();
-            Object.entries(normalizedForm).forEach(([key, value]) => {
+            payloadEntries.forEach(([key, value]) => {
               data.append(key, value == null ? "" : value);
             });
             if (imageFile) {
@@ -204,7 +270,7 @@ export default function ResourceManager({
             }
             return data;
           })()
-        : normalizedForm;
+        : Object.fromEntries(payloadEntries);
 
       if (editingId) {
         await updateItem(editingId, payload);
@@ -233,9 +299,10 @@ export default function ResourceManager({
         onSubmit={onSubmit}
         className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 md:grid-cols-2 md:p-5"
       >
-        {fields.map((field) => {
+        {visibleFields.map((field) => {
           const isFullWidth = Boolean(field.fullWidth) || field.type === "textarea";
           const colSpanClass = isFullWidth ? "md:col-span-2" : "";
+          const fieldRequired = isFieldRequired(field, form);
 
           if (field.type === "textarea") {
             return (
@@ -248,7 +315,7 @@ export default function ResourceManager({
                 value={form[field.name]}
                 onChange={onChange}
                 rows={field.rows || 3}
-                required={Boolean(field.required)}
+                required={fieldRequired}
                 minLength={field.minLength}
                 maxLength={field.maxLength}
                 placeholder={field.placeholder || field.label}
@@ -266,7 +333,7 @@ export default function ResourceManager({
                 name={field.name}
                 value={form[field.name]}
                 onChange={onChange}
-                required={Boolean(field.required)}
+                required={fieldRequired}
               >
                 <option value="">{field.placeholder || `Select ${field.label}`}</option>
                 {(field.options || []).map((option) => (
@@ -287,7 +354,7 @@ export default function ResourceManager({
               name={field.name}
               value={form[field.name]}
               onChange={onChange}
-              required={Boolean(field.required)}
+              required={fieldRequired}
               placeholder={field.placeholder || field.label}
               minLength={field.minLength}
               maxLength={field.maxLength}
@@ -386,7 +453,7 @@ export default function ResourceManager({
           <table className="min-w-full border-collapse text-sm">
             <thead className="sticky top-0 bg-slate-100/95 text-left text-gray-700 backdrop-blur">
               <tr>
-                {fields.map((field) => (
+                {tableFields.map((field) => (
                   <th key={field.name} className="px-3 py-2 font-semibold">
                     {field.label}
                   </th>
@@ -397,7 +464,7 @@ export default function ResourceManager({
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="border-t border-slate-200">
-                  {fields.map((field) => {
+                  {tableFields.map((field) => {
                     const value = item[field.name] || "";
                     if (imageUploadEnabled && field.name === imageFieldName) {
                       return (
@@ -453,7 +520,7 @@ export default function ResourceManager({
                 <tr>
                   <td
                     className="px-3 py-6"
-                    colSpan={fields.length + 1}
+                    colSpan={tableFields.length + 1}
                   >
                     <EmptyState
                       title="No entries found"
