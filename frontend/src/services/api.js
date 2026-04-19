@@ -7,6 +7,10 @@ const API_BASE_URL =
 const UPLOADS_BASE_URL =
   import.meta.env.VITE_UPLOADS_BASE_URL || "http://localhost:8000";
 
+export const MEMBERSHIP_TOKEN_KEY = "membership_token";
+export const MEMBERSHIP_REFRESH_TOKEN_KEY = "membership_refresh_token";
+export const MEMBERSHIP_USER_KEY = "membership_user";
+
 export const toAbsoluteUploadUrl = (url = "") => {
   if (!url) return "";
   if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) return url;
@@ -22,7 +26,7 @@ const multipartConfig = {
 };
 
 const membershipAuthConfig = (extraConfig = {}) => {
-  const membershipToken = localStorage.getItem("membership_token") || "";
+  const membershipToken = localStorage.getItem(MEMBERSHIP_TOKEN_KEY) || "";
   const headers = {
     ...(extraConfig.headers || {}),
     ...(membershipToken ? { Authorization: `Bearer ${membershipToken}` } : {}),
@@ -45,11 +49,108 @@ const putWithOptionalMultipart = (url, payload) =>
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("admin_token");
-  if (token) {
+  config.headers = config.headers || {};
+  if (token && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+const clearMembershipSessionStorage = () => {
+  localStorage.removeItem(MEMBERSHIP_TOKEN_KEY);
+  localStorage.removeItem(MEMBERSHIP_REFRESH_TOKEN_KEY);
+  localStorage.removeItem(MEMBERSHIP_USER_KEY);
+};
+
+const isMembershipProtectedRequest = (config) => {
+  const url = String(config?.url || "");
+  if (!url.includes("/membership-portal/")) {
+    return false;
+  }
+
+  return !url.includes("/membership-portal/token/refresh") && !url.includes("/membership-portal/logout");
+};
+
+const requestMembershipTokenRefresh = async () => {
+  const refreshToken = localStorage.getItem(MEMBERSHIP_REFRESH_TOKEN_KEY) || "";
+  if (!refreshToken) {
+    throw new Error("Membership refresh token not found.");
+  }
+
+  const response = await api.post(
+    "/membership-portal/token/refresh",
+    { refresh_token: refreshToken },
+    { _skipMembershipRefresh: true }
+  );
+
+  const nextAccessToken = String(response.data?.access_token || "");
+  const nextRefreshToken = String(response.data?.refresh_token || "");
+  if (!nextAccessToken || !nextRefreshToken) {
+    throw new Error("Membership token refresh response is incomplete.");
+  }
+
+  localStorage.setItem(MEMBERSHIP_TOKEN_KEY, nextAccessToken);
+  localStorage.setItem(MEMBERSHIP_REFRESH_TOKEN_KEY, nextRefreshToken);
+
+  const nextMember = response.data?.member;
+  if (nextMember && typeof nextMember === "object") {
+    localStorage.setItem(MEMBERSHIP_USER_KEY, JSON.stringify(nextMember));
+  }
+
+  return response.data;
+};
+
+let membershipRefreshPromise = null;
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config || {};
+
+    if (
+      originalRequest._skipMembershipRefresh ||
+      originalRequest._retry ||
+      error.response?.status !== 401 ||
+      !isMembershipProtectedRequest(originalRequest)
+    ) {
+      return Promise.reject(error);
+    }
+
+    const refreshToken = localStorage.getItem(MEMBERSHIP_REFRESH_TOKEN_KEY) || "";
+    if (!refreshToken) {
+      clearMembershipSessionStorage();
+      return Promise.reject(error);
+    }
+
+    try {
+      originalRequest._retry = true;
+
+      if (!membershipRefreshPromise) {
+        membershipRefreshPromise = requestMembershipTokenRefresh().finally(() => {
+          membershipRefreshPromise = null;
+        });
+      }
+
+      const refreshed = await membershipRefreshPromise;
+      const updatedAccessToken =
+        String(refreshed?.access_token || "") || localStorage.getItem(MEMBERSHIP_TOKEN_KEY) || "";
+
+      if (!updatedAccessToken) {
+        throw new Error("Unable to refresh membership access token.");
+      }
+
+      originalRequest.headers = {
+        ...(originalRequest.headers || {}),
+        Authorization: `Bearer ${updatedAccessToken}`,
+      };
+
+      return api.request(originalRequest);
+    } catch (refreshError) {
+      clearMembershipSessionStorage();
+      return Promise.reject(refreshError);
+    }
+  }
+);
 
 export const parseApiError = (error) => {
   if (error.response?.data?.detail) {
@@ -77,6 +178,15 @@ export const publicApi = {
   membershipRegister: (payload) => api.post("/register", payload),
   membershipLogin: (payload) => api.post("/login", payload),
   membershipForgotPassword: (payload) => api.post("/forgot-password", payload),
+  membershipResetPassword: (payload) => api.post("/membership-portal/reset-password", payload),
+  membershipRefresh: (payload) =>
+    api.post("/membership-portal/token/refresh", payload, { _skipMembershipRefresh: true }),
+  membershipLogout: () =>
+    api.post(
+      "/membership-portal/logout",
+      {},
+      membershipAuthConfig({ _skipMembershipRefresh: true })
+    ),
   getMembershipProfile: () => api.get("/membership-portal/profile", membershipAuthConfig()),
   getMembershipCpdHistory: () => api.get("/membership-portal/cpd-history", membershipAuthConfig()),
   downloadMembershipCertificate: () =>
@@ -128,7 +238,8 @@ export const adminApi = {
   },
   membership: {
     list: () => api.get("/membership"),
-    updateStatus: (id, status) => api.patch(`/membership/${id}/status`, { status }),
+    updateStatus: (id, status, reviewNotes = "") =>
+      api.patch(`/membership/${id}/status`, { status, review_notes: reviewNotes }),
     remove: (id) => api.delete(`/membership/${id}`),
   },
   imageAudit: {

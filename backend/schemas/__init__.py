@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
@@ -177,8 +177,13 @@ class MembershipCreate(BaseModel):
     name: str
     email: EmailStr
     phone: str = ""
+    mobile: str = ""
     organization: str = ""
     message: str = ""
+    existing_member: bool = False
+    membership_no: str = ""
+    membership_type: str = ""
+    interest_area: str = ""
 
     @field_validator("name")
     @classmethod
@@ -196,9 +201,36 @@ class MembershipCreate(BaseModel):
             raise ValueError("Invalid phone number format.")
         return cleaned
 
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, value: str) -> str:
+        cleaned = value.strip()
+        if cleaned and not PHONE_PATTERN.fullmatch(cleaned):
+            raise ValueError("Invalid mobile number format.")
+        return cleaned
+
     @field_validator("organization")
     @classmethod
     def validate_organization(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("membership_no")
+    @classmethod
+    def validate_membership_no(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("membership_type")
+    @classmethod
+    def validate_membership_type(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if normalized and normalized not in MEMBERSHIP_TYPES:
+            allowed = ", ".join(sorted(MEMBERSHIP_TYPES))
+            raise ValueError(f"Membership type must be one of: {allowed}.")
+        return normalized
+
+    @field_validator("interest_area")
+    @classmethod
+    def validate_interest_area(cls, value: str) -> str:
         return value.strip()
 
     @field_validator("message")
@@ -212,6 +244,7 @@ class MembershipCreate(BaseModel):
 
 class MembershipStatusUpdate(BaseModel):
     status: str
+    review_notes: str = ""
 
     @field_validator("status")
     @classmethod
@@ -222,14 +255,31 @@ class MembershipStatusUpdate(BaseModel):
             raise ValueError(f"Status must be one of: {allowed}.")
         return normalized
 
+    @field_validator("review_notes")
+    @classmethod
+    def validate_review_notes(cls, value: str) -> str:
+        cleaned = value.strip()
+        if len(cleaned) > 2000:
+            raise ValueError("Review notes must be 2000 characters or fewer.")
+        return cleaned
+
 
 class MembershipOut(BaseModel):
     id: int
     name: str
     email: EmailStr
     phone: str
+    mobile: str
     organization: str
     message: str
+    existing_member: bool
+    membership_no: str
+    membership_type: str
+    interest_area: str
+    review_notes: str
+    linked_member_id: Optional[int]
+    approved_by: str
+    approved_at: Optional[datetime]
     status: str
     created_at: datetime
 
@@ -327,8 +377,58 @@ class MembershipPortalForgotPassword(BaseModel):
         return cleaned
 
 
+class MembershipPortalForgotPasswordOut(BaseModel):
+    message: str
+    reset_token: str = ""
+    expires_in_minutes: int = 0
+
+
+class MembershipPortalResetPassword(BaseModel):
+    token: str
+    password: str
+    confirm_password: str
+
+    @field_validator("token")
+    @classmethod
+    def validate_token(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("Reset token is required.")
+        return cleaned
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not STRONG_PASSWORD_PATTERN.fullmatch(value):
+            raise ValueError(
+                "Password must be 8-64 chars and include uppercase, lowercase, number, and special character."
+            )
+        return value
+
+    @field_validator("confirm_password")
+    @classmethod
+    def validate_confirm_password(cls, value: str) -> str:
+        if not value:
+            raise ValueError("Confirm password is required.")
+        return value
+
+
+class MembershipPortalRefreshRequest(BaseModel):
+    refresh_token: str
+
+    @field_validator("refresh_token")
+    @classmethod
+    def validate_refresh_token(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("Refresh token is required.")
+        return cleaned
+
+
 class MembershipPortalAuthOut(BaseModel):
     access_token: str
+    refresh_token: str
+    access_expires_in: int
     token_type: str = "bearer"
     member: Dict[str, Union[str, int]]
 

@@ -142,7 +142,8 @@ export default function MembershipRegisterWizard() {
       await publicApi.membershipRegister(payload);
       setStatus({
         type: "success",
-        message: "Membership account created successfully. You can now sign in from the panel.",
+        message:
+          "Application submitted successfully. You can sign in after admin approval is completed.",
       });
       setForm(initialForm);
       setStep(1);
@@ -158,7 +159,7 @@ export default function MembershipRegisterWizard() {
       <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Apply Membership</p>
       <h3 className="mt-2 text-2xl font-semibold text-gray-900">Create Membership Account</h3>
       <p className="mt-1 text-sm text-gray-600">
-        Complete the guided registration to access institutional membership services.
+        Complete the guided application. Account access is enabled after admin review and approval.
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -296,7 +297,7 @@ export default function MembershipRegisterWizard() {
             </Button>
           ) : (
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating Account..." : "Create Account"}
+              {loading ? "Submitting Application..." : "Submit Application"}
             </Button>
           )}
         </div>

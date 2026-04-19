@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -30,6 +31,11 @@ class Member(Base):
     email: Mapped[str] = mapped_column(String(120), default="")
     mobile: Mapped[str] = mapped_column(String(30), default="")
     password_hash: Mapped[str] = mapped_column(String(255), default="")
+    failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    refresh_token_hash: Mapped[str] = mapped_column(String(255), default="")
+    refresh_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     membership_type: Mapped[str] = mapped_column(String(20), default="")
     interest_area: Mapped[str] = mapped_column(String(180), default="")
     legacy_image_url: Mapped[str] = mapped_column("image_url", String(255), nullable=False, default="")
@@ -131,7 +137,28 @@ class MembershipRequest(Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(120), nullable=False)
     phone: Mapped[str] = mapped_column(String(30), default="")
+    mobile: Mapped[str] = mapped_column(String(30), default="")
     organization: Mapped[str] = mapped_column(String(160), default="")
     message: Mapped[str] = mapped_column(Text, default="")
+    existing_member: Mapped[bool] = mapped_column(Boolean, default=False)
+    membership_no: Mapped[str] = mapped_column(String(80), default="")
+    membership_type: Mapped[str] = mapped_column(String(20), default="")
+    interest_area: Mapped[str] = mapped_column(String(180), default="")
+    password_hash: Mapped[str] = mapped_column(String(255), default="")
+    review_notes: Mapped[str] = mapped_column(Text, default="")
+    linked_member_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    approved_by: Mapped[str] = mapped_column(String(50), default="")
+    approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(String(30), default="new")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class MembershipPasswordResetToken(Base):
+    __tablename__ = "membership_password_reset_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    member_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

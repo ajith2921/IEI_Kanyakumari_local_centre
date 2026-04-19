@@ -145,6 +145,26 @@ def migrate_members_table() -> None:
         add_column_statements.append(
             "ALTER TABLE members ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT ''"
         )
+    if "failed_login_attempts" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE members ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0"
+        )
+    if "locked_until" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE members ADD COLUMN locked_until DATETIME"
+        )
+    if "last_login_at" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE members ADD COLUMN last_login_at DATETIME"
+        )
+    if "refresh_token_hash" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE members ADD COLUMN refresh_token_hash VARCHAR(255) NOT NULL DEFAULT ''"
+        )
+    if "refresh_token_expires_at" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE members ADD COLUMN refresh_token_expires_at DATETIME"
+        )
     if "membership_type" not in existing_columns:
         add_column_statements.append(
             "ALTER TABLE members ADD COLUMN membership_type VARCHAR(20) NOT NULL DEFAULT ''"
@@ -206,6 +226,8 @@ def migrate_members_table() -> None:
         connection.execute(text("UPDATE members SET email = '' WHERE email IS NULL"))
         connection.execute(text("UPDATE members SET mobile = '' WHERE mobile IS NULL"))
         connection.execute(text("UPDATE members SET password_hash = '' WHERE password_hash IS NULL"))
+        connection.execute(text("UPDATE members SET failed_login_attempts = 0 WHERE failed_login_attempts IS NULL"))
+        connection.execute(text("UPDATE members SET refresh_token_hash = '' WHERE refresh_token_hash IS NULL"))
         connection.execute(text("UPDATE members SET membership_type = '' WHERE membership_type IS NULL"))
         connection.execute(text("UPDATE members SET interest_area = '' WHERE interest_area IS NULL"))
         connection.execute(text("UPDATE members SET membership_id = '' WHERE membership_id IS NULL"))
@@ -213,6 +235,95 @@ def migrate_members_table() -> None:
 
 
 migrate_members_table()
+
+
+def migrate_membership_requests_table() -> None:
+    inspector = inspect(engine)
+    if "membership_requests" not in inspector.get_table_names():
+        return
+
+    existing_columns = {column["name"] for column in inspector.get_columns("membership_requests")}
+
+    add_column_statements: list[str] = []
+    if "mobile" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN mobile VARCHAR(30) NOT NULL DEFAULT ''"
+        )
+    if "existing_member" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN existing_member BOOLEAN NOT NULL DEFAULT 0"
+        )
+    if "membership_no" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN membership_no VARCHAR(80) NOT NULL DEFAULT ''"
+        )
+    if "membership_type" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN membership_type VARCHAR(20) NOT NULL DEFAULT ''"
+        )
+    if "interest_area" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN interest_area VARCHAR(180) NOT NULL DEFAULT ''"
+        )
+    if "password_hash" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT ''"
+        )
+    if "review_notes" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN review_notes TEXT NOT NULL DEFAULT ''"
+        )
+    if "linked_member_id" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN linked_member_id INTEGER"
+        )
+    if "approved_by" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN approved_by VARCHAR(50) NOT NULL DEFAULT ''"
+        )
+    if "approved_at" not in existing_columns:
+        add_column_statements.append(
+            "ALTER TABLE membership_requests ADD COLUMN approved_at DATETIME"
+        )
+
+    with engine.begin() as connection:
+        for statement in add_column_statements:
+            connection.execute(text(statement))
+
+        connection.execute(text("UPDATE membership_requests SET phone = '' WHERE phone IS NULL"))
+        connection.execute(text("UPDATE membership_requests SET mobile = '' WHERE mobile IS NULL"))
+        connection.execute(
+            text(
+                """
+                UPDATE membership_requests
+                SET mobile = CASE
+                    WHEN TRIM(COALESCE(mobile, '')) = '' THEN COALESCE(NULLIF(TRIM(phone), ''), '')
+                    ELSE mobile
+                END
+                """
+            )
+        )
+        connection.execute(text("UPDATE membership_requests SET existing_member = 0 WHERE existing_member IS NULL"))
+        connection.execute(text("UPDATE membership_requests SET membership_no = '' WHERE membership_no IS NULL"))
+        connection.execute(text("UPDATE membership_requests SET membership_type = '' WHERE membership_type IS NULL"))
+        connection.execute(
+            text(
+                """
+                UPDATE membership_requests
+                SET interest_area = CASE
+                    WHEN TRIM(COALESCE(interest_area, '')) = '' THEN COALESCE(NULLIF(TRIM(organization), ''), '')
+                    ELSE interest_area
+                END
+                """
+            )
+        )
+        connection.execute(text("UPDATE membership_requests SET password_hash = '' WHERE password_hash IS NULL"))
+        connection.execute(text("UPDATE membership_requests SET review_notes = '' WHERE review_notes IS NULL"))
+        connection.execute(text("UPDATE membership_requests SET approved_by = '' WHERE approved_by IS NULL"))
+        connection.execute(text("UPDATE membership_requests SET status = 'new' WHERE status IS NULL"))
+
+
+migrate_membership_requests_table()
 
 
 def seed_admin_user() -> None:

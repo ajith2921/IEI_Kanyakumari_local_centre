@@ -87,6 +87,10 @@ def get_current_membership_member(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        token_type: Optional[str] = payload.get("typ")
+        if token_type and token_type != "access":
+            raise credentials_exception
+
         subject: Optional[str] = payload.get("sub")
         if not subject or not subject.startswith("member:"):
             raise credentials_exception
