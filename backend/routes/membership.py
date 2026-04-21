@@ -1,7 +1,8 @@
 from datetime import datetime
+import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from auth import get_current_active_user
@@ -10,6 +11,21 @@ from models import Member, MembershipRequest, User
 from schemas import MembershipCreate, MembershipOut, MembershipStatusUpdate
 
 router = APIRouter(prefix="/membership", tags=["Membership"])
+AUDIT_LOGGER = logging.getLogger("uvicorn.error")
+
+
+def _client_ip(request: Request) -> str:
+    forwarded_for = (request.headers.get("x-forwarded-for") or "").strip()
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip() or "unknown"
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
+def _audit(event: str, **fields: object) -> None:
+    details = " ".join(f"{key}={value}" for key, value in sorted(fields.items()))
+    AUDIT_LOGGER.info("membership_event=%s %s", event, details)
 
 
 def _generate_membership_number(db: Session) -> str:
@@ -141,6 +157,7 @@ def list_membership_requests(
 @router.patch("/{request_id}/status", response_model=MembershipOut)
 def update_membership_status(
     request_id: int,
+    request: Request,
     payload: MembershipStatusUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
@@ -149,6 +166,7 @@ def update_membership_status(
     if not request_item:
         raise HTTPException(status_code=404, detail="Membership request not found")
 
+    previous_status = request_item.status
     request_item.review_notes = payload.review_notes
 
     if payload.status == "approved":
@@ -163,6 +181,18 @@ def update_membership_status(
 
     db.commit()
     db.refresh(request_item)
+
+    _audit(
+        "membership_request_status_updated",
+        request_ip=_client_ip(request),
+        admin_user=current_user.username,
+        request_id=request_item.id,
+        previous_status=previous_status,
+        new_status=request_item.status,
+        linked_member_id=request_item.linked_member_id,
+        note_length=len(payload.review_notes or ""),
+    )
+
     return request_item
 
 
@@ -173,8 +203,9 @@ def update_membership_status(
 )
 def delete_membership_request(
     request_id: int,
+    request: Request,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ) -> None:
     request_item = db.query(MembershipRequest).filter(MembershipRequest.id == request_id).first()
     if not request_item:
@@ -182,3 +213,10 @@ def delete_membership_request(
 
     db.delete(request_item)
     db.commit()
+
+    _audit(
+        "membership_request_deleted",
+        request_ip=_client_ip(request),
+        admin_user=current_user.username,
+        request_id=request_id,
+    )

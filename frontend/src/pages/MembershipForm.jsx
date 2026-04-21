@@ -14,24 +14,27 @@ const MembershipRegisterWizard = lazy(() =>
   import("../components/membership/MembershipRegisterWizard")
 );
 
-const actionTabs = [
-  { label: "Be a Member", href: "#be-member" },
-  { label: "Membership Info", href: "#membership-info" },
-  { label: "Academics / Certification", href: "#academics-certification" },
-  { label: "Network / Activities", href: "#network-activities" },
-  { label: "Sign In", href: "#auth-panel" },
+const membershipBenefits = [
+  "Chartered Engineer (CEng) pathway for design, report, and valuation certification authority",
+  "Professional Engineer (PEng) recognition for advanced competency and technical approvals",
+  "Independent consultancy practice readiness for civil, mechanical, and electrical domains",
+  "Support for government approvals, bank loan project validation, and insurance assessments",
+  "Engineering arbitration and technical expert-opinion role pathways",
+  "IEI-Springer journals, technical publications, reports, and library network access",
+  "National and international conferences, workshops, seminars, and CPD programs",
+  "Networking through 100+ centres, local chapter ecosystems, and ENGGtalks",
+  "Career Manager portfolio support, R&D grant pathways, and guest house concessions",
 ];
 
-const membershipBenefits = [
-  "Practice of Engineering Profession",
-  "Continuous Professional Development",
-  "Access to Technical Publications",
-  "Peer Networking",
-  "R&D Grants",
-  "Technical Events Participation",
-  "Knowledge Resources",
-  "Guest House Facility",
-  "Job Opportunities",
+const premiumPlanCoverage = [
+  "CEng-focused certification support for technical drawings, structural design, and project reports",
+  "PEng-level professional competency recognition for infrastructure and approval-centric work",
+  "Consultancy and valuation practice alignment for govt, bank, and insurance-facing engagements",
+  "Legal and technical authority pathways including arbitration and expert-opinion assignments",
+  "Deep resource stack: IEI-Springer journals, technical libraries, and premium reports",
+  "Continuous learning through CPD, workshops, seminars, and discounted conferences",
+  "Professional visibility via Career Manager, ENGGtalks, local centre networking, and R&D grants",
+  "Operational benefits including guest house concessions for travel and conference participation",
 ];
 
 const membershipTypes = [
@@ -62,6 +65,7 @@ const memberPortalActions = [
   "Download Membership Certificate",
   "View Membership Profile",
   "Access CPD and Event Passes",
+  "View CPD Analytics (Premium)",
 ];
 
 function BenefitItem({ text }) {
@@ -89,6 +93,7 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
   const [loadingAction, setLoadingAction] = useState("");
   const [profile, setProfile] = useState(null);
   const [cpdRecords, setCpdRecords] = useState([]);
+  const [cpdAnalytics, setCpdAnalytics] = useState(null);
 
   const runProfileFetch = async () => {
     setLoadingAction("profile");
@@ -115,6 +120,23 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
       const response = await publicApi.getMembershipCpdHistory();
       setCpdRecords(Array.isArray(response.data) ? response.data : []);
       setStatusMessage("CPD history loaded.");
+      setStatusType("success");
+    } catch (error) {
+      setStatusMessage(parseApiError(error));
+      setStatusType("error");
+    } finally {
+      setLoadingAction("");
+    }
+  };
+
+  const runCpdAnalyticsFetch = async () => {
+    setLoadingAction("analytics");
+    setStatusMessage("");
+    setStatusType("success");
+    try {
+      const response = await publicApi.getMembershipCpdAnalytics();
+      setCpdAnalytics(response.data || null);
+      setStatusMessage("Premium CPD analytics loaded.");
       setStatusType("success");
     } catch (error) {
       setStatusMessage(parseApiError(error));
@@ -203,6 +225,15 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
             >
               {loadingAction === "cpd" ? "Loading CPD History..." : memberPortalActions[2]}
             </Button>
+            <Button
+              onClick={runCpdAnalyticsFetch}
+              disabled={loadingAction === "analytics"}
+              variant="secondary"
+              size="sm"
+              className="w-full justify-start text-left"
+            >
+              {loadingAction === "analytics" ? "Loading CPD Analytics..." : memberPortalActions[3]}
+            </Button>
           </div>
           {profile && (
             <dl className="mt-4 space-y-1.5 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
@@ -236,6 +267,39 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
               </ul>
             </div>
           )}
+          {cpdAnalytics && (
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="eyebrow-chip mb-3">Premium CPD Analytics</p>
+              <div className="grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
+                <p>
+                  Total Activities: <span className="font-semibold text-gray-900">{cpdAnalytics.total_activities || 0}</span>
+                </p>
+                <p>
+                  Total Credit Hours: <span className="font-semibold text-gray-900">{cpdAnalytics.total_credit_hours || 0}</span>
+                </p>
+              </div>
+              {cpdAnalytics.recent_activity_title && (
+                <p className="mt-2 text-sm text-gray-600">
+                  Recent Activity: <span className="font-semibold text-gray-900">{cpdAnalytics.recent_activity_title}</span>
+                </p>
+              )}
+              {Array.isArray(cpdAnalytics.category_breakdown) && cpdAnalytics.category_breakdown.length > 0 && (
+                <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                  {cpdAnalytics.category_breakdown.map((item) => (
+                    <li
+                      key={item.category}
+                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2"
+                    >
+                      <span className="font-medium text-gray-800">{item.category}</span>
+                      <span className="text-xs text-gray-500">
+                        {item.activities} activity(ies) | {item.credit_hours} hrs
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           {statusMessage && (
             <p className={`mt-3 text-sm ${statusType === "error" ? "text-gray-500" : "text-[#3B82F6]"}`}>
               {statusMessage}
@@ -249,30 +313,9 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
 
 export default function MembershipForm() {
   const { isAuthenticated, member } = useMembershipSession();
-  const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="page-shell section-block">
-
-      {/* ── Tab Navigation ─────────────────────────────── */}
-      <div className="mb-8 overflow-x-auto">
-        <div className="inline-flex min-w-max rounded-xl border border-gray-200 bg-gray-50 p-1">
-          {actionTabs.map((tab, index) => (
-            <a
-              key={tab.label}
-              href={tab.href}
-              onClick={() => setActiveTab(index)}
-              className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 ${
-                activeTab === index
-                  ? "bg-gray-900 text-white shadow-sm"
-                  : "text-gray-500 hover:bg-white hover:text-gray-900"
-              }`}
-            >
-              {tab.label}
-            </a>
-          ))}
-        </div>
-      </div>
+    <section className="page-shell section-block pb-28 md:pb-20">
 
       <SectionHeader
         eyebrow="Membership Portal"
@@ -280,8 +323,34 @@ export default function MembershipForm() {
         description="Benefits of Corporate Membership"
       />
 
+      <div className="mb-8 grid gap-4 lg:grid-cols-2">
+        <Card className="border-gray-200 bg-white p-6" padded={false}>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">New Applicant</p>
+          <h3 className="mt-2 text-xl font-semibold text-gray-900">Start Membership Application</h3>
+          <p className="mt-2 text-sm text-gray-500">
+            Complete the guided membership wizard and submit your profile for admin approval.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button as="a" href="#apply-membership">Start Application</Button>
+            <Button as="a" href="#membership-info" variant="secondary">View Benefits</Button>
+          </div>
+        </Card>
+
+        <Card className="border-gray-200 bg-white p-6" padded={false}>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Existing Member</p>
+          <h3 className="mt-2 text-xl font-semibold text-gray-900">Sign In to Member Portal</h3>
+          <p className="mt-2 text-sm text-gray-500">
+            Access your profile, subscription, CPD analytics, and member-only actions.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button as="a" href="#auth-panel">Go to Sign In</Button>
+            <Button as="a" href="#network-activities" variant="secondary">Explore Programs</Button>
+          </div>
+        </Card>
+      </div>
+
       {/* ── Membership Gateway Banner ──────────────────── */}
-      <div id="be-member" className="mb-8 rounded-2xl border border-gray-200 bg-gray-50 p-8">
+      <div id="be-member" className="mb-8 rounded-2xl border border-gray-200 bg-gray-50 p-8 scroll-mt-28">
         <p className="eyebrow-chip mb-3">Institutional Membership</p>
         <h2 className="text-2xl font-semibold text-gray-900 md:text-3xl">
           Professional Membership Gateway
@@ -293,70 +362,143 @@ export default function MembershipForm() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr,0.85fr]">
-        <div className="space-y-6">
+        <div className="order-2 space-y-6 xl:order-1">
+
+          <section id="apply-membership" className="scroll-mt-28">
+            <Suspense fallback={<LoadingSpinner text="Loading registration module..." />}>
+              <MembershipRegisterWizard />
+            </Suspense>
+          </section>
 
           {/* Benefits */}
-          <Card as="section" id="membership-info" className="p-6" padded={false}>
+          <Card as="section" id="membership-info" className="p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Benefits of Corporate Membership</h3>
             <p className="mt-1.5 text-sm text-gray-500">
               Structured services supporting engineering practice, learning, and long-term career growth.
             </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {membershipBenefits.map((benefit) => (
-                <BenefitItem key={benefit} text={benefit} />
-              ))}
-            </div>
+            <details className="group mt-5">
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800">
+                <span>View complete benefit matrix</span>
+                <span className="text-xs text-gray-400 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <div className="mt-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {membershipBenefits.map((benefit) => (
+                    <BenefitItem key={benefit} text={benefit} />
+                  ))}
+                </div>
+                <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-sm font-semibold text-gray-900">Reality Check</p>
+                  <p className="mt-1.5 text-sm text-gray-500">
+                    Highest practical value is typically seen for Civil, Mechanical, and Electrical engineers
+                    pursuing consultancy-led, approval-heavy, or project-verification roles.
+                  </p>
+                </div>
+              </div>
+            </details>
+          </Card>
+
+          <Card as="section" className="p-6" padded={false}>
+            <h3 className="text-xl font-medium text-gray-900">Recommended Premium Plan Coverage</h3>
+            <p className="mt-1.5 text-sm text-gray-500">
+              Premium Chartered Professional is structured to satisfy the full professional-authority and
+              career-growth spectrum outlined for high-value engineering practice.
+            </p>
+            <details className="group mt-5">
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800">
+                <span>View premium entitlement coverage</span>
+                <span className="text-xs text-gray-400 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <ul className="mt-4 space-y-2 text-sm text-gray-600">
+                {premiumPlanCoverage.map((item) => (
+                  <li key={item} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </details>
           </Card>
 
           {/* Academics */}
-          <Card as="section" id="academics-certification" className="p-6" padded={false}>
+          <Card as="section" id="academics-certification" className="p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Academics / Certification</h3>
             <p className="mt-1.5 text-sm text-gray-500">
-              Access guided certification tracks, technical talks, and recognized learning opportunities
-              aligned with professional practice.
+              Certification-first pathways aligned with engineering authority, compliance-ready documentation,
+              and career-grade professional recognition.
+            </p>
+            <div className="mt-5 grid gap-4">
+              <article id="chartered-engineer" className="rounded-xl border border-gray-200 bg-gray-50 p-4 scroll-mt-28">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-400">Certification Track</p>
+                <p className="mt-1.5 text-base font-semibold text-gray-900">Chartered Engineer (CEng)</p>
+                <p className="mt-1.5 text-sm text-gray-500">
+                  Built for engineers targeting authority-backed technical design approvals, valuation reports,
+                  and project execution validation.
+                </p>
+              </article>
+
+              <article id="professional-engineer" className="rounded-xl border border-gray-200 bg-gray-50 p-4 scroll-mt-28">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-400">Professional Recognition</p>
+                <p className="mt-1.5 text-base font-semibold text-gray-900">Professional Engineer (PEng)</p>
+                <p className="mt-1.5 text-sm text-gray-500">
+                  Advanced competency route for high-stakes assignments in infrastructure, consultancy-led
+                  execution, and institutional review workflows.
+                </p>
+              </article>
+
+              <article id="section-ab" className="rounded-xl border border-gray-200 bg-gray-50 p-4 scroll-mt-28">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-400">Academic Services</p>
+                <p className="mt-1.5 text-base font-semibold text-gray-900">Section A & B Examination</p>
+                <p className="mt-1.5 text-sm text-gray-500">
+                  End-to-end support for form filling, admit cards, results tracking, and progression planning
+                  for aspiring members.
+                </p>
+              </article>
+            </div>
+          </Card>
+
+          <Card as="section" id="publications" className="p-6 scroll-mt-28" padded={false}>
+            <h3 className="text-xl font-medium text-gray-900">Journals / Publications</h3>
+            <p className="mt-1.5 text-sm text-gray-500">
+              Access IEI-focused technical publications, curated research streams, and submission opportunities
+              for professional and academic visibility.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-900">Structured Learning Pathways</p>
+                <p className="text-sm font-medium text-gray-900">Journal Access</p>
                 <p className="mt-1.5 text-sm text-gray-500">
-                  Curated orientation and progression resources for AMIE, MIE, and FIE candidates.
+                  Explore engineering journals, institutional papers, and technical references for domain practice.
                 </p>
               </div>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-900">Certification Support</p>
+                <p className="text-sm font-medium text-gray-900">Paper Submission Pathway</p>
                 <p className="mt-1.5 text-sm text-gray-500">
-                  Official chapter guidance for exams, documentation, and continuing education records.
+                  Prepare and publish original work through guided submission channels and editorial standards.
                 </p>
               </div>
             </div>
           </Card>
 
           {/* Network */}
-          <Card as="section" id="network-activities" className="p-6" padded={false}>
+          <Card as="section" id="network-activities" className="p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Network / Activities</h3>
             <p className="mt-1.5 text-sm text-gray-500">
-              Participate in chapter activities, peer exchanges, technical forums, and institutional events.
+              Participate in technical forums, chapter events, CPD sessions, and professional networking programs.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-900">Technical Chapters</p>
+                <p className="text-sm font-medium text-gray-900">Technical Chapters & ENGGtalks</p>
                 <p className="mt-1.5 text-sm text-gray-500">
                   Engage with focused engineering domains and collaborative chapter groups.
                 </p>
               </div>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-900">Professional Networking</p>
+                <p className="text-sm font-medium text-gray-900">CPD & Professional Networking</p>
                 <p className="mt-1.5 text-sm text-gray-500">
                   Connect with senior professionals, practitioners, and institutional mentors.
                 </p>
               </div>
             </div>
           </Card>
-
-          {/* Registration Wizard */}
-          <Suspense fallback={<LoadingSpinner text="Loading registration module..." />}>
-            <MembershipRegisterWizard />
-          </Suspense>
 
           {/* Membership Categories */}
           <Card as="section" className="p-6" padded={false}>
@@ -382,7 +524,7 @@ export default function MembershipForm() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+        <div className="order-1 space-y-4 xl:order-2 xl:sticky xl:top-24 xl:self-start">
           <Suspense fallback={<LoadingSpinner text="Loading member access panel..." />}>
             <MembershipAuthPanel />
           </Suspense>
@@ -400,6 +542,20 @@ export default function MembershipForm() {
             </p>
           </Card>
         </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-3 py-2.5 shadow-[0_-6px_22px_-14px_rgba(17,24,39,0.35)] backdrop-blur md:hidden">
+        <nav className="mx-auto grid max-w-6xl grid-cols-3 gap-2" aria-label="Membership quick actions">
+          <Button as="a" href="#apply-membership" className="!h-10 !px-2 !text-xs">
+            Apply
+          </Button>
+          <Button as="a" href="#auth-panel" variant="secondary" className="!h-10 !px-2 !text-xs">
+            Sign In
+          </Button>
+          <Button as="a" href="/" variant="secondary" className="!h-10 !px-2 !text-xs">
+            Main Site
+          </Button>
+        </nav>
       </div>
     </section>
   );

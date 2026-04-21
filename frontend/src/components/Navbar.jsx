@@ -187,7 +187,7 @@ export default function Navbar() {
           ))}
           <MoreDropdown />
           <div className="ml-2.5 flex h-11 items-center gap-2 border-l border-gray-200 pl-3">
-            <Button as={Link} to="/membership-form" size="sm">
+            <Button as={Link} to="/membership-form" target="_blank" rel="noopener noreferrer" size="sm">
               Membership
             </Button>
             <Button as={Link} to="/admin/login" variant="secondary" size="sm">
@@ -211,7 +211,13 @@ export default function Navbar() {
               <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
             ))}
             <div className="mt-4 grid gap-2.5">
-              <Button as={Link} to="/membership-form" onClick={() => setOpen(false)}>
+              <Button
+                as={Link}
+                to="/membership-form"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+              >
                 Membership
               </Button>
               <Button as={Link} to="/admin/login" onClick={() => setOpen(false)} variant="secondary">

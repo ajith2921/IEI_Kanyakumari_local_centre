@@ -56,6 +56,7 @@ export default function EventCard({ activity }) {
   const description = activity.description?.trim() || "Details will be updated soon.";
   const category = getCategory(description);
   const imageSrc = toAbsoluteUploadUrl(activity.image_url);
+  const venue = activity.venue?.trim() || "IEI Kanyakumari Local Centre";
   const eventDate = activity.event_date
     ? new Date(activity.event_date).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -80,10 +81,19 @@ export default function EventCard({ activity }) {
             {eventDate}
           </span>
         )}
+        <span className="absolute right-3 top-3 rounded-full border border-white/80 bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-gray-600 shadow-sm backdrop-blur">
+          {category}
+        </span>
       </div>
+
       <div className="space-y-2 p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400">Hosted by IEI KKLC</p>
         <h3 className="text-base font-semibold leading-snug text-gray-900">{title}</h3>
         <p className="line-clamp-3 text-sm leading-relaxed text-gray-500">{description}</p>
+        <p className="truncate pt-1 text-xs text-gray-400">{venue}</p>
+        <p className="pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
+          View Event Details →
+        </p>
       </div>
     </Card>
   );

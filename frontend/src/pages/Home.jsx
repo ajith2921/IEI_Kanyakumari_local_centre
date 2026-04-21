@@ -11,21 +11,63 @@ import Button from "../components/ui/Button";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi } from "../services/api";
 
-const shortcutCards = [
+const membershipServiceCards = [
   {
-    title: "Upcoming Events",
-    description: "Find lectures, workshops, and chapter activities.",
-    to: "/technical-activities",
+    title: "Become a Member",
+    description: "Start your IEI membership application and activate professional access.",
+    to: "/membership-form#be-member",
+    cta: "Know More",
   },
   {
-    title: "Member Directory",
-    description: "View office bearers and professional members.",
-    to: "/members",
+    title: "Chartered Engineer",
+    description: "Follow the CEng pathway for design, valuation, and project authority work.",
+    to: "/membership-form#chartered-engineer",
+    cta: "Apply Pathway",
   },
   {
-    title: "Download Center",
-    description: "Access forms, circulars, and publications.",
+    title: "Professional Engineer",
+    description: "Advance to PEng-grade recognition for high-responsibility engineering practice.",
+    to: "/membership-form#professional-engineer",
+    cta: "Explore Track",
+  },
+  {
+    title: "Section A & B Examination",
+    description: "Get exam-oriented support for forms, admit cards, and progression planning.",
+    to: "/membership-form#section-ab",
+    cta: "Exam Services",
+  },
+  {
+    title: "Journals & Publications",
+    description: "Browse IEI-oriented journals, publications, and knowledge resources.",
+    to: "/membership-form#publications",
+    cta: "View Resources",
+  },
+  {
+    title: "Events & CPD",
+    description: "Join seminars, workshops, and continuous professional development activities.",
+    to: "/membership-form#network-activities",
+    cta: "Join Programs",
+  },
+];
+
+const highlightPanels = [
+  {
+    title: "Career Manager Support",
+    detail:
+      "Build professional visibility through portfolio positioning, chapter networking, and mentorship channels.",
+    to: "/membership-form#network-activities",
+  },
+  {
+    title: "Downloads and Circulars",
+    detail:
+      "Get operational resources quickly including forms, policy notes, and chapter documentation.",
     to: "/links-downloads",
+  },
+  {
+    title: "Technical Activities Calendar",
+    detail:
+      "Track this month technical programs, event schedules, and community-led engineering sessions.",
+    to: "/technical-activities",
   },
 ];
 
@@ -92,10 +134,53 @@ export default function Home() {
     },
   ];
 
+  const isMembershipTarget = (to = "") => String(to).startsWith("/membership-form");
+
   return (
     <>
       {/* ── HERO ────────────────────────────────────────── */}
       <HeroSlider stats={heroStats} />
+
+      {/* ── KYM SERVICE DESK ─────────────────────────────── */}
+      <section className="border-b border-gray-200 bg-white">
+        <div className="page-shell py-10 sm:py-12">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow-chip mb-2">KYM Service Desk</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+                Membership and Certification Services
+              </h2>
+            </div>
+            <Button
+              as={Link}
+              to="/membership-form"
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="secondary"
+              size="sm"
+            >
+              Open Membership Portal
+            </Button>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {membershipServiceCards.map((item) => (
+              <Link
+                key={item.title}
+                to={item.to}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="focus-ring group flex h-full flex-col rounded-2xl border border-gray-200 bg-gray-50 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-white hover:shadow-sm"
+              >
+                <h3 className="text-base font-semibold leading-tight text-gray-900">{item.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-500">{item.description}</p>
+                <span className="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
+                  {item.cta}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── WELCOME — gray-50 bg ─────────────────────────── */}
       <section className="bg-gray-50/60">
@@ -117,7 +202,14 @@ export default function Home() {
                 We strive to build a strong engineering ecosystem through knowledge sharing,
                 professional networking, industry collaboration, and community service.
               </p>
-              <Button as={Link} to="/membership-form" variant="secondary" size="sm">
+              <Button
+                as={Link}
+                to="/membership-form"
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="secondary"
+                size="sm"
+              >
                 Become a Member
               </Button>
             </div>
@@ -160,22 +252,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── QUICK ACCESS — gray-50 bg ─────────────────────── */}
+      {/* ── HIGHLIGHTS — gray-50 bg ───────────────────────── */}
       <section className="bg-gray-50/60">
         <div className="page-shell py-20">
+          <SectionHeader
+            eyebrow="Highlights"
+            title="Member Privileges and Service Channels"
+            description="Key access points modeled around institutional workflows for growth, resources, and participation."
+            className="mb-8"
+          />
           <div className="grid gap-4 md:grid-cols-3">
-            {shortcutCards.map((item) => (
+            {highlightPanels.map((item) => (
               <Link
-                key={item.to}
+                key={item.title}
                 to={item.to}
+                target={isMembershipTarget(item.to) ? "_blank" : undefined}
+                rel={isMembershipTarget(item.to) ? "noopener noreferrer" : undefined}
                 className="focus-ring group flex h-full flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-md"
               >
                 <h2 className="text-base font-semibold text-gray-900">
                   {item.title}
                 </h2>
-                <p className="flex-1 text-sm leading-relaxed text-gray-500">{item.description}</p>
+                <p className="flex-1 text-sm leading-relaxed text-gray-500">{item.detail}</p>
                 <span className="text-xs font-medium text-gray-300 transition-colors duration-200 group-hover:text-gray-900">
-                  Explore →
+                  Learn More →
                 </span>
               </Link>
             ))}

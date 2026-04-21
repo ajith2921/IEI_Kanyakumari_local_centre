@@ -6,12 +6,18 @@ import Card from "./ui/Card";
 export default function MemberCard({ member }) {
   const name = member.name?.trim() || "Member";
   const position = member.position?.trim() || "Member";
+  const membershipId = member.membership_id ? String(member.membership_id).trim() : "";
+  const email = member.email?.trim() || "";
+  const phone = member.mobile?.trim() || member.phone?.trim() || "";
 
   return (
     <Link to="/members" className="focus-ring block h-full rounded-2xl">
       <Card interactive padded={false} className="group flex h-full flex-col overflow-hidden">
-        <div className="p-5 pb-0">
-          <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
+        <div className="relative p-5 pb-0">
+          <span className="absolute left-8 top-8 z-10 rounded-full border border-white/80 bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-gray-600 shadow-sm">
+            IEI Member
+          </span>
+          <div className="aspect-square w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
             <ImageMedia
               src={toAbsoluteUploadUrl(member.image_url)}
               alt={name}
@@ -40,11 +46,30 @@ export default function MemberCard({ member }) {
             />
           </div>
         </div>
+
         <div className="flex flex-1 flex-col p-5">
           <h3 className="text-base font-semibold leading-tight text-gray-900">{name}</h3>
-          <p className="mt-1 text-sm text-gray-400">{position}</p>
-          <p className="mt-auto pt-4 text-xs font-medium text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
-            View Committee →
+          <p className="mt-1 text-sm font-medium text-gray-500">{position}</p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {membershipId && (
+              <span className="rounded-full border border-cyan-100 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-cyan-700">
+                M.No. {membershipId}
+              </span>
+            )}
+            {phone && (
+              <span className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-500">
+                {phone}
+              </span>
+            )}
+          </div>
+
+          {email && (
+            <p className="mt-3 truncate text-xs text-gray-400">{email}</p>
+          )}
+
+          <p className="mt-auto pt-4 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
+            View Profile Directory →
           </p>
         </div>
       </Card>

@@ -7,6 +7,25 @@ from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 PHONE_PATTERN = re.compile(r"^[+]?[0-9\s()\-]{7,18}$")
 MEMBERSHIP_STATUSES = {"new", "reviewed", "approved", "rejected"}
 MEMBERSHIP_TYPES = {"AMIE", "MIE", "FIE"}
+BILLING_CYCLES = {"monthly", "yearly"}
+SUBSCRIPTION_LIFECYCLE_STATUSES = {
+    "pending",
+    "trialing",
+    "active",
+    "past_due",
+    "cancelled",
+    "expired",
+    "suspended",
+}
+INVOICE_STATUSES = {
+    "pending",
+    "paid",
+    "failed",
+    "cancelled",
+    "expired",
+    "refunded",
+    "past_due",
+}
 STRONG_PASSWORD_PATTERN = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,64}$")
 
 
@@ -455,3 +474,298 @@ class MembershipPortalCpdOut(BaseModel):
     status: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class MembershipPlanOut(BaseModel):
+    id: int
+    code: str
+    name: str
+    description: str
+    monthly_price_cents: int
+    yearly_price_cents: int
+    currency: str
+    is_active: bool
+    sort_order: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MembershipEntitlementOut(BaseModel):
+    key: str
+    label: str
+    is_enabled: bool
+    limit_value: Optional[int]
+
+
+class MembershipSubscriptionSelectIn(BaseModel):
+    plan_code: str
+    billing_cycle: str = "monthly"
+
+    @field_validator("plan_code")
+    @classmethod
+    def validate_plan_code(cls, value: str) -> str:
+        cleaned = value.strip().upper()
+        if not cleaned:
+            raise ValueError("Plan code is required.")
+        return cleaned
+
+    @field_validator("billing_cycle")
+    @classmethod
+    def validate_billing_cycle(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in BILLING_CYCLES:
+            allowed = ", ".join(sorted(BILLING_CYCLES))
+            raise ValueError(f"Billing cycle must be one of: {allowed}.")
+        return normalized
+
+
+class MembershipSubscriptionOut(BaseModel):
+    id: int
+    member_id: int
+    plan_code: str
+    plan_name: str
+    status: str
+    billing_cycle: str
+    current_period_start: Optional[datetime]
+    current_period_end: Optional[datetime]
+    cancel_at_period_end: bool
+    entitlements: list[MembershipEntitlementOut] = []
+
+
+class MembershipInvoiceOut(BaseModel):
+    id: int
+    invoice_number: str
+    amount_cents: int
+    currency: str
+    status: str
+    payment_reference: str
+    due_at: Optional[datetime]
+    paid_at: Optional[datetime]
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MembershipCheckoutSessionOut(BaseModel):
+    provider: str
+    checkout_reference: str
+    checkout_url: str
+    checkout_payload: Dict[str, Union[str, int, float, bool, None]] = {}
+    subscription: MembershipSubscriptionOut
+    invoice: MembershipInvoiceOut
+
+
+class MembershipPaymentWebhookIn(BaseModel):
+    provider: str = "sandbox"
+    event_id: str
+    event_type: str = "payment.updated"
+    invoice_number: str
+    status: str
+    payment_reference: str = ""
+    paid_at: Optional[datetime] = None
+
+    @field_validator("provider")
+    @classmethod
+    def validate_provider(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if not normalized:
+            raise ValueError("Provider is required.")
+        return normalized
+
+    @field_validator("event_id")
+    @classmethod
+    def validate_event_id(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("event_id is required.")
+        return cleaned
+
+    @field_validator("event_type")
+    @classmethod
+    def validate_event_type(cls, value: str) -> str:
+        cleaned = value.strip().lower()
+        if not cleaned:
+            raise ValueError("event_type is required.")
+        return cleaned
+
+    @field_validator("invoice_number")
+    @classmethod
+    def validate_invoice_number(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("invoice_number is required.")
+        return cleaned
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        cleaned = value.strip().lower()
+        if not cleaned:
+            raise ValueError("status is required.")
+        return cleaned
+
+
+class MembershipPaymentWebhookOut(BaseModel):
+    processed: bool
+    message: str
+    invoice_status: str = ""
+    subscription_status: str = ""
+
+
+class MembershipAdminSubscriptionOut(BaseModel):
+    id: int
+    member_id: int
+    member_name: str
+    member_email: str
+    member_membership_id: str
+    plan_code: str
+    plan_name: str
+    status: str
+    billing_cycle: str
+    current_period_start: Optional[datetime]
+    current_period_end: Optional[datetime]
+    cancel_at_period_end: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class MembershipAdminInvoiceOut(BaseModel):
+    id: int
+    invoice_number: str
+    member_id: int
+    member_name: str
+    member_email: str
+    member_membership_id: str
+    subscription_id: int
+    plan_code: str
+    plan_name: str
+    amount_cents: int
+    currency: str
+    status: str
+    payment_reference: str
+    due_at: Optional[datetime]
+    paid_at: Optional[datetime]
+    created_at: datetime
+
+
+class MembershipAdminSubscriptionStatusUpdateIn(BaseModel):
+    status: str
+    cancel_at_period_end: Optional[bool] = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in SUBSCRIPTION_LIFECYCLE_STATUSES:
+            allowed = ", ".join(sorted(SUBSCRIPTION_LIFECYCLE_STATUSES))
+            raise ValueError(f"Status must be one of: {allowed}.")
+        return normalized
+
+
+class MembershipAdminInvoiceStatusUpdateIn(BaseModel):
+    status: str
+    payment_reference: str = ""
+    paid_at: Optional[datetime] = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in INVOICE_STATUSES:
+            allowed = ", ".join(sorted(INVOICE_STATUSES))
+            raise ValueError(f"Status must be one of: {allowed}.")
+        return normalized
+
+    @field_validator("payment_reference")
+    @classmethod
+    def validate_payment_reference(cls, value: str) -> str:
+        return value.strip()
+
+
+class MembershipAdminSubscriptionRenewIn(BaseModel):
+    billing_cycle: str = ""
+    activate_now: bool = False
+
+    @field_validator("billing_cycle")
+    @classmethod
+    def validate_billing_cycle(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if not normalized:
+            return ""
+        if normalized not in BILLING_CYCLES:
+            allowed = ", ".join(sorted(BILLING_CYCLES))
+            raise ValueError(f"Billing cycle must be one of: {allowed}.")
+        return normalized
+
+
+class MembershipAdminRefundIn(BaseModel):
+    payment_reference: str = ""
+    reason: str = ""
+
+    @field_validator("payment_reference")
+    @classmethod
+    def validate_payment_reference(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, value: str) -> str:
+        cleaned = value.strip()
+        if len(cleaned) > 300:
+            raise ValueError("Reason must be 300 characters or fewer.")
+        return cleaned
+
+
+class MembershipAdminRenewOut(BaseModel):
+    subscription: MembershipAdminSubscriptionOut
+    invoice: MembershipAdminInvoiceOut
+    message: str
+
+
+class MembershipAdminRefundOut(BaseModel):
+    invoice: MembershipAdminInvoiceOut
+    subscription_status: str
+    message: str
+
+
+class MembershipAdminMetricsOut(BaseModel):
+    total_subscriptions: int
+    active_subscriptions: int
+    pending_subscriptions: int
+    suspended_subscriptions: int
+    cancelled_subscriptions: int
+    total_invoices: int
+    paid_invoices: int
+    pending_invoices: int
+    refunded_invoices: int
+    paid_revenue_cents: int
+    monthly_recurring_revenue_cents: int
+    yearly_recurring_revenue_cents: int
+
+
+class MembershipPaymentEventOut(BaseModel):
+    id: int
+    provider: str
+    event_id: str
+    event_type: str
+    invoice_id: Optional[int]
+    invoice_number: str
+    payment_reference: str
+    status: str
+    processed_at: datetime
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MembershipCpdCategoryStat(BaseModel):
+    category: str
+    activities: int
+    credit_hours: int
+
+
+class MembershipCpdAnalyticsOut(BaseModel):
+    total_activities: int
+    total_credit_hours: int
+    recent_activity_title: str = ""
+    category_breakdown: list[MembershipCpdCategoryStat] = []

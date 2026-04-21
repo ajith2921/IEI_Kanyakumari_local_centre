@@ -162,3 +162,94 @@ class MembershipPasswordResetToken(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class MembershipPlan(Base):
+    __tablename__ = "membership_plans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    code: Mapped[str] = mapped_column(String(40), unique=True, index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str] = mapped_column(Text, default="")
+    monthly_price_cents: Mapped[int] = mapped_column(Integer, default=0)
+    yearly_price_cents: Mapped[int] = mapped_column(Integer, default=0)
+    currency: Mapped[str] = mapped_column(String(10), default="INR")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class MembershipEntitlement(Base):
+    __tablename__ = "membership_entitlements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    plan_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    key: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    label: Mapped[str] = mapped_column(String(180), default="")
+    is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    limit_value: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class MembershipSubscription(Base):
+    __tablename__ = "membership_subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    member_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    plan_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="pending")
+    billing_cycle: Mapped[str] = mapped_column(String(20), default="monthly")
+    current_period_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    current_period_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    cancel_at_period_end: Mapped[bool] = mapped_column(Boolean, default=False)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class MembershipInvoice(Base):
+    __tablename__ = "membership_invoices"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    member_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    subscription_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    plan_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    invoice_number: Mapped[str] = mapped_column(String(80), unique=True, index=True, nullable=False)
+    amount_cents: Mapped[int] = mapped_column(Integer, default=0)
+    currency: Mapped[str] = mapped_column(String(10), default="INR")
+    status: Mapped[str] = mapped_column(String(30), default="pending")
+    due_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    payment_reference: Mapped[str] = mapped_column(String(120), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class MembershipUsageRecord(Base):
+    __tablename__ = "membership_usage_records"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    member_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    subscription_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    entitlement_key: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    usage_value: Mapped[int] = mapped_column(Integer, default=0)
+    period_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    period_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class MembershipPaymentEvent(Base):
+    __tablename__ = "membership_payment_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    event_key: Mapped[str] = mapped_column(String(160), unique=True, index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(40), default="")
+    event_id: Mapped[str] = mapped_column(String(120), default="")
+    event_type: Mapped[str] = mapped_column(String(80), default="")
+    invoice_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    invoice_number: Mapped[str] = mapped_column(String(80), default="")
+    payment_reference: Mapped[str] = mapped_column(String(120), default="")
+    status: Mapped[str] = mapped_column(String(40), default="")
+    processed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

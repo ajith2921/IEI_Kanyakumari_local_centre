@@ -162,6 +162,44 @@ export const parseApiError = (error) => {
   return error.message || "Unexpected error";
 };
 
+const buildPremiumEventParams = (filters = {}) => {
+  const params = {
+    limit: Number(filters?.limit) > 0 ? Number(filters.limit) : 80,
+  };
+
+  const provider = String(filters?.provider || "").trim();
+  const eventType = String(filters?.event_type || "").trim();
+  const status = String(filters?.status || "").trim();
+  const invoiceNumber = String(filters?.invoice_number || "").trim();
+  const subscriptionId = String(filters?.subscription_id || "").trim();
+  const processedFrom = String(filters?.processed_from || "").trim();
+  const processedTo = String(filters?.processed_to || "").trim();
+
+  if (provider) {
+    params.provider = provider;
+  }
+  if (eventType) {
+    params.event_type = eventType;
+  }
+  if (status) {
+    params.status = status;
+  }
+  if (invoiceNumber) {
+    params.invoice_number = invoiceNumber;
+  }
+  if (/^\d+$/.test(subscriptionId)) {
+    params.subscription_id = Number(subscriptionId);
+  }
+  if (processedFrom) {
+    params.processed_from = processedFrom;
+  }
+  if (processedTo) {
+    params.processed_to = processedTo;
+  }
+
+  return params;
+};
+
 export const authApi = {
   login: (payload) => api.post("/auth/login", payload),
 };
@@ -179,6 +217,7 @@ export const publicApi = {
   membershipLogin: (payload) => api.post("/login", payload),
   membershipForgotPassword: (payload) => api.post("/forgot-password", payload),
   membershipResetPassword: (payload) => api.post("/membership-portal/reset-password", payload),
+  getMembershipPremiumPlans: () => api.get("/membership-premium/plans"),
   membershipRefresh: (payload) =>
     api.post("/membership-portal/token/refresh", payload, { _skipMembershipRefresh: true }),
   membershipLogout: () =>
@@ -187,6 +226,16 @@ export const publicApi = {
       {},
       membershipAuthConfig({ _skipMembershipRefresh: true })
     ),
+  getMembershipSubscription: () =>
+    api.get("/membership-portal/subscription", membershipAuthConfig()),
+  selectMembershipSubscription: (payload) =>
+    api.post("/membership-portal/subscription/select", payload, membershipAuthConfig()),
+  startMembershipSubscriptionCheckout: (payload) =>
+    api.post("/membership-portal/subscription/checkout", payload, membershipAuthConfig()),
+  getMembershipSubscriptionInvoices: () =>
+    api.get("/membership-portal/subscription/invoices", membershipAuthConfig()),
+  getMembershipCpdAnalytics: () =>
+    api.get("/membership-portal/cpd-analytics", membershipAuthConfig()),
   getMembershipProfile: () => api.get("/membership-portal/profile", membershipAuthConfig()),
   getMembershipCpdHistory: () => api.get("/membership-portal/cpd-history", membershipAuthConfig()),
   downloadMembershipCertificate: () =>
@@ -241,6 +290,34 @@ export const adminApi = {
     updateStatus: (id, status, reviewNotes = "") =>
       api.patch(`/membership/${id}/status`, { status, review_notes: reviewNotes }),
     remove: (id) => api.delete(`/membership/${id}`),
+  },
+  premium: {
+    getMetrics: () => api.get("/membership-premium/admin/metrics"),
+    getEvents: (filters = {}) =>
+      api.get("/membership-premium/admin/events", {
+        params: buildPremiumEventParams(filters),
+      }),
+    exportEventsCsv: (filters = {}) =>
+      api.get("/membership-premium/admin/events/export", {
+        params: buildPremiumEventParams(filters),
+        responseType: "blob",
+      }),
+    listSubscriptions: (status = "") =>
+      api.get("/membership-premium/admin/subscriptions", {
+        params: status ? { status } : {},
+      }),
+    renewSubscription: (id, payload = {}) =>
+      api.post(`/membership-premium/admin/subscriptions/${id}/renew`, payload),
+    updateSubscriptionStatus: (id, payload) =>
+      api.patch(`/membership-premium/admin/subscriptions/${id}/status`, payload),
+    listInvoices: (status = "") =>
+      api.get("/membership-premium/admin/invoices", {
+        params: status ? { status } : {},
+      }),
+    refundInvoice: (id, payload = {}) =>
+      api.post(`/membership-premium/admin/invoices/${id}/refund`, payload),
+    updateInvoiceStatus: (id, payload) =>
+      api.patch(`/membership-premium/admin/invoices/${id}/status`, payload),
   },
   imageAudit: {
     list: () => api.get("/image-audit"),

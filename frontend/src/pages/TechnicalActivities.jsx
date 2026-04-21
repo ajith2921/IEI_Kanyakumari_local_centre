@@ -82,23 +82,47 @@ export default function TechnicalActivities() {
     return orderedSections;
   }, [conductedActivities]);
 
+  const totalActivities = data.length;
+  const totalUpcoming = upcomingActivities.length;
+  const totalConducted = conductedActivities.length;
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50/50">
       <main className="page-shell py-20">
 
         {/* ── Page header ────────────────────────────── */}
-        <header className="mb-14 border-b border-gray-100 pb-8">
-          <p className="eyebrow-chip mb-3">Knowledge Exchange · Professional Development · Innovation</p>
-          <h1 className="heading-h1 text-gray-900">Events & Technical Activities</h1>
-          <p className="mt-3 text-sm text-gray-400">IEI Kanyakumari Local Centre</p>
+        <header className="relative mb-14 overflow-hidden rounded-3xl border border-gray-200 bg-white p-7 shadow-sm sm:p-9">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.1),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.08),transparent_42%)]" />
+
+          <div className="relative">
+            <p className="eyebrow-chip mb-3">Knowledge Exchange · Professional Development · Innovation</p>
+            <h1 className="heading-h1 text-gray-900">Events & Technical Activities</h1>
+            <p className="mt-3 text-sm text-gray-500">IEI Kanyakumari Local Centre</p>
+
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-gray-400">Total Activities</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{loading ? "..." : totalActivities}</p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-gray-400">Upcoming</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{loading ? "..." : totalUpcoming}</p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-gray-400">Conducted</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{loading ? "..." : totalConducted}</p>
+              </div>
+            </div>
+          </div>
         </header>
 
         {/* ── Upcoming events (API) ───────────────────── */}
-        <section className="mb-20">
+        <section className="mb-20 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <SectionHeader
             eyebrow="Upcoming Events"
-            title="Upcoming Conference"
-            description="Upcoming conferences and events from the IEI KKLC team."
+            title="Upcoming Technical Programs"
+            description="Scheduled conferences, seminars, and chapter-led activities from IEI KKLC."
+            className="mb-8"
           />
           {loading && <SkeletonGrid count={1} />}
           {error && <ErrorState message={error} onRetry={reload} />}
@@ -119,11 +143,12 @@ export default function TechnicalActivities() {
         </section>
 
         {/* ── Conducted activities (API) ──────────────── */}
-        <section className="mb-20">
+        <section className="mb-20 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <SectionHeader
             eyebrow="Conducted by IEI KKLC"
             title="Major Activities Conducted"
-            description="These are activities conducted by the IEI KKLC team."
+            description="Archived technical activities grouped by program type and chapter focus area."
+            className="mb-8"
           />
           {!loading && !error && (
             groupedActivities.length > 0 ? (

@@ -8,6 +8,7 @@ from . import (
     image_audit,
     members,
     membership,
+    membership_premium,
     membership_portal,
     newsletters,
 )
@@ -23,5 +24,6 @@ __all__ = [
     "downloads",
     "contact",
     "membership",
+    "membership_premium",
     "membership_portal",
 ]

@@ -9,7 +9,7 @@ from sqlalchemy import inspect, text
 
 from auth import hash_password, verify_password
 from database import Base, SessionLocal, engine
-from models import Member, User
+from models import Member, MembershipEntitlement, MembershipPlan, User
 from routes import (
     activities,
     auth,
@@ -20,6 +20,7 @@ from routes import (
     image_audit,
     members,
     membership,
+    membership_premium,
     membership_portal,
     newsletters,
 )
@@ -109,6 +110,121 @@ PROGRAM_DIVISIONS = [
     {
         "division": "Applied Science / Management",
         "members": ["Dr. N. Azhagesan"],
+    },
+]
+
+DEFAULT_MEMBERSHIP_PLANS = [
+    {
+        "code": "STANDARD",
+        "name": "Standard",
+        "description": "Core membership portal access with profile, CPD history, and certificate download.",
+        "monthly_price_cents": 0,
+        "yearly_price_cents": 0,
+        "currency": "INR",
+        "sort_order": 1,
+        "entitlements": [
+            {"key": "profile.basic", "label": "Basic Member Profile", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.history", "label": "CPD History", "is_enabled": True, "limit_value": None},
+            {"key": "certificate.download", "label": "Certificate Download", "is_enabled": True, "limit_value": None},
+        ],
+    },
+    {
+        "code": "PREMIUM_INDIVIDUAL",
+        "name": "Premium Individual",
+        "description": (
+            "Starter premium pathway with advanced CPD analytics, priority event access, "
+            "professional networking, and technical resource upgrades."
+        ),
+        "monthly_price_cents": 14900,
+        "yearly_price_cents": 149000,
+        "currency": "INR",
+        "sort_order": 2,
+        "entitlements": [
+            {"key": "profile.basic", "label": "Basic Member Profile", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.history", "label": "CPD History", "is_enabled": True, "limit_value": None},
+            {"key": "certificate.download", "label": "Certificate Download", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.analytics", "label": "Advanced CPD Analytics", "is_enabled": True, "limit_value": None},
+            {"key": "events.priority", "label": "Priority Event Enrollment", "is_enabled": True, "limit_value": None},
+            {"key": "resources.premium", "label": "Premium Resource Library", "is_enabled": True, "limit_value": None},
+            {"key": "resources.iei_springer", "label": "IEI-Springer Journal Access", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.programs", "label": "Continuous Professional Development Programs", "is_enabled": True, "limit_value": None},
+            {"key": "networking.enggtalks", "label": "ENGGtalks Networking Access", "is_enabled": True, "limit_value": None},
+        ],
+    },
+    {
+        "code": "PREMIUM_CHARTERED_PRO",
+        "name": "Premium Chartered Professional",
+        "description": (
+            "High-value plan for Civil/Mechanical/Electrical engineers pursuing Chartered Engineer (CEng), "
+            "Professional Engineer (PEng), consultancy practice, legal technical authority roles, "
+            "and approval-driven project work."
+        ),
+        "monthly_price_cents": 29900,
+        "yearly_price_cents": 299000,
+        "currency": "INR",
+        "sort_order": 3,
+        "entitlements": [
+            {"key": "profile.basic", "label": "Basic Member Profile", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.history", "label": "CPD History", "is_enabled": True, "limit_value": None},
+            {"key": "certificate.download", "label": "Certificate Download", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.analytics", "label": "Advanced CPD Analytics", "is_enabled": True, "limit_value": None},
+            {"key": "certification.ceng", "label": "Chartered Engineer (CEng) Pathway", "is_enabled": True, "limit_value": None},
+            {"key": "certification.peng", "label": "Professional Engineer (PEng) Recognition Pathway", "is_enabled": True, "limit_value": None},
+            {"key": "authority.design_certification", "label": "Authority for Drawings, Designs, and Technical Report Certification", "is_enabled": True, "limit_value": None},
+            {"key": "authority.gov_bank_insurance", "label": "Support for Government, Bank, and Insurance Approval Workflows", "is_enabled": True, "limit_value": None},
+            {"key": "practice.consultancy", "label": "Independent Consultancy and Valuation Practice Support", "is_enabled": True, "limit_value": None},
+            {"key": "authority.arbitration", "label": "Engineering Arbitration Role Eligibility Support", "is_enabled": True, "limit_value": None},
+            {"key": "authority.expert_opinion", "label": "Technical Expert Opinion Role Support", "is_enabled": True, "limit_value": None},
+            {"key": "resources.iei_springer", "label": "IEI-Springer Journal Access", "is_enabled": True, "limit_value": None},
+            {"key": "resources.premium", "label": "Premium Technical Publication and Report Access", "is_enabled": True, "limit_value": None},
+            {"key": "resources.library_network", "label": "IEI Library Network Access", "is_enabled": True, "limit_value": None},
+            {"key": "events.priority", "label": "Priority Event Enrollment", "is_enabled": True, "limit_value": None},
+            {"key": "events.conference_discount", "label": "Conference and Workshop Discount", "is_enabled": True, "limit_value": 20},
+            {"key": "cpd.programs", "label": "Continuous Professional Development Programs", "is_enabled": True, "limit_value": None},
+            {"key": "networking.local_centres", "label": "Local Centre and National Chapter Networking", "is_enabled": True, "limit_value": None},
+            {"key": "networking.enggtalks", "label": "ENGGtalks Networking Access", "is_enabled": True, "limit_value": None},
+            {"key": "career.manager", "label": "Career Manager Portfolio and Skill Tracking", "is_enabled": True, "limit_value": None},
+            {"key": "rnd.grants", "label": "R&D Grant and Project Support Eligibility", "is_enabled": True, "limit_value": None},
+            {"key": "hospitality.guest_house", "label": "IEI Guest House Access at Concessional Rates", "is_enabled": True, "limit_value": None},
+        ],
+    },
+    {
+        "code": "PREMIUM_INSTITUTIONAL",
+        "name": "Premium Institutional",
+        "description": (
+            "Institutional premium plan combining Chartered Professional benefits with consolidated billing, "
+            "team CPD governance, and multi-seat capability."
+        ),
+        "monthly_price_cents": 49900,
+        "yearly_price_cents": 499000,
+        "currency": "INR",
+        "sort_order": 4,
+        "entitlements": [
+            {"key": "profile.basic", "label": "Basic Member Profile", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.history", "label": "CPD History", "is_enabled": True, "limit_value": None},
+            {"key": "certificate.download", "label": "Certificate Download", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.analytics", "label": "Advanced CPD Analytics", "is_enabled": True, "limit_value": None},
+            {"key": "certification.ceng", "label": "Chartered Engineer (CEng) Pathway", "is_enabled": True, "limit_value": None},
+            {"key": "certification.peng", "label": "Professional Engineer (PEng) Recognition Pathway", "is_enabled": True, "limit_value": None},
+            {"key": "authority.design_certification", "label": "Authority for Drawings, Designs, and Technical Report Certification", "is_enabled": True, "limit_value": None},
+            {"key": "authority.gov_bank_insurance", "label": "Support for Government, Bank, and Insurance Approval Workflows", "is_enabled": True, "limit_value": None},
+            {"key": "practice.consultancy", "label": "Independent Consultancy and Valuation Practice Support", "is_enabled": True, "limit_value": None},
+            {"key": "authority.arbitration", "label": "Engineering Arbitration Role Eligibility Support", "is_enabled": True, "limit_value": None},
+            {"key": "authority.expert_opinion", "label": "Technical Expert Opinion Role Support", "is_enabled": True, "limit_value": None},
+            {"key": "events.priority", "label": "Priority Event Enrollment", "is_enabled": True, "limit_value": None},
+            {"key": "events.conference_discount", "label": "Conference and Workshop Discount", "is_enabled": True, "limit_value": 20},
+            {"key": "resources.premium", "label": "Premium Resource Library", "is_enabled": True, "limit_value": None},
+            {"key": "resources.iei_springer", "label": "IEI-Springer Journal Access", "is_enabled": True, "limit_value": None},
+            {"key": "resources.library_network", "label": "IEI Library Network Access", "is_enabled": True, "limit_value": None},
+            {"key": "cpd.programs", "label": "Continuous Professional Development Programs", "is_enabled": True, "limit_value": None},
+            {"key": "networking.local_centres", "label": "Local Centre and National Chapter Networking", "is_enabled": True, "limit_value": None},
+            {"key": "networking.enggtalks", "label": "ENGGtalks Networking Access", "is_enabled": True, "limit_value": None},
+            {"key": "career.manager", "label": "Career Manager Portfolio and Skill Tracking", "is_enabled": True, "limit_value": None},
+            {"key": "rnd.grants", "label": "R&D Grant and Project Support Eligibility", "is_enabled": True, "limit_value": None},
+            {"key": "hospitality.guest_house", "label": "IEI Guest House Access at Concessional Rates", "is_enabled": True, "limit_value": None},
+            {"key": "billing.team", "label": "Consolidated Team Billing", "is_enabled": True, "limit_value": None},
+            {"key": "team.seats", "label": "Team Seat Allocation", "is_enabled": True, "limit_value": 30},
+        ],
     },
 ]
 
@@ -442,8 +558,81 @@ def seed_members_from_program_data() -> None:
         db.close()
 
 
+def seed_membership_plans() -> None:
+    if not _env_flag("AUTO_SEED_MEMBERSHIP_PLANS", "true"):
+        return
+
+    db = SessionLocal()
+    try:
+        existing_plans = {
+            plan.code.upper(): plan
+            for plan in db.query(MembershipPlan).all()
+        }
+        changed = False
+
+        for item in DEFAULT_MEMBERSHIP_PLANS:
+            code = item["code"].upper()
+            plan = existing_plans.get(code)
+
+            if not plan:
+                plan = MembershipPlan(
+                    code=code,
+                    name=item["name"],
+                    description=item["description"],
+                    monthly_price_cents=item["monthly_price_cents"],
+                    yearly_price_cents=item["yearly_price_cents"],
+                    currency=item["currency"],
+                    is_active=True,
+                    sort_order=item["sort_order"],
+                )
+                db.add(plan)
+                db.flush()
+                existing_plans[code] = plan
+                changed = True
+            else:
+                plan.name = item["name"]
+                plan.description = item["description"]
+                plan.monthly_price_cents = item["monthly_price_cents"]
+                plan.yearly_price_cents = item["yearly_price_cents"]
+                plan.currency = item["currency"]
+                plan.sort_order = item["sort_order"]
+                plan.is_active = True
+
+            entitlement_rows = {
+                row.key: row
+                for row in db.query(MembershipEntitlement)
+                .filter(MembershipEntitlement.plan_id == plan.id)
+                .all()
+            }
+
+            for entitlement in item["entitlements"]:
+                key = entitlement["key"]
+                row = entitlement_rows.get(key)
+                if not row:
+                    db.add(
+                        MembershipEntitlement(
+                            plan_id=plan.id,
+                            key=key,
+                            label=entitlement["label"],
+                            is_enabled=bool(entitlement["is_enabled"]),
+                            limit_value=entitlement["limit_value"],
+                        )
+                    )
+                    changed = True
+                else:
+                    row.label = entitlement["label"]
+                    row.is_enabled = bool(entitlement["is_enabled"])
+                    row.limit_value = entitlement["limit_value"]
+
+        if changed:
+            db.commit()
+    finally:
+        db.close()
+
+
 seed_admin_user()
 seed_members_from_program_data()
+seed_membership_plans()
 
 upload_dir = Path(__file__).resolve().parent / "uploads"
 upload_dir.mkdir(parents=True, exist_ok=True)
@@ -461,6 +650,7 @@ app.include_router(downloads.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
 app.include_router(membership.router, prefix="/api")
 app.include_router(membership_portal.router, prefix="/api")
+app.include_router(membership_premium.router, prefix="/api")
 
 
 @app.get("/api/health")

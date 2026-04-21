@@ -4,19 +4,19 @@ import Button from "./ui/Button";
 
 const slides = [
   {
-    title: "A Professional Home for Engineers in Kanyakumari",
+    title: "Engineering Excellence Since 1920",
     subtitle:
-      "Access events, resources, publications, and membership services in one clear platform.",
+      "Where engineers belong, collaborate, and grow through certification, learning, and chapter networks.",
   },
   {
-    title: "Learn, Participate, and Contribute",
+    title: "India's Professional Voice of Engineering",
     subtitle:
-      "Explore technical activities and chapter initiatives designed for practicing engineers and students.",
+      "Stay connected with technical programs, chapter leadership, and institutional engineering services.",
   },
   {
-    title: "Stay Connected With Institutional Updates",
+    title: "Empowering Engineers, Building the Nation",
     subtitle:
-      "View newsletters, member updates, and official downloads without friction.",
+      "Participate in events, publications, CPD, and high-value membership pathways for career progression.",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function HeroSlider({ stats = defaultStats }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button as={Link} to="/membership-form">
+              <Button as={Link} to="/membership-form" target="_blank" rel="noopener noreferrer">
                 Apply for Membership
               </Button>
               <Button as={Link} to="/technical-activities" variant="secondary">
@@ -98,20 +98,29 @@ export default function HeroSlider({ stats = defaultStats }) {
             </div>
           </div>
 
-          {/* Right: Quick actions card */}
+          {/* Right: Membership + notices card */}
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="eyebrow-chip mb-5">Quick Access</p>
+            <p className="eyebrow-chip mb-5">Membership Service Hub</p>
             <div className="grid gap-2.5">
               {[
-                { to: "/technical-activities", title: "View Events", hint: "Workshops and lectures" },
-                { to: "/members", title: "Check Members", hint: "Leadership and office bearers" },
-                { to: "/links-downloads", title: "Download Resources", hint: "Official documents" },
-                { to: "/contact", title: "Contact Organization", hint: "Send your query" },
-                { to: "/membership-form", title: "Apply Membership", hint: "Submit application" },
+                { to: "/membership-form#be-member", title: "Become a Member", hint: "Apply to IEI membership" },
+                {
+                  to: "/membership-form#chartered-engineer",
+                  title: "Chartered Engineer (CEng)",
+                  hint: "Technical authority pathway",
+                },
+                {
+                  to: "/membership-form#professional-engineer",
+                  title: "Professional Engineer (PEng)",
+                  hint: "Advanced competency recognition",
+                },
+                { to: "/membership-form#section-ab", title: "Section A & B", hint: "Exam and progression services" },
               ].map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="focus-ring group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3.5 transition-all duration-200 hover:border-gray-200 hover:bg-white hover:shadow-sm"
                 >
                   <div>
@@ -127,6 +136,15 @@ export default function HeroSlider({ stats = defaultStats }) {
                   </svg>
                 </Link>
               ))}
+            </div>
+
+            <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Important Updates</p>
+              <ul className="mt-2 space-y-2 text-sm text-gray-600">
+                <li className="rounded-lg border border-gray-200 bg-white px-3 py-2">KYM compliance support is available through the membership desk.</li>
+                <li className="rounded-lg border border-gray-200 bg-white px-3 py-2">Premium analytics and CPD visibility are available for authenticated members.</li>
+                <li className="rounded-lg border border-gray-200 bg-white px-3 py-2">Use the events panel for monthly seminars, workshops, and chapter programs.</li>
+              </ul>
             </div>
           </div>
 

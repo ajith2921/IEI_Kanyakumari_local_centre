@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import MembershipNavbar from "./components/membership/MembershipNavbar";
 import Home from "./pages/Home";
 import Conference from "./pages/Conference";
 import MembersList from "./pages/MembersList";
@@ -24,11 +25,22 @@ import AdminFacilities from "./admin/AdminFacilities";
 import AdminDownloads from "./admin/AdminDownloads";
 import AdminMessages from "./admin/AdminMessages";
 import AdminMembershipRequests from "./admin/AdminMembershipRequests";
+import AdminPremiumSubscriptions from "./admin/AdminPremiumSubscriptions";
 
 function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Navbar />
+      <main id="main-content">{children}</main>
+      <Footer />
+    </div>
+  );
+}
+
+function MembershipLayout({ children }) {
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+      <MembershipNavbar />
       <main id="main-content">{children}</main>
       <Footer />
     </div>
@@ -115,9 +127,9 @@ export default function App() {
       <Route
         path="/membership-form"
         element={
-          <PublicLayout>
+          <MembershipLayout>
             <MembershipForm />
-          </PublicLayout>
+          </MembershipLayout>
         }
       />
 
@@ -139,6 +151,7 @@ export default function App() {
         <Route path="downloads" element={<AdminDownloads />} />
         <Route path="messages" element={<AdminMessages />} />
         <Route path="memberships" element={<AdminMembershipRequests />} />
+        <Route path="premium" element={<AdminPremiumSubscriptions />} />
       </Route>
 
       <Route path="/admin/*" element={<Navigate to="/admin" replace />} />

@@ -160,7 +160,7 @@ export default function MembershipAuthPanel() {
 
   if (isAuthenticated) {
     return (
-      <Card as="aside" id="auth-panel" className="p-5 md:p-6" padded={false}>
+      <Card as="aside" id="auth-panel" className="scroll-mt-28 p-5 md:p-6" padded={false}>
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Member Access</p>
         <h3 className="mt-2 text-xl font-medium text-gray-900">Welcome Back</h3>
         <p className="mt-1 text-sm text-gray-600">You are signed in to the membership portal.</p>
@@ -205,7 +205,7 @@ export default function MembershipAuthPanel() {
   }
 
   return (
-    <Card as="aside" id="auth-panel" className="p-5 md:p-6" padded={false}>
+    <Card as="aside" id="auth-panel" className="scroll-mt-28 p-5 md:p-6" padded={false}>
       <p className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Member Access</p>
       <h3 className="mt-2 text-xl font-medium text-gray-900">Portal Sign In</h3>
       <p className="mt-1 text-sm text-gray-600">

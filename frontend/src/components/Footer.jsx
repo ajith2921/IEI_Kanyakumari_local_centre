@@ -3,6 +3,27 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer className="border-t border-gray-100 bg-white">
+      <div className="border-b border-gray-200 bg-gray-50">
+        <div className="page-shell grid gap-3 py-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Institution</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">Since 1920</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Local Centre</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">Established 2025</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Service Tracks</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">CEng / PEng / CPD</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Member Access</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">Portal and Resources</p>
+          </div>
+        </div>
+      </div>
+
       <div className="page-shell grid gap-10 py-16 md:grid-cols-4">
 
         {/* Brand */}
@@ -35,7 +56,11 @@ export default function Footer() {
         <div>
           <p className="eyebrow-chip mb-5">Services</p>
           <div className="grid gap-3 text-sm text-gray-400">
-            <Link to="/membership-form" className="transition-colors duration-200 hover:text-gray-900">Membership</Link>
+            <Link to="/membership-form" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Membership</Link>
+            <Link to="/membership-form#chartered-engineer" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Chartered Engineer</Link>
+            <Link to="/membership-form#professional-engineer" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Professional Engineer</Link>
+            <Link to="/membership-form#section-ab" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Section A & B</Link>
+            <Link to="/membership-form#publications" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Publications</Link>
             <Link to="/newsletter" className="transition-colors duration-200 hover:text-gray-900">Newsletter</Link>
             <Link to="/links-downloads" className="transition-colors duration-200 hover:text-gray-900">Downloads</Link>
             <Link to="/facilities" className="transition-colors duration-200 hover:text-gray-900">Facilities</Link>
