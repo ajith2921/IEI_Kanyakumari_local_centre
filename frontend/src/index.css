@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -17,6 +18,15 @@
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.04);
   --shadow-md: 0 4px 16px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.05);
+
+  /* IEI Brand Tokens */
+  --iei-navy: #1c2647;
+  --iei-top: #3D689C;
+  --iei-gold: #f4c430;
+  --iei-green: #009368;
+  --iei-maroon: #800000;
+  --iei-stats: #394d93;
+  --iei-dark-card: #0c3c53;
 }
 
 html,
@@ -62,6 +72,39 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(10px);
 }
 
+.membership-premium-shell {
+  background:
+    radial-gradient(circle at 5% 0%,  rgb(11 58 103 / 0.18), transparent 40%),
+    radial-gradient(circle at 95% 10%, rgb(244 196 48  / 0.14), transparent 34%),
+    radial-gradient(circle at 50% 80%, rgb(11 58 103 / 0.07), transparent 55%),
+    linear-gradient(180deg, #eef4ff 0%, #f7faff 28%, #ffffff 55%, #ffffff 100%);
+}
+
+.premium-panel {
+  border: 1px solid #d4dff0;
+  background: linear-gradient(160deg, #ffffff 0%, #f7fbff 60%, #f2f7ff 100%);
+  box-shadow: 0 8px 28px -18px rgb(11 58 103 / 0.38), 0 1px 4px -1px rgb(11 58 103 / 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.premium-panel:hover {
+  box-shadow: 0 14px 38px -20px rgb(11 58 103 / 0.52), 0 2px 6px -1px rgb(11 58 103 / 0.08);
+}
+
+.premium-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgb(244 196 48 / 0.4);
+  background: rgb(244 196 48 / 0.12);
+  padding: 0.2rem 0.55rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0b3a67;
+}
+
 .section-block {
   @apply py-20;
 }
@@ -96,6 +139,44 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   line-height: 1.04;
   letter-spacing: -0.035em;
+}
+
+/* IEI Gothic Title */
+.iei-gothic-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--iei-navy);
+}
+
+/* IEI Stats Band */
+.iei-stats-band {
+  background-color: var(--iei-stats);
+  color: white;
+}
+
+.iei-stats-band .iei-stat-number {
+  color: var(--iei-gold);
+  font-weight: 700;
+}
+
+/* IEI Join Band */
+.iei-join-band {
+  background-color: var(--iei-green);
+}
+
+/* IEI Dark Card */
+.iei-dark-card {
+  background-color: var(--iei-dark-card);
+  color: white;
+}
+
+.iei-dark-card .iei-card-title {
+  color: white;
+}
+
+.iei-maroon {
+  color: var(--iei-maroon);
 }
 
 .heading-h2 {

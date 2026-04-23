@@ -168,7 +168,17 @@ export default function MembershipDashboardCard() {
         <p className="text-sm text-gray-600">Sign in to view your profile and CPD summary.</p>
       ) : (
         <>
-          {loading && <p className="text-sm text-gray-600">Loading member summary...</p>}
+          {loading && (
+            <div className="space-y-3">
+              <div className="skeleton h-4 w-3/4 rounded-md" />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="skeleton h-14 rounded-xl" />
+                <div className="skeleton h-14 rounded-xl" />
+                <div className="skeleton h-14 rounded-xl" />
+                <div className="skeleton h-14 rounded-xl" />
+              </div>
+            </div>
+          )}
           {!loading && error && <p className="text-sm text-gray-500">{error}</p>}
           {!loading && !error && message && <p className="text-sm text-[#3B82F6]">{message}</p>}
 
@@ -244,16 +254,21 @@ export default function MembershipDashboardCard() {
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
                       Active Plan Entitlements
                     </p>
-                    <ul className="mt-1 space-y-1 text-xs text-gray-600">
+                    <div className="mt-2 flex flex-wrap gap-1.5">
                       {activeEntitlements.slice(0, 10).map((label) => (
-                        <li key={label}>- {label}</li>
+                        <span
+                          key={label}
+                          className="inline-flex rounded-full border border-[#d3deeb] bg-[#f0f6ff] px-2 py-0.5 text-[11px] font-semibold text-[#0b3a67]"
+                        >
+                          {label}
+                        </span>
                       ))}
-                    </ul>
-                    {activeEntitlements.length > 10 && (
-                      <p className="mt-1 text-xs text-gray-400">
-                        +{activeEntitlements.length - 10} more entitlements
-                      </p>
-                    )}
+                      {activeEntitlements.length > 10 && (
+                        <span className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
+                          +{activeEntitlements.length - 10} more
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -287,20 +302,20 @@ export default function MembershipDashboardCard() {
                             <Button
                               type="button"
                               size="sm"
-                              variant="secondary"
                               disabled={Boolean(actionLoading)}
                               onClick={() => startCheckout(plan.code, "monthly")}
+                              className="!bg-[#0b3a67] !text-white hover:!bg-[#082947]"
                             >
                               {isMonthlyLoading ? "Starting..." : "Checkout Monthly"}
                             </Button>
                             <Button
                               type="button"
                               size="sm"
-                              variant="secondary"
                               disabled={Boolean(actionLoading)}
                               onClick={() => startCheckout(plan.code, "yearly")}
+                              className="!border-[#f4c430]/60 !bg-[#f4c430] !text-[#0b3a67] hover:!bg-[#ffd34d]"
                             >
-                              {isYearlyLoading ? "Starting..." : "Checkout Yearly"}
+                              {isYearlyLoading ? "Starting..." : "Checkout Yearly ✦"}
                             </Button>
                           </div>
                         </article>

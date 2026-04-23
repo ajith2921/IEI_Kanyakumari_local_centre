@@ -76,21 +76,157 @@ const memberPortalActions = [
   "View CPD Analytics (Premium)",
 ];
 
+function formatCurrency(amountCents, currency = "INR") {
+  const amount = Number(amountCents || 0) / 100;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: currency || "INR",
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function getAnnualSavings(monthlyCents, yearlyCents) {
+  const monthly = Number(monthlyCents || 0);
+  const yearly = Number(yearlyCents || 0);
+  if (monthly <= 0 || yearly <= 0) {
+    return { amountCents: 0, percent: 0 };
+  }
+
+  const annualMonthlyCost = monthly * 12;
+  if (yearly >= annualMonthlyCost) {
+    return { amountCents: 0, percent: 0 };
+  }
+
+  const amountCents = annualMonthlyCost - yearly;
+  const percent = Math.round((amountCents / annualMonthlyCost) * 100);
+  return { amountCents, percent };
+}
+
+function PremiumPlansShowcase({ plans = [], loading = false, isAuthenticated = false }) {
+  const premiumPlans = Array.isArray(plans)
+    ? plans.filter((plan) => String(plan?.code || "").toUpperCase().startsWith("PREMIUM"))
+    : [];
+
+  const bestValuePlanCode = premiumPlans.reduce(
+    (best, plan) => {
+      const savings = getAnnualSavings(plan.monthly_price_cents, plan.yearly_price_cents);
+      if (savings.percent > best.percent) {
+        return { code: plan.code, percent: savings.percent };
+      }
+      return best;
+    },
+    { code: "", percent: 0 }
+  ).code;
+
+  return (
+    <section className="mb-8 overflow-hidden rounded-3xl border border-[#0b3a67]/20 bg-[linear-gradient(145deg,#0c3f71_0%,#0f4c86_55%,#1f6bae_100%)] p-6 text-white shadow-[0_22px_55px_-34px_rgba(11,58,103,0.9)]">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="premium-chip !border-[#f4c430]/60 !bg-[#f4c430]/18 !text-[#f4c430]">Premium Plan Comparison</p>
+          <h3 className="mt-3 text-2xl font-semibold text-white md:text-3xl">Choose Your Premium Track</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#d8e8fb] md:text-base">
+            Compare monthly and yearly plans, unlock certified professional workflows, and
+            activate premium membership services with a guided checkout path.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.11em] text-[#f4c430]">Checkout Policy</p>
+          <p className="mt-1 text-sm text-[#e8f2ff]">
+            Premium access activates after verified payment confirmation.
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="h-44 rounded-2xl border border-white/20 bg-white/10" />
+          <div className="h-44 rounded-2xl border border-white/20 bg-white/10" />
+        </div>
+      ) : premiumPlans.length === 0 ? (
+        <div className="mt-5 rounded-2xl border border-white/20 bg-white/10 px-5 py-6">
+          <p className="text-sm text-[#e5f0ff]">
+            Premium plans are being refreshed. Please check back shortly or contact the chapter office.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          {premiumPlans.map((plan) => {
+            const savings = getAnnualSavings(plan.monthly_price_cents, plan.yearly_price_cents);
+            const hasSavings = savings.percent > 0;
+            const isBestValue = bestValuePlanCode && bestValuePlanCode === plan.code;
+
+            return (
+              <article
+                key={plan.id || plan.code || plan.name}
+                className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-lg font-semibold text-white">{plan.name || plan.code || "Premium Plan"}</p>
+                  {isBestValue && (
+                    <span className="rounded-full border border-[#f4c430]/55 bg-[#f4c430]/18 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.08em] text-[#f4c430]">
+                      Best Value
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-1.5 text-sm text-[#d5e5fb]">{plan.description || "Premium membership access."}</p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2.5">
+                    <p className="text-xs uppercase tracking-[0.11em] text-[#c4d9f1]">Monthly</p>
+                    <p className="mt-1 text-base font-semibold text-white">
+                      {formatCurrency(plan.monthly_price_cents, plan.currency)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2.5">
+                    <p className="text-xs uppercase tracking-[0.11em] text-[#c4d9f1]">Yearly</p>
+                    <p className="mt-1 text-base font-semibold text-white">
+                      {formatCurrency(plan.yearly_price_cents, plan.currency)}
+                    </p>
+                  </div>
+                </div>
+
+                {hasSavings && (
+                  <p className="mt-3 text-sm font-semibold text-[#f4c430]">
+                    Save {savings.percent}% yearly ({formatCurrency(savings.amountCents, plan.currency)})
+                  </p>
+                )}
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    as="a"
+                    href="#auth-panel"
+                    className="!bg-[#f4c430] !text-[#0b3a67] hover:!bg-[#ffd34d]"
+                  >
+                    {isAuthenticated ? "Open Member Checkout" : "Sign In To Checkout"}
+                  </Button>
+                  <Button
+                    as="a"
+                    href="#membership-info"
+                    variant="secondary"
+                    className="!border-white/35 !bg-white/10 !text-white hover:!bg-white/20"
+                  >
+                    View Entitlements
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function BenefitItem({ text }) {
   return (
-    <div className="flex items-start rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
-      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-500">
+    <div className="flex items-start rounded-xl border border-[#d3deeb] bg-[#f5f9ff] px-3 py-2.5 transition-shadow hover:shadow-[0_4px_12px_-6px_rgba(11,58,103,0.18)]">
+      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#0b3a67]/10 text-[#0b3a67]">
         <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-          <path
-            d="M5 10.5L8.2 13.5L15 6.5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <path d="M5 10.5L8.2 13.5L15 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
-      <p className="ml-3 text-sm font-medium text-gray-600">{text}</p>
+      <p className="ml-3 text-sm font-medium text-gray-700">{text}</p>
     </div>
   );
 }
@@ -323,6 +459,7 @@ export default function MembershipForm() {
   const { isAuthenticated, member } = useMembershipSession();
   const activities = useFetchList(publicApi.getActivities);
   const newsletters = useFetchList(publicApi.getNewsletters);
+  const premiumPlans = useFetchList(publicApi.getMembershipPremiumPlans);
   const metrics = {
     serviceCount: 6,
     activityCount: activities.data.length,
@@ -330,7 +467,7 @@ export default function MembershipForm() {
   };
 
   return (
-    <section className="page-shell section-block pb-28 md:pb-20">
+    <section className="page-shell membership-premium-shell section-block pb-28 md:pb-20">
 
       <div className="mb-8 space-y-5">
         <MembershipHeroCampaign />
@@ -350,39 +487,66 @@ export default function MembershipForm() {
         description="Benefits of Corporate Membership"
       />
 
+      <PremiumPlansShowcase
+        plans={premiumPlans.data}
+        loading={premiumPlans.loading}
+        isAuthenticated={isAuthenticated}
+      />
+
       <div className="mb-8 grid gap-4 lg:grid-cols-2">
-        <Card className="border-gray-200 bg-white p-6" padded={false}>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">New Applicant</p>
-          <h3 className="mt-2 text-xl font-semibold text-gray-900">Start Membership Application</h3>
-          <p className="mt-2 text-sm text-gray-500">
+        <Card className="premium-panel p-6" padded={false}>
+          <p className="premium-chip">New Applicant</p>
+          <h3 className="mt-2 text-xl font-semibold text-[#123252]">Start Membership Application</h3>
+          <p className="mt-2 text-sm text-[#577089]">
             Complete the guided membership wizard and submit your profile for admin approval.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button as="a" href="#apply-membership">Start Application</Button>
-            <Button as="a" href="#membership-info" variant="secondary">View Benefits</Button>
+            <Button as="a" href="#apply-membership" className="!bg-[#0b3a67] hover:!bg-[#082947]">
+              Start Application
+            </Button>
+            <Button
+              as="a"
+              href="#membership-info"
+              variant="secondary"
+              className="!border-[#c5d3e5] !text-[#0b3a67] hover:!bg-[#f2f7ff]"
+            >
+              View Benefits
+            </Button>
           </div>
         </Card>
 
-        <Card className="border-gray-200 bg-white p-6" padded={false}>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Existing Member</p>
-          <h3 className="mt-2 text-xl font-semibold text-gray-900">Sign In to Member Portal</h3>
-          <p className="mt-2 text-sm text-gray-500">
+        <Card className="premium-panel p-6" padded={false}>
+          <p className="premium-chip">Existing Member</p>
+          <h3 className="mt-2 text-xl font-semibold text-[#123252]">Sign In to Member Portal</h3>
+          <p className="mt-2 text-sm text-[#577089]">
             Access your profile, subscription, CPD analytics, and member-only actions.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button as="a" href="#auth-panel">Go to Sign In</Button>
-            <Button as="a" href="#network-activities" variant="secondary">Explore Programs</Button>
+            <Button as="a" href="#auth-panel" className="!bg-[#0b3a67] hover:!bg-[#082947]">
+              Go to Sign In
+            </Button>
+            <Button
+              as="a"
+              href="#network-activities"
+              variant="secondary"
+              className="!border-[#c5d3e5] !text-[#0b3a67] hover:!bg-[#f2f7ff]"
+            >
+              Explore Programs
+            </Button>
           </div>
         </Card>
       </div>
 
       {/* ── Membership Gateway Banner ──────────────────── */}
-      <div id="be-member" className="mb-8 rounded-2xl border border-gray-200 bg-gray-50 p-8 scroll-mt-28">
-        <p className="eyebrow-chip mb-3">Institutional Membership</p>
-        <h2 className="text-2xl font-semibold text-gray-900 md:text-3xl">
+      <div
+        id="be-member"
+        className="mb-8 overflow-hidden rounded-3xl border border-[#0b3a67]/20 bg-[linear-gradient(135deg,#0b3a67_0%,#124a83_63%,#1a5f9f_100%)] p-8 text-white scroll-mt-28"
+      >
+        <p className="premium-chip !border-[#f4c430]/60 !bg-[#f4c430]/20 !text-[#f4c430]">Institutional Membership</p>
+        <h2 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
           Professional Membership Gateway
         </h2>
-        <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-500">
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#d8e6f7]">
           Join a structured engineering community with standards-based professional development,
           technical resources, certification pathways, and chapter-level collaboration.
         </p>
@@ -398,15 +562,15 @@ export default function MembershipForm() {
           </section>
 
           {/* Benefits */}
-          <Card as="section" id="membership-info" className="p-6 scroll-mt-28" padded={false}>
+          <Card as="section" id="membership-info" className="premium-panel p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Benefits of Corporate Membership</h3>
             <p className="mt-1.5 text-sm text-gray-500">
               Structured services supporting engineering practice, learning, and long-term career growth.
             </p>
             <details className="group mt-5">
-              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800">
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-xl border border-[#d3deeb] bg-[#f5f9ff] px-4 py-3 text-sm font-semibold text-[#17406b]">
                 <span>View complete benefit matrix</span>
-                <span className="text-xs text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                <span className="text-xs text-[#7d94ad] transition-transform group-open:rotate-180">▼</span>
               </summary>
               <div className="mt-4">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -414,9 +578,9 @@ export default function MembershipForm() {
                     <BenefitItem key={benefit} text={benefit} />
                   ))}
                 </div>
-                <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
-                  <p className="text-sm font-semibold text-gray-900">Reality Check</p>
-                  <p className="mt-1.5 text-sm text-gray-500">
+                <div className="mt-5 rounded-xl border border-[#d3deeb] bg-[#f5f9ff] p-4">
+                  <p className="text-sm font-semibold text-[#123252]">Reality Check</p>
+                  <p className="mt-1.5 text-sm text-[#5a738d]">
                     Highest practical value is typically seen for Civil, Mechanical, and Electrical engineers
                     pursuing consultancy-led, approval-heavy, or project-verification roles.
                   </p>
@@ -425,29 +589,47 @@ export default function MembershipForm() {
             </details>
           </Card>
 
-          <Card as="section" className="p-6" padded={false}>
-            <h3 className="text-xl font-medium text-gray-900">Recommended Premium Plan Coverage</h3>
-            <p className="mt-1.5 text-sm text-gray-500">
+          <Card
+            as="section"
+            className="overflow-hidden border border-[#0b3a67]/25 bg-[linear-gradient(140deg,#0b3a67_0%,#0f4479_58%,#175994_100%)] p-6 text-white"
+            padded={false}
+          >
+            <p className="premium-chip !border-[#f4c430]/60 !bg-[#f4c430]/20 !text-[#f4c430]">Premium Focus</p>
+            <h3 className="mt-3 text-xl font-medium text-white">Recommended Premium Plan Coverage</h3>
+            <p className="mt-1.5 text-sm text-[#d7e6f8]">
               Premium Chartered Professional is structured to satisfy the full professional-authority and
               career-growth spectrum outlined for high-value engineering practice.
             </p>
             <details className="group mt-5">
-              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800">
+              <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-xl border border-[#f4c430]/35 bg-[#0a3a66]/45 px-4 py-3 text-sm font-semibold text-[#f8fbff]">
                 <span>View premium entitlement coverage</span>
-                <span className="text-xs text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                <span className="text-xs text-[#c1d8f2] transition-transform group-open:rotate-180">▼</span>
               </summary>
-              <ul className="mt-4 space-y-2 text-sm text-gray-600">
+              <ul className="mt-4 space-y-2 text-sm text-[#e9f2ff]">
                 {premiumPlanCoverage.map((item) => (
-                  <li key={item} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <li key={item} className="rounded-lg border border-white/20 bg-white/10 px-3 py-2">
                     {item}
                   </li>
                 ))}
               </ul>
             </details>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Button as="a" href="#auth-panel" className="!bg-[#f4c430] !text-[#0b3a67] hover:!bg-[#ffd34d]">
+                Activate Premium Access
+              </Button>
+              <Button
+                as={Link}
+                to="/membership/events-cpd"
+                variant="secondary"
+                className="!border-white/35 !bg-white/10 !text-white hover:!bg-white/20"
+              >
+                View CPD Programs
+              </Button>
+            </div>
           </Card>
 
           {/* Academics */}
-          <Card as="section" id="academics-certification" className="p-6 scroll-mt-28" padded={false}>
+          <Card as="section" id="academics-certification" className="premium-panel p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Academics / Certification</h3>
             <p className="mt-1.5 text-sm text-gray-500">
               Certification-first pathways aligned with engineering authority, compliance-ready documentation,
@@ -483,7 +665,7 @@ export default function MembershipForm() {
             </div>
           </Card>
 
-          <Card as="section" id="publications" className="p-6 scroll-mt-28" padded={false}>
+          <Card as="section" id="publications" className="premium-panel p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Journals / Publications</h3>
             <p className="mt-1.5 text-sm text-gray-500">
               Access IEI-focused technical publications, curated research streams, and submission opportunities
@@ -506,7 +688,7 @@ export default function MembershipForm() {
           </Card>
 
           {/* Network */}
-          <Card as="section" id="network-activities" className="p-6 scroll-mt-28" padded={false}>
+          <Card as="section" id="network-activities" className="premium-panel p-6 scroll-mt-28" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Network / Activities</h3>
             <p className="mt-1.5 text-sm text-gray-500">
               Participate in technical forums, chapter events, CPD sessions, and professional networking programs.
@@ -528,7 +710,7 @@ export default function MembershipForm() {
           </Card>
 
           {/* Membership Categories */}
-          <Card as="section" className="p-6" padded={false}>
+          <Card as="section" className="premium-panel p-6" padded={false}>
             <h3 className="text-xl font-medium text-gray-900">Membership Categories</h3>
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {membershipTypes.map((item) => (
@@ -571,15 +753,15 @@ export default function MembershipForm() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-3 py-2.5 shadow-[0_-6px_22px_-14px_rgba(17,24,39,0.35)] backdrop-blur md:hidden">
-        <nav className="mx-auto grid max-w-6xl grid-cols-3 gap-2" aria-label="Membership quick actions">
-          <Button as="a" href="#apply-membership" className="!h-10 !px-2 !text-xs">
+      <div className="fixed inset-x-0 bottom-0 z-40 overflow-x-hidden border-t border-gray-200 bg-white/95 px-2 py-2.5 shadow-[0_-6px_22px_-14px_rgba(17,24,39,0.35)] backdrop-blur md:hidden">
+        <nav className="mx-auto grid w-full max-w-md grid-cols-3 gap-2" aria-label="Membership quick actions">
+          <Button as="a" href="#apply-membership" className="min-w-0 !h-10 !px-2 !text-xs">
             Apply
           </Button>
-          <Button as="a" href="#auth-panel" variant="secondary" className="!h-10 !px-2 !text-xs">
+          <Button as="a" href="#auth-panel" variant="secondary" className="min-w-0 !h-10 !px-2 !text-xs">
             Sign In
           </Button>
-          <Button as="a" href="/" variant="secondary" className="!h-10 !px-2 !text-xs">
+          <Button as="a" href="/" variant="secondary" className="min-w-0 !h-10 !px-2 !text-xs">
             Main Site
           </Button>
         </nav>

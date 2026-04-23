@@ -95,6 +95,14 @@ const navItems = [
   },
 ];
 
+const socialLinks = [
+  { href: "https://twitter.com", icon: <IconX />, title: "X" },
+  { href: "https://facebook.com", icon: <IconFacebook />, title: "Facebook" },
+  { href: "https://youtube.com", icon: <IconYouTube />, title: "YouTube" },
+  { href: "https://linkedin.com", icon: <IconLinkedIn />, title: "LinkedIn" },
+  { href: "https://instagram.com", icon: <IconInstagram />, title: "Instagram" },
+];
+
 /* ─── Social icons ──────────────────────────────────────────── */
 function IconX() {
   return (
@@ -160,8 +168,9 @@ const inactiveNavCls =
 function DropdownItem({ to, label, onClick }) {
   if (!to) {
     return (
-      <span className="block cursor-not-allowed whitespace-nowrap px-4 py-2 text-[13px] font-medium text-gray-400 select-none">
-        {label} <span className="text-[11px]">(Coming Soon)</span>
+      <span className="flex cursor-not-allowed items-center justify-between whitespace-nowrap px-4 py-2 text-[13px] font-medium text-gray-400 select-none">
+        <span>{label}</span>
+        <span className="ml-3 rounded-full border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-gray-400">Planned</span>
       </span>
     );
   }
@@ -261,19 +270,29 @@ function MobileDropdownItem({ item, onClose }) {
       {open && (
         <div className="bg-white border-t border-gray-200">
           {item.dropdown.map((d) => (
-            <NavLink
-              key={d.to}
-              to={d.to}
-              onClick={() => { setOpen(false); onClose(); }}
-              className={({ isActive }) =>
-                `block px-8 py-2.5 text-[13px] ${isActive
-                  ? "bg-[#0b3a67] font-semibold text-white"
-                  : "text-[#1a1a1a] hover:bg-[#0b3a67] hover:text-white"
-                }`
-              }
-            >
-              {d.label}
-            </NavLink>
+            d.to ? (
+              <NavLink
+                key={d.label}
+                to={d.to}
+                onClick={() => { setOpen(false); onClose(); }}
+                className={({ isActive }) =>
+                  `block px-8 py-2.5 text-[13px] ${isActive
+                    ? "bg-[#0b3a67] font-semibold text-white"
+                    : "text-[#1a1a1a] hover:bg-[#0b3a67] hover:text-white"
+                  }`
+                }
+              >
+                {d.label}
+              </NavLink>
+            ) : (
+              <span
+                key={d.label}
+                className="flex cursor-not-allowed items-center justify-between px-8 py-2.5 text-[13px] font-medium text-gray-400"
+              >
+                <span>{d.label}</span>
+                <span className="rounded-full border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-gray-400">Planned</span>
+              </span>
+            )
           ))}
         </div>
       )}
@@ -296,37 +315,32 @@ export default function MembershipNavbar() {
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="sticky top-0 z-50 w-full overflow-x-hidden">
 
       {/* ══ TOP UTILITY BAR ════════════════════════════════════ */}
-      <div style={{ background: "#0b3a67" }} className="w-full">
-        <div className="mx-auto flex max-w-[1280px] items-center px-4 py-1.5">
+      <div style={{ background: "#0b3a67" }} className="w-full overflow-hidden">
+        <div className="mx-auto flex max-w-[1280px] items-center overflow-hidden px-2 py-1.5 sm:px-4">
 
-          {/* Spacer — logo now lives in the nav bar and overlaps upward */}
+          {/* Spacer */}
           <div className="mr-auto" />
 
-          {/* Right: Contact Us + socials + LOGIN */}
-          <div className="flex items-center gap-3">
+          {/* Right: Contact Us + socials + LOGIN — all flex-shrink-0 so no item forces overflow */}
+          <div className="ml-auto flex min-w-0 shrink items-center gap-1.5 overflow-hidden sm:gap-2">
             {/* Contact Us */}
             <a
               href="/contact"
-              className="inline-flex items-center gap-1.5 border border-[#f4c430] px-2.5 py-0.5 text-[11px] font-semibold text-[#f4c430] transition-colors hover:bg-[#f4c430] hover:text-[#0b3a67]"
+              aria-label="Contact Us"
+              className="inline-flex flex-shrink-0 items-center gap-1 rounded border border-[#f4c430]/70 px-2 py-0.5 text-[10px] font-semibold text-[#f4c430] transition-colors hover:bg-[#f4c430] hover:text-[#0b3a67] sm:px-2.5 sm:text-[11px]"
             >
-              <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3">
+              <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 flex-shrink-0">
                 <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z" />
               </svg>
-              Contact Us
+              <span className="hidden min-[380px]:inline">Contact</span>
             </a>
 
-            {/* Social icons */}
-            <div className="flex items-center gap-2">
-              {[
-                { href: "https://twitter.com", icon: <IconX />, title: "X" },
-                { href: "https://facebook.com", icon: <IconFacebook />, title: "Facebook" },
-                { href: "https://youtube.com", icon: <IconYouTube />, title: "YouTube" },
-                { href: "https://linkedin.com", icon: <IconLinkedIn />, title: "LinkedIn" },
-                { href: "https://instagram.com", icon: <IconInstagram />, title: "Instagram" },
-              ].map(({ href, icon, title }) => (
+            {/* Social icons — only on wider small screens */}
+            <div className="hidden min-[460px]:flex items-center gap-1.5">
+              {socialLinks.map(({ href, icon, title }) => (
                 <a
                   key={title}
                   href={href}
@@ -343,7 +357,7 @@ export default function MembershipNavbar() {
             {/* LOGIN */}
             <Link
               to="/membership#auth-panel"
-              className="inline-flex items-center bg-[#f4c430] px-4 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#1a1a1a] transition-opacity hover:opacity-90"
+              className="inline-flex flex-shrink-0 items-center rounded-sm bg-[#f4c430] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a1a] transition-opacity hover:opacity-90 sm:px-4 sm:text-[11px]"
             >
               LOGIN
             </Link>
@@ -421,7 +435,7 @@ export default function MembershipNavbar() {
               )
             )}
             {/* Mobile CTA */}
-            <div className="flex items-center gap-3 px-5 py-3">
+            <div className="flex flex-wrap items-center gap-3 px-5 py-3">
               <Link
                 to="/membership#auth-panel"
                 onClick={() => setMobileOpen(false)}
@@ -435,6 +449,21 @@ export default function MembershipNavbar() {
               >
                 Contact Us
               </a>
+            </div>
+
+            <div className="flex items-center gap-3 px-5 pb-4">
+              {socialLinks.map(({ href, icon, title }) => (
+                <a
+                  key={title}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={title}
+                  className="text-[#0b3a67] transition-colors hover:text-[#f4c430]"
+                >
+                  {icon}
+                </a>
+              ))}
             </div>
           </nav>
         </div>

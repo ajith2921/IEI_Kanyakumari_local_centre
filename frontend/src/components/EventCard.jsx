@@ -51,7 +51,7 @@ function EventImageFallback({ title, category }) {
   );
 }
 
-export default function EventCard({ activity }) {
+export default function EventCard({ activity, darkTheme = false }) {
   const title = activity.title?.trim() || "Technical Activity";
   const description = activity.description?.trim() || "Details will be updated soon.";
   const category = getCategory(description);
@@ -65,9 +65,11 @@ export default function EventCard({ activity }) {
       })
     : null;
 
+  const isDark = darkTheme;
+
   return (
-    <Card interactive padded={false} className="group overflow-hidden">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-50">
+    <Card interactive padded={false} className={`group overflow-hidden ${isDark ? "bg-[#0c3c53] text-white" : ""}`}>
+      <div className={`relative aspect-[4/3] w-full overflow-hidden ${isDark ? "bg-[#0c3c53]" : "bg-gray-50"}`}>
         <ImageMedia
           src={imageSrc}
           alt={title}
@@ -77,21 +79,21 @@ export default function EventCard({ activity }) {
           fallback={<EventImageFallback title={title} category={category} />}
         />
         {eventDate && (
-          <span className="absolute left-3 top-3 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur">
+          <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-medium shadow-sm backdrop-blur ${isDark ? "bg-[#f4c430] text-[#1c2647]" : "bg-white/90 text-gray-700"}`}>
             {eventDate}
           </span>
         )}
-        <span className="absolute right-3 top-3 rounded-full border border-white/80 bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-gray-600 shadow-sm backdrop-blur">
+        <span className={`absolute right-3 top-3 rounded-full border border-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] shadow-sm backdrop-blur ${isDark ? "bg-[#0c3c53] border-white/30 text-white/90" : "bg-white/90 text-gray-600"}`}>
           {category}
         </span>
       </div>
 
       <div className="space-y-2 p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400">Hosted by IEI KKLC</p>
-        <h3 className="text-base font-semibold leading-snug text-gray-900">{title}</h3>
-        <p className="line-clamp-3 text-sm leading-relaxed text-gray-500">{description}</p>
-        <p className="truncate pt-1 text-xs text-gray-400">{venue}</p>
-        <p className="pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
+        <p className={`text-[11px] font-semibold uppercase tracking-[0.1em] ${isDark ? "text-[#f4c430]" : "text-gray-400"}`}>Hosted by IEI KKLC</p>
+        <h3 className={`text-base font-semibold leading-snug ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
+        <p className={`line-clamp-3 text-sm leading-relaxed ${isDark ? "text-white/70" : "text-gray-500"}`}>{description}</p>
+        <p className={`truncate pt-1 text-xs ${isDark ? "text-white/50" : "text-gray-400"}`}>{venue}</p>
+        <p className={`pt-2 text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-200 group-hover:${isDark ? "text-[#f4c430]" : "text-gray-900"} ${isDark ? "text-white/60" : "text-gray-400"}`}>
           View Event Details →
         </p>
       </div>

@@ -2,19 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import Button from "./ui/Button";
 
-const primaryLinks = [
-  { to: "/", label: "Home" },
-  { to: "/conference", label: "Conference" },
-  { to: "/technical-activities", label: "Events" },
-  { to: "/members", label: "Committee" },
-  { to: "/gallery", label: "Gallery" },
+const menuItems = [
+  { to: "/", label: "About" },
+  { to: "/membership", label: "Membership" },
+  { to: "/membership#chartered-engineer", label: "Certification" },
+  { to: "/newsletter", label: "Publications" },
+  { to: "/technical-activities", label: "Technical Events" },
+  { to: "/links-downloads", label: "Prize & Awards" },
+  { to: "/contact", label: "Research Grant-in-Aid" },
+  { to: "/facilities", label: "Education and CPD" },
 ];
 
-const moreLinks = [
-  { to: "/contact", label: "Contact" },
-  { to: "/newsletter", label: "Newsletter" },
-  { to: "/facilities", label: "Facilities" },
-  { to: "/links-downloads", label: "Resources" },
+const socialIcons = [
+  { label: "X", href: "https://x.com" },
+  { label: "Fb", href: "https://facebook.com" },
+  { label: "Yt", href: "https://youtube.com" },
+  { label: "In", href: "https://linkedin.com" },
+  { label: "Ig", href: "https://instagram.com" },
 ];
 
 function NavItem({ to, label, onClick, mobile = false }) {
@@ -29,8 +33,8 @@ function NavItem({ to, label, onClick, mobile = false }) {
               ? "bg-gray-100 font-medium text-gray-900"
               : "font-normal text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             : isActive
-              ? "font-medium text-gray-900"
-              : "font-normal text-gray-500 hover:text-gray-900"
+              ? "font-medium text-white"
+              : "font-normal text-white/70 hover:text-white"
         }`
       }
     >
@@ -38,7 +42,7 @@ function NavItem({ to, label, onClick, mobile = false }) {
         <>
           {label}
           {!mobile && isActive && (
-            <span className="absolute -bottom-[11px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-gray-900" />
+            <span className="absolute -bottom-[11px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[#f4c430]" />
           )}
         </>
       )}
@@ -52,10 +56,8 @@ function MoreDropdown() {
   const ref = useRef(null);
   const location = useLocation();
 
-  /* close on route change */
   useEffect(() => setOpen(false), [location.pathname]);
 
-  /* close on outside click */
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
@@ -65,7 +67,7 @@ function MoreDropdown() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const isChildActive = moreLinks.some((l) => location.pathname === l.to);
+  const isChildActive = menuItems.some((l) => location.pathname === l.to);
 
   return (
     <div ref={ref} className="relative">
@@ -74,8 +76,8 @@ function MoreDropdown() {
         onClick={() => setOpen((p) => !p)}
         className={`inline-flex h-11 items-center gap-1 rounded-lg px-3.5 text-[13px] transition-colors duration-200 ${
           isChildActive
-            ? "font-medium text-gray-900"
-            : "font-normal text-gray-500 hover:text-gray-900"
+            ? "font-medium text-white"
+            : "font-normal text-white/70 hover:text-white"
         }`}
       >
         More
@@ -88,8 +90,8 @@ function MoreDropdown() {
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-3 min-w-[180px] rounded-xl border border-gray-200 bg-white p-1 shadow-lg animate-fade-in">
-          {moreLinks.map((item) => (
+        <div className="absolute right-0 top-full z-50 mt-3 min-w-[180px] rounded-xl border border-white/10 bg-[#1c2647] p-1 shadow-lg animate-fade-in">
+          {menuItems.slice(4).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -97,8 +99,8 @@ function MoreDropdown() {
               className={({ isActive }) =>
                 `block rounded-lg px-3 py-2 text-[13px] transition-colors duration-200 ${
                   isActive
-                    ? "bg-gray-50 font-medium text-gray-900"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-white/10 font-medium text-white"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                 }`
               }
             >
@@ -129,7 +131,6 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  /* scroll shadow */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -137,96 +138,126 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header
-      className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur transition-all duration-200 ${
-        scrolled ? "border-transparent nav-scrolled" : "border-gray-200"
-      }`}
-    >
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
-      >
-        Skip to main content
-      </a>
-
-      {/* Main nav bar */}
-      <div className="page-shell flex items-center justify-between py-2.5 sm:py-3">
-        <Link to="/" className="flex items-center gap-3 leading-tight">
-          <img
-            src="https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png"
-            alt="Institution of Engineers (India) logo"
-            className="h-12 w-12 flex-shrink-0 rounded-full border border-gray-100 bg-white object-contain p-1 sm:h-14 sm:w-14"
-            loading="eager"
-            decoding="async"
-            referrerPolicy="no-referrer"
-          />
-          <span className="flex flex-col">
-            <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-gray-900">
-              IEI Kanyakumari Local Centre
-            </span>
-            <span className="mt-1 inline-flex w-[152px] overflow-hidden rounded-full border border-gray-200 bg-gray-50 px-2 py-[2px] text-[10px] text-gray-500 sm:w-[170px]">
-              <span className="navbar-marquee-track inline-flex whitespace-nowrap font-medium">
-                <span className="pr-8">(Established in 2025)</span>
-                <span className="pr-8" aria-hidden="true">(Established in 2025)</span>
-              </span>
-            </span>
-          </span>
-        </Link>
-
-        <button
-          type="button"
-          className="focus-ring h-11 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-50 lg:hidden"
-          onClick={() => setOpen((prev) => !prev)}
-        >
-          {open ? "Close" : "Menu"}
-        </button>
-
-        <nav className="hidden items-center gap-0.5 lg:flex">
-          {primaryLinks.map((item) => (
-            <NavItem key={item.to} {...item} />
-          ))}
-          <MoreDropdown />
-          <div className="ml-2.5 flex h-11 items-center gap-2 border-l border-gray-200 pl-3">
-            <Button as={Link} to="/membership" target="_blank" rel="noopener noreferrer" size="sm">
-              Membership
-            </Button>
-            <Button as={Link} to="/admin/login" variant="secondary" size="sm">
-              Admin
-            </Button>
+    <header className="sticky top-0 z-50">
+      {/* Utility bar */}
+      <div className="hidden bg-[#3D689C] px-4 py-2 text-xs text-white lg:block">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded border border-white/30 px-3 py-1 transition-colors hover:bg-white/10"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Download Mobile App
+            </button>
+            <button
+              type="button"
+              className="rounded border border-white/30 px-3 py-1 transition-colors hover:bg-white/10"
+            >
+              Contact Us
+            </button>
           </div>
-        </nav>
-      </div>
-
-      {/* Mobile drawer */}
-      {open && (
-        <div className="animate-fade-in border-t border-gray-100 bg-white lg:hidden">
-          <div className="page-shell grid gap-1 py-4">
-            {primaryLinks.map((item) => (
-              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
-            ))}
-            <p className="mb-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
-              More
-            </p>
-            {moreLinks.map((item) => (
-              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
-            ))}
-            <div className="mt-4 grid gap-2.5">
-              <Button
-                as={Link}
-                to="/membership"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
-              >
-                Membership
-              </Button>
-              <Button as={Link} to="/admin/login" onClick={() => setOpen(false)} variant="secondary">
-                Admin
-              </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              {socialIcons.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-white/80 hover:text-white"
+                >
+                  {social.label}
+                </a>
+              ))}
             </div>
+            <button
+              type="button"
+              className="rounded bg-[#f4c430] px-4 py-1.5 font-semibold text-[#1c2647] transition-colors hover:bg-[#e5b42c]"
+            >
+              LOGIN
+            </button>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Main navbar */}
+      <div
+        className={`border-b border-white/10 bg-[#1c2647] transition-all duration-200 ${
+          scrolled ? "nav-scrolled" : ""
+        }`}
+      >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[#f4c430] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[#1c2647]"
+        >
+          Skip to main content
+        </a>
+
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src="https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png"
+              alt="Institution of Engineers (India) logo"
+              className="h-12 w-12 flex-shrink-0 rounded-full border-2 border-white/20 bg-white object-contain p-1"
+              loading="eager"
+              decoding="async"
+              referrerPolicy="no-referrer"
+            />
+            <span className="flex flex-col">
+              <span className="whitespace-nowrap text-sm font-semibold text-white">
+                IEI Kanyakumari Local Centre
+              </span>
+              <span className="mt-1 inline-flex w-[170px] overflow-hidden rounded-full border border-white/20 bg-white/5 px-2 py-[2px] text-[10px] text-white/60">
+                <span className="navbar-marquee-track inline-flex whitespace-nowrap font-medium">
+                  <span className="pr-8">(Established in 2025)</span>
+                  <span className="pr-8" aria-hidden="true">(Established in 2025)</span>
+                </span>
+              </span>
+            </span>
+          </Link>
+
+          <button
+            type="button"
+            className="focus-ring h-11 rounded-lg border border-white/20 bg-white/5 px-4 text-[13px] font-medium text-white transition-colors hover:bg-white/10 lg:hidden"
+            onClick={() => setOpen((prev) => !prev)}
+          >
+            {open ? "Close" : "Menu"}
+          </button>
+
+          <nav className="hidden items-center gap-0.5 lg:flex">
+            {menuItems.slice(0, 4).map((item) => (
+              <NavItem key={item.to} {...item} />
+            ))}
+            <MoreDropdown />
+          </nav>
+        </div>
+
+        {/* Mobile drawer */}
+        {open && (
+          <div className="animate-fade-in border-t border-white/10 bg-[#1c2647] lg:hidden">
+            <div className="mx-auto grid gap-1 px-6 py-4">
+              {menuItems.map((item) => (
+                <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
+              ))}
+              <div className="mt-4 grid gap-2.5">
+                <Button
+                  as={Link}
+                  to="/membership"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setOpen(false)}
+                  className="!bg-[#f4c430] !text-[#1c2647]"
+                >
+                  Membership
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import HeroSlider from "../components/HeroSlider";
+import JoinIEIBand from "../components/JoinIEIBand";
 import SectionHeader from "../components/SectionHeader";
 import MemberCard from "../components/MemberCard";
 import EventCard from "../components/EventCard";
@@ -134,12 +135,38 @@ export default function Home() {
     },
   ];
 
+  /* ── IEI Stats Band ──────────────────────────────── */
+  const statsBand = [
+    { value: "1920", label: "Year Established" },
+    { value: String(members.data.length || "..."), label: "Corporate Members" },
+    { value: String(activities.data.length || "..."), label: "Events Conducted" },
+    { value: String(getDivisionCount(members.data) || "..."), label: "Engineering Divisions" },
+  ];
+
   const isMembershipTarget = (to = "") => String(to).startsWith("/membership");
 
   return (
     <>
       {/* ── HERO ────────────────────────────────────────── */}
-      <HeroSlider stats={heroStats} />
+      <HeroSlider />
+
+      {/* ── STATS BAND (dark blue + gold) ───────────────── */}
+      <section className="iei-stats-band">
+        <div className="page-shell py-8 sm:py-10">
+          <div className="grid gap-6 text-center sm:grid-cols-2 lg:grid-cols-4">
+            {statsBand.map((stat, idx) => (
+              <div key={idx} className="flex flex-col">
+                <p className="iei-stat-number text-3xl font-bold sm:text-4xl">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-xs uppercase tracking-wider text-white/80 sm:text-sm">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── KYM SERVICE DESK ─────────────────────────────── */}
       <section className="border-b border-gray-200 bg-white">
@@ -347,8 +374,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── EVENTS — white bg ─────────────────────────────── */}
-      <section className="bg-white">
+      {/* ── EVENTS — dark navy bg ──────────────────────────── */}
+      <section className="bg-[#05154B]">
         <div className="page-shell py-20">
           <SectionHeader
             eyebrow="Events"
@@ -367,7 +394,7 @@ export default function Home() {
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {activities.data.slice(0, 3).map((activity) => (
                   <div key={activity.id}>
-                    <EventCard activity={activity} />
+                    <EventCard activity={activity} darkTheme />
                   </div>
                 ))}
               </div>
@@ -380,6 +407,9 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* ── JOIN IEI BAND ───────────────────────────────────── */}
+      <JoinIEIBand />
 
       {/* ── ANNOUNCEMENTS ─────────────────────────────────── */}
       <AnnouncementSection
