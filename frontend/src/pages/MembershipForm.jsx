@@ -1,10 +1,18 @@
 import { Suspense, lazy, useState } from "react";
+import { Link } from "react-router-dom";
 import SectionHeader from "../components/SectionHeader";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import MembershipHeroCampaign from "../components/membership/MembershipHeroCampaign";
+import MembershipServiceDesk from "../components/membership/MembershipServiceDesk";
+import MembershipEventsBoard from "../components/membership/MembershipEventsBoard";
+import MembershipHighlightsCarousel from "../components/membership/MembershipHighlightsCarousel";
+import MembershipAnnouncementsCarousel from "../components/membership/MembershipAnnouncementsCarousel";
+import MembershipStatsBand from "../components/membership/MembershipStatsBand";
 import { useMembershipSession } from "../context/MembershipSessionContext";
 import { parseApiError, publicApi } from "../services/api";
+import useFetchList from "../hooks/useFetchList";
 
 const MembershipAuthPanel = lazy(() => import("../components/membership/MembershipAuthPanel"));
 const MembershipDashboardCard = lazy(() =>
@@ -313,9 +321,28 @@ function ProtectedPortalActions({ isAuthenticated, member }) {
 
 export default function MembershipForm() {
   const { isAuthenticated, member } = useMembershipSession();
+  const activities = useFetchList(publicApi.getActivities);
+  const newsletters = useFetchList(publicApi.getNewsletters);
+  const metrics = {
+    serviceCount: 6,
+    activityCount: activities.data.length,
+    noticeCount: newsletters.data.length,
+  };
 
   return (
     <section className="page-shell section-block pb-28 md:pb-20">
+
+      <div className="mb-8 space-y-5">
+        <MembershipHeroCampaign />
+        <MembershipServiceDesk />
+        <MembershipEventsBoard activities={activities.data} loading={activities.loading} />
+        <MembershipHighlightsCarousel />
+        <MembershipAnnouncementsCarousel
+          newsletters={newsletters.data}
+          loading={newsletters.loading}
+        />
+        <MembershipStatsBand metrics={metrics} />
+      </div>
 
       <SectionHeader
         eyebrow="Membership Portal"
@@ -555,6 +582,22 @@ export default function MembershipForm() {
           <Button as="a" href="/" variant="secondary" className="!h-10 !px-2 !text-xs">
             Main Site
           </Button>
+        </nav>
+      </div>
+
+      <div className="fixed bottom-5 right-5 z-40 hidden md:block">
+        <nav className="rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg backdrop-blur" aria-label="Membership quick dock">
+          <div className="grid gap-2">
+            <Button as="a" href="#apply-membership" size="sm" className="!h-9 !px-3 !text-xs">
+              Apply
+            </Button>
+            <Button as="a" href="#auth-panel" variant="secondary" size="sm" className="!h-9 !px-3 !text-xs">
+              Sign In
+            </Button>
+            <Button as={Link} to="/membership/events-cpd" variant="secondary" size="sm" className="!h-9 !px-3 !text-xs">
+              Events
+            </Button>
+          </div>
         </nav>
       </div>
     </section>

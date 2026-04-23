@@ -187,7 +187,7 @@ export default function Navbar() {
           ))}
           <MoreDropdown />
           <div className="ml-2.5 flex h-11 items-center gap-2 border-l border-gray-200 pl-3">
-            <Button as={Link} to="/membership-form" target="_blank" rel="noopener noreferrer" size="sm">
+            <Button as={Link} to="/membership" target="_blank" rel="noopener noreferrer" size="sm">
               Membership
             </Button>
             <Button as={Link} to="/admin/login" variant="secondary" size="sm">
@@ -213,7 +213,7 @@ export default function Navbar() {
             <div className="mt-4 grid gap-2.5">
               <Button
                 as={Link}
-                to="/membership-form"
+                to="/membership"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}

@@ -1,7 +1,8 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import MembershipNavbar from "./components/membership/MembershipNavbar";
+import MembershipFooter from "./components/membership/MembershipFooter";
 import Home from "./pages/Home";
 import Conference from "./pages/Conference";
 import MembersList from "./pages/MembersList";
@@ -12,6 +13,11 @@ import TechnicalActivities from "./pages/TechnicalActivities";
 import LinksDownloads from "./pages/LinksDownloads";
 import Contact from "./pages/Contact";
 import MembershipForm from "./pages/MembershipForm";
+import BecomeMemberPage from "./pages/membership/BecomeMemberPage";
+import CertificationPage from "./pages/membership/CertificationPage";
+import PublicationsPage from "./pages/membership/PublicationsPage";
+import EventsCpdPage from "./pages/membership/EventsCpdPage";
+import MemberServicesPage from "./pages/membership/MemberServicesPage";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "./admin/AdminRoute";
 import AdminLogin from "./admin/AdminLogin";
@@ -26,6 +32,12 @@ import AdminDownloads from "./admin/AdminDownloads";
 import AdminMessages from "./admin/AdminMessages";
 import AdminMembershipRequests from "./admin/AdminMembershipRequests";
 import AdminPremiumSubscriptions from "./admin/AdminPremiumSubscriptions";
+
+function LegacyMembershipRedirect() {
+  const location = useLocation();
+
+  return <Navigate to={{ pathname: "/membership", hash: location.hash }} replace />;
+}
 
 function PublicLayout({ children }) {
   return (
@@ -42,7 +54,7 @@ function MembershipLayout({ children }) {
     <div className="min-h-screen bg-white text-gray-900">
       <MembershipNavbar />
       <main id="main-content">{children}</main>
-      <Footer />
+      <MembershipFooter />
     </div>
   );
 }
@@ -125,10 +137,52 @@ export default function App() {
         }
       />
       <Route
-        path="/membership-form"
+        path="/membership"
         element={
           <MembershipLayout>
             <MembershipForm />
+          </MembershipLayout>
+        }
+      />
+      <Route path="/membership-form" element={<LegacyMembershipRedirect />} />
+      <Route path="/membership-form/*" element={<LegacyMembershipRedirect />} />
+      <Route
+        path="/membership/become-member"
+        element={
+          <MembershipLayout>
+            <BecomeMemberPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/certification"
+        element={
+          <MembershipLayout>
+            <CertificationPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/publications"
+        element={
+          <MembershipLayout>
+            <PublicationsPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/events-cpd"
+        element={
+          <MembershipLayout>
+            <EventsCpdPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/member-services"
+        element={
+          <MembershipLayout>
+            <MemberServicesPage />
           </MembershipLayout>
         }
       />

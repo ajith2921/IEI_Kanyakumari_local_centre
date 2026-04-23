@@ -62,7 +62,7 @@ export default function HeroSlider({ stats = defaultStats }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button as={Link} to="/membership-form" target="_blank" rel="noopener noreferrer">
+              <Button as={Link} to="/membership" target="_blank" rel="noopener noreferrer">
                 Apply for Membership
               </Button>
               <Button as={Link} to="/technical-activities" variant="secondary">
@@ -103,18 +103,18 @@ export default function HeroSlider({ stats = defaultStats }) {
             <p className="eyebrow-chip mb-5">Membership Service Hub</p>
             <div className="grid gap-2.5">
               {[
-                { to: "/membership-form#be-member", title: "Become a Member", hint: "Apply to IEI membership" },
+                { to: "/membership#be-member", title: "Become a Member", hint: "Apply to IEI membership" },
                 {
-                  to: "/membership-form#chartered-engineer",
+                  to: "/membership#chartered-engineer",
                   title: "Chartered Engineer (CEng)",
                   hint: "Technical authority pathway",
                 },
                 {
-                  to: "/membership-form#professional-engineer",
+                  to: "/membership#professional-engineer",
                   title: "Professional Engineer (PEng)",
                   hint: "Advanced competency recognition",
                 },
-                { to: "/membership-form#section-ab", title: "Section A & B", hint: "Exam and progression services" },
+                { to: "/membership#section-ab", title: "Section A & B", hint: "Exam and progression services" },
               ].map((item) => (
                 <Link
                   key={item.to}

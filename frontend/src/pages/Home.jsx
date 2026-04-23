@@ -15,37 +15,37 @@ const membershipServiceCards = [
   {
     title: "Become a Member",
     description: "Start your IEI membership application and activate professional access.",
-    to: "/membership-form#be-member",
+    to: "/membership#be-member",
     cta: "Know More",
   },
   {
     title: "Chartered Engineer",
     description: "Follow the CEng pathway for design, valuation, and project authority work.",
-    to: "/membership-form#chartered-engineer",
+    to: "/membership#chartered-engineer",
     cta: "Apply Pathway",
   },
   {
     title: "Professional Engineer",
     description: "Advance to PEng-grade recognition for high-responsibility engineering practice.",
-    to: "/membership-form#professional-engineer",
+    to: "/membership#professional-engineer",
     cta: "Explore Track",
   },
   {
     title: "Section A & B Examination",
     description: "Get exam-oriented support for forms, admit cards, and progression planning.",
-    to: "/membership-form#section-ab",
+    to: "/membership#section-ab",
     cta: "Exam Services",
   },
   {
     title: "Journals & Publications",
     description: "Browse IEI-oriented journals, publications, and knowledge resources.",
-    to: "/membership-form#publications",
+    to: "/membership#publications",
     cta: "View Resources",
   },
   {
     title: "Events & CPD",
     description: "Join seminars, workshops, and continuous professional development activities.",
-    to: "/membership-form#network-activities",
+    to: "/membership#network-activities",
     cta: "Join Programs",
   },
 ];
@@ -55,7 +55,7 @@ const highlightPanels = [
     title: "Career Manager Support",
     detail:
       "Build professional visibility through portfolio positioning, chapter networking, and mentorship channels.",
-    to: "/membership-form#network-activities",
+    to: "/membership#network-activities",
   },
   {
     title: "Downloads and Circulars",
@@ -134,7 +134,7 @@ export default function Home() {
     },
   ];
 
-  const isMembershipTarget = (to = "") => String(to).startsWith("/membership-form");
+  const isMembershipTarget = (to = "") => String(to).startsWith("/membership");
 
   return (
     <>
@@ -153,7 +153,7 @@ export default function Home() {
             </div>
             <Button
               as={Link}
-              to="/membership-form"
+              to="/membership"
               target="_blank"
               rel="noopener noreferrer"
               variant="secondary"
@@ -204,7 +204,7 @@ export default function Home() {
               </p>
               <Button
                 as={Link}
-                to="/membership-form"
+                to="/membership"
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="secondary"
