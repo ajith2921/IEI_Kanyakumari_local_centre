@@ -6,6 +6,9 @@ export default function SectionHeader({
   className = "",
   contentWidthClassName = "max-w-2xl",
   titleAs = "h2",
+  eyebrowClassName = "",
+  titleClassName = "",
+  descriptionClassName = "",
 }) {
   const TitleTag = titleAs;
 
@@ -13,11 +16,13 @@ export default function SectionHeader({
     <div className={`mb-14 flex flex-wrap items-end justify-between gap-6 ${className}`.trim()}>
       <div className={contentWidthClassName}>
         {eyebrow && (
-          <p className="eyebrow-chip mb-3">{eyebrow}</p>
+          <p className={`eyebrow-chip mb-3 ${eyebrowClassName}`.trim()}>{eyebrow}</p>
         )}
-        <TitleTag className="heading-h2 text-gray-900">{title}</TitleTag>
+        <TitleTag className={`heading-h2 text-gray-900 ${titleClassName}`.trim()}>{title}</TitleTag>
         {description && (
-          <p className="mt-3 text-base leading-relaxed text-gray-500">{description}</p>
+          <p className={`mt-3 text-base leading-relaxed text-gray-500 ${descriptionClassName}`.trim()}>
+            {description}
+          </p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}

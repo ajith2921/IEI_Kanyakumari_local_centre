@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import AnnouncementTicker from "./components/AnnouncementTicker";
 import Footer from "./components/Footer";
 import MembershipNavbar from "./components/membership/MembershipNavbar";
 import MembershipFooter from "./components/membership/MembershipFooter";
@@ -44,7 +43,6 @@ function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Navbar />
-      <AnnouncementTicker />
       <main id="main-content">{children}</main>
       <Footer />
     </div>

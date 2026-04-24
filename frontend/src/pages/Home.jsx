@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import HeroSlider from "../components/HeroSlider";
-import JoinIEIBand from "../components/JoinIEIBand";
 import SectionHeader from "../components/SectionHeader";
 import MemberCard from "../components/MemberCard";
 import EventCard from "../components/EventCard";
@@ -98,6 +97,12 @@ const focusAreas = [
   "Community Engineering Solutions",
 ];
 
+const heroTrustSignals = [
+  "Established institutional legacy since 1920",
+  "Professional-grade certifications and pathways",
+  "Verified technical forums led by domain experts",
+];
+
 const chairmanMessage =
   '"Engineering is not just a profession — it is the foundation of progress. Our centre is dedicated to empowering engineers, motivating students, strengthening institutions, and serving society through innovative ideas and technical excellence. We invite all engineers, professionals, industries, and students to actively engage with KKLC and become part of a meaningful professional network."';
 
@@ -115,32 +120,29 @@ function getDivisionCount(membersList) {
   return divisions.size;
 }
 
+function getStaggerClass(index) {
+  const sequence = ["stagger-1", "stagger-2", "stagger-3", "stagger-4", "stagger-5"];
+  return sequence[index % sequence.length];
+}
+
 export default function Home() {
   const members = useFetchList(publicApi.getMembers);
   const activities = useFetchList(publicApi.getActivities);
   const newsletters = useFetchList(publicApi.getNewsletters);
   const cleanChairmanMessage = chairmanMessage.replace(/\s+/g, " ").trim();
-  const heroStats = [
+  const heroMetrics = [
     {
       value: members.loading ? "..." : String(members.data.length),
-      label: "Active Members",
+      label: "Corporate Members",
     },
     {
       value: activities.loading ? "..." : String(activities.data.length),
-      label: "Events Conducted",
+      label: "Technical Programs",
     },
     {
       value: members.loading ? "..." : String(getDivisionCount(members.data)),
       label: "Engineering Divisions",
     },
-  ];
-
-  /* ── IEI Stats Band ──────────────────────────────── */
-  const statsBand = [
-    { value: "1920", label: "Year Established" },
-    { value: String(members.data.length || "..."), label: "Corporate Members" },
-    { value: String(activities.data.length || "..."), label: "Events Conducted" },
-    { value: String(getDivisionCount(members.data) || "..."), label: "Engineering Divisions" },
   ];
 
   const isMembershipTarget = (to = "") => String(to).startsWith("/membership");
@@ -150,31 +152,72 @@ export default function Home() {
       {/* ── HERO ────────────────────────────────────────── */}
       <HeroSlider />
 
-      {/* ── STATS BAND (dark blue + gold) ───────────────── */}
-      <section className="iei-stats-band">
+      {/* ── PREMIUM HERO COMPANION ─────────────────────── */}
+      <section className="home-premium-shell border-b border-gray-200">
         <div className="page-shell py-8 sm:py-10">
-          <div className="grid gap-6 text-center sm:grid-cols-2 lg:grid-cols-4">
-            {statsBand.map((stat, idx) => (
-              <div key={idx} className="flex flex-col">
-                <p className="iei-stat-number text-3xl font-bold sm:text-4xl">
-                  {stat.value}
+          <div className="home-premium-panel animate-fade-up">
+            <div className="grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-end">
+              <div>
+                <p className="home-premium-kicker">Institutional Excellence</p>
+                <h2 className="home-premium-title mt-3">
+                  Engineering leadership shaped for modern practice and long-term impact.
+                </h2>
+                <p className="home-premium-copy mt-4 max-w-2xl">
+                  Explore a professional platform that combines institutional credibility,
+                  skill growth, and member-first service delivery across the district.
                 </p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-white/80 sm:text-sm">
-                  {stat.label}
-                </p>
+
+                <div className="home-premium-cta-row mt-6">
+                  <Button
+                    as={Link}
+                    to="/membership"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="sm"
+                    className="home-premium-primary-action home-premium-cta-button"
+                  >
+                    Become a Member
+                  </Button>
+                  <Button
+                    as={Link}
+                    to="/technical-activities"
+                    variant="secondary"
+                    size="sm"
+                    className="home-premium-secondary-action home-premium-cta-button"
+                  >
+                    Explore Technical Calendar
+                  </Button>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  {heroTrustSignals.map((signal) => (
+                    <span key={signal} className="home-premium-pill">
+                      {signal}
+                    </span>
+                  ))}
+                </div>
               </div>
-            ))}
+
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                {heroMetrics.map((metric) => (
+                  <div key={metric.label} className="home-premium-metric-card">
+                    <p className="home-premium-metric-value">{metric.value}</p>
+                    <p className="home-premium-metric-label">{metric.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── KYM SERVICE DESK ─────────────────────────────── */}
-      <section className="border-b border-gray-200 bg-white">
-        <div className="page-shell py-10 sm:py-12">
+      <section className="border-b border-gray-200 bg-gradient-to-b from-white to-gray-50/40">
+        <div className="page-shell home-rhythm-compact">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow-chip mb-2">KYM Service Desk</p>
-              <h2 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+              <h2 className="home-premium-section-title">
                 Membership and Certification Services
               </h2>
             </div>
@@ -185,18 +228,19 @@ export default function Home() {
               rel="noopener noreferrer"
               variant="secondary"
               size="sm"
+              className="home-premium-secondary-action home-section-action-btn"
             >
               Open Membership Portal
             </Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {membershipServiceCards.map((item) => (
+            {membershipServiceCards.map((item, idx) => (
               <Link
                 key={item.title}
                 to={item.to}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="focus-ring group flex h-full flex-col rounded-2xl border border-gray-200 bg-gray-50 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-white hover:shadow-sm"
+                className={`focus-ring home-premium-card home-reveal-card animate-fade-up ${getStaggerClass(idx)} group flex h-full flex-col rounded-2xl border border-gray-200 bg-gray-50 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-white hover:shadow-sm`}
               >
                 <h3 className="text-base font-semibold leading-tight text-gray-900">{item.title}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-500">{item.description}</p>
@@ -211,21 +255,21 @@ export default function Home() {
 
       {/* ── WELCOME — gray-50 bg ─────────────────────────── */}
       <section className="bg-gray-50/60">
-        <div className="page-shell pb-10 pt-12 sm:pb-14 sm:pt-16">
+        <div className="page-shell home-rhythm-shell">
           <div className="grid gap-8 md:grid-cols-2 md:items-start md:gap-10">
             {/* Welcome text */}
             <div className="max-w-2xl">
-              <h2 className="mb-3 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+              <h2 className="home-premium-section-title mb-3">
                 Welcome
               </h2>
-              <p className="mb-5 max-w-[24ch] text-2xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-3xl lg:text-4xl">
+              <p className="home-premium-display mb-5 max-w-[24ch]">
                 The Institution of Engineers (India) —{" "}
-                <span className="text-gray-400">Kanyakumari Local Centre</span>
+                <span className="text-[color:var(--home-premium-accent)]">Kanyakumari Local Centre</span>
               </p>
-              <p className="mb-3 max-w-[62ch] text-[15px] leading-7 text-gray-600 sm:text-base">
+              <p className="home-premium-lead mb-3 max-w-[62ch]">
                 IEI KKLC is a dynamic professional body committed to advancing engineering excellence, innovation, technical leadership, and societal development. We serve engineers, academicians, and students across Kanyakumari District and surrounding regions.
               </p>
-              <p className="mb-6 max-w-[62ch] text-sm leading-7 text-gray-500 sm:mb-7 sm:text-[15px]">
+              <p className="home-premium-copy mb-6 max-w-[62ch] sm:mb-7">
                 We strive to build a strong engineering ecosystem through knowledge sharing,
                 professional networking, industry collaboration, and community service.
               </p>
@@ -234,16 +278,17 @@ export default function Home() {
                 to="/membership"
                 target="_blank"
                 rel="noopener noreferrer"
-                variant="secondary"
+                variant="primary"
                 size="sm"
+                className="home-premium-primary-action home-section-action-btn"
               >
                 Become a Member
               </Button>
             </div>
 
             {/* Focus areas */}
-            <div className="rounded-2xl border border-gray-200 bg-white/90 p-6 shadow-sm sm:p-7">
-              <h3 className="mb-4 text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+            <div className="home-premium-card home-premium-glass animate-fade-up stagger-2 rounded-2xl border border-gray-200 bg-white/90 p-6 shadow-sm sm:p-7">
+              <h3 className="home-premium-subtitle mb-4">
                 Our Focus Areas
               </h3>
               <ul className="grid gap-2.5 sm:gap-3">
@@ -261,13 +306,13 @@ export default function Home() {
 
       {/* ── CHAIRMAN'S MESSAGE — white bg ─────────────────── */}
       <section className="bg-white">
-        <div className="page-shell pb-10 pt-12 sm:pb-14 sm:pt-16">
+        <div className="page-shell home-rhythm-shell">
           <div className="mx-auto max-w-3xl">
-            <h2 className="mb-5 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+            <h2 className="home-premium-section-title mb-5">
               Chairman&apos;s Message
             </h2>
-            <div className="rounded-2xl border border-gray-200 bg-gray-50/60 p-6 sm:p-8">
-              <blockquote className="mb-4 mr-auto max-w-[66ch] text-left text-[17px] leading-8 text-gray-600 italic sm:mb-5 sm:text-lg">
+            <div className="home-premium-card animate-fade-up stagger-2 rounded-2xl border border-gray-200 bg-gray-50/60 p-6 sm:p-8">
+              <blockquote className="home-premium-quote mb-4 mr-auto max-w-[66ch] text-left italic sm:mb-5">
                 {cleanChairmanMessage}
               </blockquote>
               <div className="mt-5 text-left">
@@ -281,21 +326,23 @@ export default function Home() {
 
       {/* ── HIGHLIGHTS — gray-50 bg ───────────────────────── */}
       <section className="bg-gray-50/60">
-        <div className="page-shell py-20">
+        <div className="page-shell home-rhythm-wide">
           <SectionHeader
             eyebrow="Highlights"
             title="Member Privileges and Service Channels"
             description="Key access points modeled around institutional workflows for growth, resources, and participation."
-            className="mb-8"
+            className="mb-9 sm:mb-11"
+            titleClassName="home-premium-section-title"
+            descriptionClassName="home-premium-section-copy"
           />
           <div className="grid gap-4 md:grid-cols-3">
-            {highlightPanels.map((item) => (
+            {highlightPanels.map((item, idx) => (
               <Link
                 key={item.title}
                 to={item.to}
                 target={isMembershipTarget(item.to) ? "_blank" : undefined}
                 rel={isMembershipTarget(item.to) ? "noopener noreferrer" : undefined}
-                className="focus-ring group flex h-full flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-md"
+                className={`focus-ring home-premium-card home-reveal-card animate-fade-up ${getStaggerClass(idx)} group flex h-full flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-md`}
               >
                 <h2 className="text-base font-semibold text-gray-900">
                   {item.title}
@@ -312,25 +359,27 @@ export default function Home() {
 
       {/* ── ABOUT — white bg ──────────────────────────────── */}
       <section className="bg-white">
-        <div className="page-shell pb-10 pt-12 sm:pb-14 sm:pt-16">
+        <div className="page-shell home-rhythm-shell">
           <SectionHeader
             eyebrow="Who We Are"
             title="About IEI Kanyakumari Local Centre"
             description="A vibrant institutional platform dedicated to engineering excellence, networking, and professional contribution."
             contentWidthClassName="max-w-none"
             className="mb-7 sm:mb-9"
+            titleClassName="home-premium-section-title"
+            descriptionClassName="home-premium-section-copy"
           />
-          <p className="mb-8 max-w-none text-[15px] leading-7 text-gray-600 sm:mb-10 sm:text-base">
+          <p className="home-premium-lead mb-8 max-w-none sm:mb-10">
             IEI Kanyakumari Local Centre serves as a hub for engineers, educators, and students,
             focusing on technical competence and community impact. Our programs bridge academia and
             industry, enabling members to stay relevant in evolving technologies while upholding ethical
             and professional standards.
           </p>
           <div className="grid gap-5 sm:gap-6 md:grid-cols-3">
-            {aboutPillars.map((item) => (
+            {aboutPillars.map((item, idx) => (
               <div
                 key={item.title}
-                className="h-full rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-sm"
+                className={`home-premium-card animate-fade-up ${getStaggerClass(idx)} h-full rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-sm`}
               >
                 <h3 className="mb-2 text-base font-semibold text-gray-900">{item.title}</h3>
                 <p className="text-sm leading-6 text-gray-600">{item.detail}</p>
@@ -342,15 +391,25 @@ export default function Home() {
 
       {/* ── MEMBERS — gray-50 bg ──────────────────────────── */}
       <section className="bg-gray-50/60">
-        <div className="page-shell py-20">
+        <div className="page-shell home-rhythm-wide">
           <SectionHeader
             eyebrow="Leadership"
             title="Office Bearers & Members"
             description="Meet our experienced team that drives institutional and technical initiatives."
+            titleClassName="home-premium-section-title"
+            descriptionClassName="home-premium-section-copy"
             action={
-              <Button as={Link} to="/members" variant="secondary" size="sm">
-                View All Members
-              </Button>
+              <div className="home-section-action-wrap">
+                <Button
+                  as={Link}
+                  to="/members"
+                  variant="secondary"
+                  size="sm"
+                  className="home-premium-secondary-action home-section-action-btn"
+                >
+                  View All Members
+                </Button>
+              </div>
             }
           />
           {members.loading && <SkeletonGrid count={6} />}
@@ -358,8 +417,8 @@ export default function Home() {
           {!members.loading && !members.error && (
             members.data.length > 0 ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-                {members.data.slice(0, 6).map((member) => (
-                  <div key={member.id}>
+                {members.data.slice(0, 6).map((member, idx) => (
+                  <div key={member.id} className={`home-list-card-shell animate-fade-up ${getStaggerClass(idx)}`}>
                     <MemberCard member={member} />
                   </div>
                 ))}
@@ -375,16 +434,27 @@ export default function Home() {
       </section>
 
       {/* ── EVENTS — dark navy bg ──────────────────────────── */}
-      <section className="bg-[#05154B]">
-        <div className="page-shell py-20">
+      <section className="home-premium-dark-shell bg-[#05154B]">
+        <div className="page-shell home-rhythm-wide">
           <SectionHeader
             eyebrow="Events"
             title="Technical Activities"
             description="A preview of workshops, lectures, and technical engagement programs."
+            eyebrowClassName="!text-white/70"
+            titleClassName="!text-white"
+            descriptionClassName="!text-slate-200"
             action={
-              <Button as={Link} to="/technical-activities" variant="secondary" size="sm">
-                View All Events
-              </Button>
+              <div className="home-section-action-wrap">
+                <Button
+                  as={Link}
+                  to="/technical-activities"
+                  variant="secondary"
+                  size="sm"
+                  className="home-premium-secondary-action-dark home-section-action-btn"
+                >
+                  View All Events
+                </Button>
+              </div>
             }
           />
           {activities.loading && <SkeletonGrid count={3} />}
@@ -392,8 +462,8 @@ export default function Home() {
           {!activities.loading && !activities.error && (
             activities.data.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                {activities.data.slice(0, 3).map((activity) => (
-                  <div key={activity.id}>
+                {activities.data.slice(0, 3).map((activity, idx) => (
+                  <div key={activity.id} className={`home-list-card-shell home-list-card-shell-dark animate-fade-up ${getStaggerClass(idx)}`}>
                     <EventCard activity={activity} darkTheme />
                   </div>
                 ))}
@@ -407,9 +477,6 @@ export default function Home() {
           )}
         </div>
       </section>
-
-      {/* ── JOIN IEI BAND ───────────────────────────────────── */}
-      <JoinIEIBand />
 
       {/* ── ANNOUNCEMENTS ─────────────────────────────────── */}
       <AnnouncementSection
