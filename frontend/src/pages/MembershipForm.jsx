@@ -13,6 +13,7 @@ import MembershipStatsBand from "../components/membership/MembershipStatsBand";
 import { useMembershipSession } from "../context/MembershipSessionContext";
 import { parseApiError, publicApi } from "../services/api";
 import useFetchList from "../hooks/useFetchList";
+import "../components/membership/membership-premium-experience.css";
 
 const MembershipAuthPanel = lazy(() => import("../components/membership/MembershipAuthPanel"));
 const MembershipDashboardCard = lazy(() =>
@@ -74,6 +75,67 @@ const memberPortalActions = [
   "View Membership Profile",
   "Access CPD and Event Passes",
   "View CPD Analytics (Premium)",
+];
+
+const premiumOperatingSignals = [
+  { label: "National Coverage", value: "100+ Centres" },
+  { label: "Certification Tracks", value: "CEng / PEng" },
+  { label: "Learning Stack", value: "CPD + Events" },
+  { label: "Activation Model", value: "Verified Payment" },
+];
+
+const premiumTrustSignals = [
+  "Secure payment processing with verified activation flow",
+  "Institution-backed professional pathways since 1920",
+  "Member dashboard with subscription and CPD visibility",
+];
+
+const premiumProofStats = [
+  { label: "Centres Network", value: "100+" },
+  { label: "Certification Tracks", value: "2" },
+  { label: "Member Journey", value: "Apply -> Activate" },
+];
+
+const premiumCapabilityPillars = [
+  {
+    title: "Professional Authority",
+    description:
+      "Build documentation-ready authority for approvals, valuations, and technical reports with certification-backed recognition pathways.",
+    accent: "authority",
+  },
+  {
+    title: "Career Acceleration",
+    description:
+      "Upgrade your visibility through domain events, chapter networking, publication opportunities, and structured capability growth milestones.",
+    accent: "career",
+  },
+  {
+    title: "Member Intelligence",
+    description:
+      "Track subscriptions, CPD progress, certificates, and profile records in a single premium operating surface for daily member actions.",
+    accent: "intelligence",
+  },
+];
+
+const premiumJourneySteps = [
+  {
+    title: "Create Membership Profile",
+    detail: "Submit your registration through the onboarding wizard and choose the right membership category.",
+    ctaLabel: "Start Application",
+    ctaHref: "#apply-membership",
+  },
+  {
+    title: "Validate And Activate",
+    detail: "Sign in, select premium plan, and complete checkout. Premium access starts after payment verification.",
+    ctaLabel: "Open Sign In",
+    ctaHref: "#auth-panel",
+  },
+  {
+    title: "Operate As Premium Member",
+    detail: "Use CPD analytics, certificate downloads, publications, and chapter programs for continuous professional outcomes.",
+    ctaLabel: "Explore Programs",
+    ctaHref: "#network-activities",
+  },
 ];
 
 function formatCurrency(amountCents, currency = "INR") {
@@ -228,6 +290,134 @@ function BenefitItem({ text }) {
       </span>
       <p className="ml-3 text-sm font-medium text-gray-700">{text}</p>
     </div>
+  );
+}
+
+function PremiumExperienceHub({ isAuthenticated, premiumPlanCount }) {
+  return (
+    <section className="membership-premium-hub">
+      <div className="membership-premium-hub__head">
+        <div>
+          <p className="membership-premium-hub__eyebrow">Premium Membership Control Hub</p>
+          <h2 className="membership-premium-hub__title">Operate Your Engineering Career In Premium Mode</h2>
+          <p className="membership-premium-hub__description">
+            This membership surface is tuned for conversion, activation, and repeat professional engagement.
+            Start as an applicant or continue as an authenticated member without leaving the page flow.
+          </p>
+        </div>
+        <div className="membership-premium-hub__status-card" role="status" aria-live="polite">
+          <p className="membership-premium-hub__status-label">Current Session</p>
+          <p className="membership-premium-hub__status-value">
+            {isAuthenticated ? "Authenticated Member" : "Guest / Applicant"}
+          </p>
+          <p className="membership-premium-hub__status-meta">
+            {premiumPlanCount > 0
+              ? `${premiumPlanCount} premium plan option(s) are available for activation.`
+              : "Premium plans are syncing. You can still continue onboarding and sign-in flows."}
+          </p>
+        </div>
+      </div>
+
+      <ul className="membership-premium-hub__signal-grid" aria-label="Premium membership signals">
+        {premiumOperatingSignals.map((signal) => (
+          <li key={signal.label}>
+            <p>{signal.value}</p>
+            <span>{signal.label}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="membership-premium-hub__cta-row">
+        <Button as="a" href="#apply-membership" className="membership-premium-hub__primary-cta">
+          Start Membership Journey
+        </Button>
+        <Button as="a" href="#auth-panel" variant="secondary" className="membership-premium-hub__secondary-cta">
+          Member Sign In
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function PremiumTrustProofBand() {
+  return (
+    <section className="mb-8 overflow-hidden rounded-2xl border border-[#c9d9ec] bg-[linear-gradient(160deg,#f8fbff_0%,#ffffff_58%,#f3f8ff_100%)] p-5 shadow-[0_14px_30px_-24px_rgba(11,58,103,0.58)]">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="premium-chip">Trust And Proof</p>
+          <h3 className="mt-2 text-xl font-semibold text-[#123252]">Premium Membership, Backed By Verified Systems</h3>
+          <ul className="mt-3 space-y-1.5 text-sm text-[#4f6781]">
+            {premiumTrustSignals.map((signal) => (
+              <li key={signal} className="flex items-start gap-2">
+                <span className="mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#0b3a67]/10 text-[#0b3a67]">
+                  <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3" aria-hidden="true">
+                    <path d="M5 10.5L8.2 13.5L15 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span>{signal}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <ul className="grid min-w-[220px] gap-2 sm:grid-cols-3 sm:gap-3">
+          {premiumProofStats.map((stat) => (
+            <li key={stat.label} className="rounded-xl border border-[#d4e1f1] bg-white px-3 py-2.5">
+              <p className="text-base font-semibold text-[#123252]">{stat.value}</p>
+              <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6a8198]">
+                {stat.label}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function PremiumCapabilityShowcase() {
+  return (
+    <section className="membership-premium-capability" id="premium-value">
+      <div className="membership-premium-capability__header">
+        <p className="premium-chip">Premium Capability Stack</p>
+        <h3>What Makes The Membership Experience Premium</h3>
+      </div>
+      <div className="membership-premium-capability__grid">
+        {premiumCapabilityPillars.map((pillar) => (
+          <article
+            key={pillar.title}
+            className={`membership-premium-capability__card membership-premium-capability__card--${pillar.accent}`}
+          >
+            <h4>{pillar.title}</h4>
+            <p>{pillar.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PremiumJourneyMap() {
+  return (
+    <section className="membership-premium-journey" aria-label="Premium onboarding journey">
+      <div className="membership-premium-journey__header">
+        <p className="premium-chip">Guided Workflow</p>
+        <h3>Three-Step Premium Membership Flow</h3>
+      </div>
+      <ol className="membership-premium-journey__steps">
+        {premiumJourneySteps.map((step, index) => (
+          <li key={step.title} className="membership-premium-journey__step">
+            <span className="membership-premium-journey__index">{index + 1}</span>
+            <div>
+              <h4>{step.title}</h4>
+              <p>{step.detail}</p>
+              <Button as="a" href={step.ctaHref} variant="secondary" size="sm">
+                {step.ctaLabel}
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -460,6 +650,11 @@ export default function MembershipForm() {
   const activities = useFetchList(publicApi.getActivities);
   const newsletters = useFetchList(publicApi.getNewsletters);
   const premiumPlans = useFetchList(publicApi.getMembershipPremiumPlans);
+  const premiumPlanCount = Array.isArray(premiumPlans.data)
+    ? premiumPlans.data.filter((plan) =>
+        String(plan?.code || "").toUpperCase().startsWith("PREMIUM")
+      ).length
+    : 0;
   const metrics = {
     serviceCount: 6,
     activityCount: activities.data.length,
@@ -467,9 +662,9 @@ export default function MembershipForm() {
   };
 
   return (
-    <section className="page-shell membership-premium-shell section-block pb-28 md:pb-20">
+    <section className="page-shell membership-premium-shell membership-premium-experience section-block pb-28 md:pb-20">
 
-      <div className="mb-8 space-y-5">
+      <div className="membership-premium-top-stack mb-8 space-y-5">
         <MembershipHeroCampaign />
         <MembershipServiceDesk />
         <MembershipEventsBoard activities={activities.data} loading={activities.loading} />
@@ -487,22 +682,34 @@ export default function MembershipForm() {
         description="Benefits of Corporate Membership"
       />
 
+      <PremiumExperienceHub
+        isAuthenticated={isAuthenticated}
+        premiumPlanCount={premiumPlanCount}
+      />
+
+      <PremiumTrustProofBand />
+
       <PremiumPlansShowcase
         plans={premiumPlans.data}
         loading={premiumPlans.loading}
         isAuthenticated={isAuthenticated}
       />
 
-      <div className="mb-8 grid gap-4 lg:grid-cols-2">
+      <PremiumCapabilityShowcase />
+      <PremiumJourneyMap />
+
+      <div className="membership-premium-entry-grid mb-8 grid gap-4 lg:grid-cols-2">
         <Card className="premium-panel p-6" padded={false}>
           <p className="premium-chip">New Applicant</p>
           <h3 className="mt-2 text-xl font-semibold text-[#123252]">Start Membership Application</h3>
           <p className="mt-2 text-sm text-[#577089]">
-            Complete the guided membership wizard and submit your profile for admin approval.
+            {isAuthenticated
+              ? "You are signed in. Continue and update your membership application workflow."
+              : "Complete the guided membership wizard and submit your profile for admin approval."}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button as="a" href="#apply-membership" className="!bg-[#0b3a67] hover:!bg-[#082947]">
-              Start Application
+              {isAuthenticated ? "Continue Application" : "Start Application"}
             </Button>
             <Button
               as="a"
@@ -519,11 +726,13 @@ export default function MembershipForm() {
           <p className="premium-chip">Existing Member</p>
           <h3 className="mt-2 text-xl font-semibold text-[#123252]">Sign In to Member Portal</h3>
           <p className="mt-2 text-sm text-[#577089]">
-            Access your profile, subscription, CPD analytics, and member-only actions.
+            {isAuthenticated
+              ? "Open your member controls for subscription, CPD analytics, and protected actions."
+              : "Sign in to access your profile, subscription, CPD analytics, and member-only actions."}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button as="a" href="#auth-panel" className="!bg-[#0b3a67] hover:!bg-[#082947]">
-              Go to Sign In
+              {isAuthenticated ? "Open Member Access" : "Go to Sign In"}
             </Button>
             <Button
               as="a"
@@ -540,7 +749,7 @@ export default function MembershipForm() {
       {/* ── Membership Gateway Banner ──────────────────── */}
       <div
         id="be-member"
-        className="mb-8 overflow-hidden rounded-3xl border border-[#0b3a67]/20 bg-[linear-gradient(135deg,#0b3a67_0%,#124a83_63%,#1a5f9f_100%)] p-8 text-white scroll-mt-28"
+        className="membership-premium-gateway mb-8 overflow-hidden rounded-3xl border border-[#0b3a67]/20 bg-[linear-gradient(135deg,#0b3a67_0%,#124a83_63%,#1a5f9f_100%)] p-8 text-white scroll-mt-28"
       >
         <p className="premium-chip !border-[#f4c430]/60 !bg-[#f4c430]/20 !text-[#f4c430]">Institutional Membership</p>
         <h2 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
@@ -552,7 +761,7 @@ export default function MembershipForm() {
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.35fr,0.85fr]">
+      <div className="membership-premium-content-grid grid gap-6 xl:grid-cols-[1.35fr,0.85fr]">
         <div className="order-2 space-y-6 xl:order-1">
 
           <section id="apply-membership" className="scroll-mt-28">
@@ -753,13 +962,13 @@ export default function MembershipForm() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 overflow-x-hidden border-t border-gray-200 bg-white/95 px-2 py-2.5 shadow-[0_-6px_22px_-14px_rgba(17,24,39,0.35)] backdrop-blur md:hidden">
+      <div className="membership-premium-mobile-dock fixed inset-x-0 bottom-0 z-40 overflow-x-hidden border-t border-gray-200 bg-white/95 px-2 py-2.5 shadow-[0_-6px_22px_-14px_rgba(17,24,39,0.35)] backdrop-blur md:hidden">
         <nav className="mx-auto grid w-full max-w-md grid-cols-3 gap-2" aria-label="Membership quick actions">
           <Button as="a" href="#apply-membership" className="min-w-0 !h-10 !px-2 !text-xs">
-            Apply
+            {isAuthenticated ? "Continue" : "Apply"}
           </Button>
           <Button as="a" href="#auth-panel" variant="secondary" className="min-w-0 !h-10 !px-2 !text-xs">
-            Sign In
+            {isAuthenticated ? "Portal" : "Sign In"}
           </Button>
           <Button as="a" href="/" variant="secondary" className="min-w-0 !h-10 !px-2 !text-xs">
             Main Site
@@ -767,14 +976,14 @@ export default function MembershipForm() {
         </nav>
       </div>
 
-      <div className="fixed bottom-5 right-5 z-40 hidden md:block">
+      <div className="membership-premium-desktop-dock fixed bottom-5 right-5 z-40 hidden md:block">
         <nav className="rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-lg backdrop-blur" aria-label="Membership quick dock">
           <div className="grid gap-2">
             <Button as="a" href="#apply-membership" size="sm" className="!h-9 !px-3 !text-xs">
-              Apply
+              {isAuthenticated ? "Continue" : "Apply"}
             </Button>
             <Button as="a" href="#auth-panel" variant="secondary" size="sm" className="!h-9 !px-3 !text-xs">
-              Sign In
+              {isAuthenticated ? "Portal" : "Sign In"}
             </Button>
             <Button as={Link} to="/membership/events-cpd" variant="secondary" size="sm" className="!h-9 !px-3 !text-xs">
               Events

@@ -5,63 +5,72 @@ import Button from "../ui/Button";
 const campaigns = [
   {
     badge: "Premium Membership Portal",
-    title: "Engineering Excellence Since 1920",
+    title: "Join The Premium Engineering Network",
     subtitle:
-      "A dedicated membership website for applications, certification pathways, publications, and CPD growth.",
+      "Move from application to activation with a membership flow built for certification, CPD, and professional growth.",
     primaryTo: "/membership/become-member",
-    primaryLabel: "Apply Now",
+    primaryLabel: "Start Application",
     secondaryTo: "/membership/member-services",
-    secondaryLabel: "Member Services",
+    secondaryLabel: "Open Member Services",
   },
   {
     badge: "Certification Acceleration",
-    title: "Certification and Career Advancement",
+    title: "Build Authority With CEng And PEng",
     subtitle:
-      "Move through Chartered Engineer, Professional Engineer, and Section A & B pathways with structured support.",
+      "Advance through Chartered Engineer, Professional Engineer, and structured certification pathways.",
     primaryTo: "/membership/certification",
     primaryLabel: "Open Certification",
     secondaryTo: "/membership/certification#chartered-engineer",
     secondaryLabel: "View CEng",
   },
   {
-    badge: "Growth and Visibility",
-    title: "Publications, Events, and CPD",
+    badge: "Activation To Outcomes",
+    title: "Activate Premium And Stay Career-Ready",
     subtitle:
-      "Stay active through monthly events, publication services, and professional development programs.",
+      "Access premium CPD programs, events, and publication channels designed for long-term member outcomes.",
     primaryTo: "/membership/events-cpd",
-    primaryLabel: "Explore Events",
+    primaryLabel: "Explore CPD Programs",
     secondaryTo: "/membership/publications",
     secondaryLabel: "View Publications",
   },
 ];
 
 const trustPoints = [
-  "Guided onboarding with approval-aware member access",
-  "Premium-ready CPD, analytics, and subscription lifecycle",
-  "Integrated pathways for certification, events, and publications",
+  "Guided onboarding with verified premium activation",
+  "Subscription, invoice, and entitlement visibility in one dashboard",
+  "Structured pathways for certification, CPD, and publications",
 ];
 
 const trustBadges = [
-  { label: "Est. 1920", icon: "🏛️" },
-  { label: "100+ Centres", icon: "🌐" },
-  { label: "CEng & PEng", icon: "🎓" },
-  { label: "IEI-Springer", icon: "📚" },
+  { label: "Est. 1920", tag: "EST" },
+  { label: "100+ Centres", tag: "100+" },
+  { label: "CEng & PEng", tag: "CERT" },
+  { label: "IEI-Springer", tag: "PUB" },
 ];
 
 export default function MembershipHeroCampaign() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
+    if (isPaused) {
+      return undefined;
+    }
+
     const timer = setInterval(() => {
       setActiveIndex((current) => (current + 1) % campaigns.length);
     }, 5500);
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused]);
 
   const active = campaigns[activeIndex];
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-[#0b3a67]/25 bg-[linear-gradient(135deg,#071f3d_0%,#0b3a67_45%,#0f4f8a_80%,#1a6bad_100%)] text-white shadow-[0_24px_60px_-30px_rgba(11,58,103,0.9)]">
+    <section
+      className="relative overflow-hidden rounded-3xl border border-[#0b3a67]/25 bg-[linear-gradient(135deg,#071f3d_0%,#0b3a67_45%,#0f4f8a_80%,#1a6bad_100%)] text-white shadow-[0_24px_60px_-30px_rgba(11,58,103,0.9)]"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Layered radial glows */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_12%,rgba(244,196,48,0.28),transparent_38%),radial-gradient(circle_at_90%_85%,rgba(122,166,214,0.3),transparent_42%),radial-gradient(circle_at_55%_0%,rgba(255,255,255,0.06),transparent_30%)]" />
       {/* Subtle grid texture */}
@@ -112,6 +121,7 @@ export default function MembershipHeroCampaign() {
                   index === activeIndex ? "w-10 bg-[#f4c430]" : "w-3 bg-white/30 hover:bg-white/50"
                 }`}
                 aria-label={`Show campaign ${index + 1}`}
+                aria-pressed={index === activeIndex ? "true" : "false"}
               />
             ))}
           </div>
@@ -123,7 +133,9 @@ export default function MembershipHeroCampaign() {
                 key={badge.label}
                 className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-[#d8ecff] backdrop-blur-sm"
               >
-                <span>{badge.icon}</span>
+                <span className="inline-flex min-w-[34px] justify-center rounded-full border border-white/20 bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[#f4c430]">
+                  {badge.tag}
+                </span>
                 {badge.label}
               </span>
             ))}
@@ -162,3 +174,4 @@ export default function MembershipHeroCampaign() {
     </section>
   );
 }
+

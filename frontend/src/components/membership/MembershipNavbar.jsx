@@ -1,121 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import './membership-navbar.css';
+import NAV_ITEMS from './membership-navbar-menu.config';
 
 const IEI_LOGO =
   'https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png';
-
-const NAV_ITEMS = [
-  {
-    id: 'about',
-    label: 'About',
-    icon: 'about',
-    to: '/membership',
-    dropdown: [
-      { label: 'About IEI', to: '/membership' },
-      { label: 'Engg Divisions', to: null },
-      { label: 'IEI Council', to: null },
-      { label: 'Policies and Regulations', to: null },
-      { label: 'IEI Centres & Network', to: null },
-      { label: 'IEI Guest House', to: null },
-      { label: 'Tender Notice', to: null },
-      { label: 'Leadership', to: null },
-      { label: 'Career', to: null },
-    ],
-  },
-  {
-    id: 'membership',
-    label: 'Membership',
-    icon: 'membership',
-    to: '/membership/become-member',
-    dropdown: [
-      { label: 'Membership Overview', to: '/membership' },
-      { label: 'Become a Member', to: '/membership/become-member' },
-      { label: 'Membership Types', to: '/membership/grades' },
-      { label: 'Subscription / Renewal', to: '/membership/member-services' },
-      { label: 'Member Benefits', to: '/membership/benefits' },
-      { label: 'Downloads / Forms', to: null },
-      { label: 'FAQ', to: '/membership/member-services' },
-    ],
-  },
-  {
-    id: 'certification',
-    label: 'Certification and Arbitration',
-    icon: 'certification',
-    to: '/membership/certification',
-    dropdown: [
-      { label: 'Certification Overview', to: '/membership/certification' },
-      { label: 'Chartered Engineer (CEng)', to: '/membership/certification' },
-      { label: 'Professional Engineer (PEng)', to: '/membership/certification' },
-      { label: 'Section A & B Examination', to: '/membership/certification' },
-      { label: 'Arbitration Services', to: null },
-      { label: 'Apply / Track Status', to: '/membership/certification' },
-    ],
-  },
-  {
-    id: 'publication',
-    label: 'Publication',
-    icon: 'publication',
-    to: '/membership/publications',
-    dropdown: [
-      { label: 'Journals & Transactions', to: '/membership/publications' },
-      { label: 'Newsletters', to: '/membership/publications' },
-      { label: 'Conference Proceedings', to: '/membership/publications' },
-      { label: 'IEI–Springer Book Series', to: null },
-      { label: 'Publication Guidelines', to: null },
-    ],
-  },
-  {
-    id: 'technical-events',
-    label: 'Technical Events',
-    icon: 'events',
-    to: '/membership/events-cpd',
-    dropdown: [
-      { label: 'Upcoming Events', to: '/membership/events-cpd' },
-      { label: 'Conferences & Seminars', to: '/membership/events-cpd' },
-      { label: 'Workshops', to: '/membership/events-cpd' },
-      { label: 'Student Chapters', to: '/membership/events-cpd' },
-      { label: 'Technical Competitions', to: null },
-    ],
-  },
-  {
-    id: 'prize-awards',
-    label: 'Prize & Awards',
-    icon: 'awards',
-    to: null,
-    dropdown: [
-      { label: 'Award Categories', to: null },
-      { label: 'Eligibility Criteria', to: null },
-      { label: 'Nomination Process', to: null },
-      { label: 'Past Awardees', to: null },
-    ],
-  },
-  {
-    id: 'research-grant',
-    label: 'Research Grant-in-Aid',
-    icon: 'research',
-    to: null,
-    dropdown: [
-      { label: 'Scheme Details', to: null },
-      { label: 'Eligibility & Guidelines', to: null },
-      { label: 'Apply for Grant', to: null },
-      { label: 'Check Status', to: null },
-    ],
-  },
-  {
-    id: 'education-cpd',
-    label: 'Education and CPD',
-    icon: 'cpd',
-    to: '/membership/events-cpd',
-    dropdown: [
-      { label: 'CPD Programs', to: '/membership/events-cpd' },
-      { label: 'Courses & Workshops', to: '/membership/events-cpd' },
-      { label: 'Online Learning', to: null },
-      { label: 'Registration', to: '/membership/events-cpd' },
-      { label: 'CPD Certificate', to: null },
-    ],
-  },
-];
 
 const SOCIAL_LINKS = [
   { id: 'x', label: 'X', href: 'https://x.com' },
@@ -124,6 +13,15 @@ const SOCIAL_LINKS = [
   { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com' },
   { id: 'instagram', label: 'Instagram', href: 'https://instagram.com' },
 ];
+
+function createAllExpandedMobileMenus() {
+  return NAV_ITEMS.reduce((acc, item) => {
+    if (item.dropdown) {
+      acc[item.id] = true;
+    }
+    return acc;
+  }, {});
+}
 
 function normalizePath(value = '') {
   return String(value).split('#')[0] || '';
@@ -311,7 +209,7 @@ function DesktopMenuItem({
 
   return (
     <li
-      className={`iei-membership-navbar__menu-item iei-membership-navbar__menu-item--dropdown ${isOpen ? 'is-open' : ''}`}
+      className={`iei-membership-navbar__menu-item iei-membership-navbar__menu-item--dropdown ${isOpen ? 'is-open' : ''} ${item.dropdownAlign === 'right' ? 'is-align-right' : ''}`}
       ref={(node) => registerContainer(item.id, node)}
       onMouseEnter={() => openMenu(item.id)}
       onMouseLeave={() => scheduleClose(item.id)}
@@ -677,6 +575,17 @@ export default function MembershipNavbar() {
 
   const closeMobileMenu = () => {
     setMobileOpen(false);
+    setMobileExpandedMenus({});
+  };
+
+  const toggleMobileDrawer = () => {
+    setMobileOpen((current) => {
+      const nextOpen = !current;
+      if (nextOpen) {
+        setMobileExpandedMenus(createAllExpandedMobileMenus());
+      }
+      return nextOpen;
+    });
   };
 
   return (
@@ -766,8 +675,9 @@ export default function MembershipNavbar() {
             aria-label='Open membership menu'
             aria-controls='iei-membership-mobile-nav'
             aria-expanded={mobileOpen ? 'true' : 'false'}
-            onClick={() => setMobileOpen((current) => !current)}
+            onClick={toggleMobileDrawer}
           >
+            <span className='iei-membership-navbar__menu-toggle-label'>Menu</span>
             <HamburgerIcon open={mobileOpen} />
           </button>
         </div>

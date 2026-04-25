@@ -20,6 +20,7 @@ import EventsCpdPage from "./pages/membership/EventsCpdPage";
 import MemberServicesPage from "./pages/membership/MemberServicesPage";
 import MembershipBenefitsPage from "./pages/membership/MembershipBenefitsPage";
 import MembershipGradesPage from "./pages/membership/MembershipGradesPage";
+import MembershipInfoPage from "./pages/membership/MembershipInfoPage";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "./admin/AdminRoute";
 import AdminLogin from "./admin/AdminLogin";
@@ -229,6 +230,14 @@ export default function App() {
         element={
           <MembershipLayout>
             <MembershipGradesPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/info"
+        element={
+          <MembershipLayout>
+            <MembershipInfoPage />
           </MembershipLayout>
         }
       />
