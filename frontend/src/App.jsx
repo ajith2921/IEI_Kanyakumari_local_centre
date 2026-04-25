@@ -18,6 +18,8 @@ import CertificationPage from "./pages/membership/CertificationPage";
 import PublicationsPage from "./pages/membership/PublicationsPage";
 import EventsCpdPage from "./pages/membership/EventsCpdPage";
 import MemberServicesPage from "./pages/membership/MemberServicesPage";
+import MembershipBenefitsPage from "./pages/membership/MembershipBenefitsPage";
+import MembershipGradesPage from "./pages/membership/MembershipGradesPage";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "./admin/AdminRoute";
 import AdminLogin from "./admin/AdminLogin";
@@ -39,6 +41,34 @@ function LegacyMembershipRedirect() {
   return <Navigate to={{ pathname: "/membership", hash: location.hash }} replace />;
 }
 
+function MembershipHomeRoute() {
+  const location = useLocation();
+  const normalizedHash = String(location.hash || "").toLowerCase();
+
+  const hashRouteMap = {
+    "#be-member": "/membership/become-member",
+    "#apply-membership": "/membership/become-member",
+    "#membership-info": "/membership/benefits",
+    "#chartered-engineer": "/membership/certification#chartered-engineer",
+    "#professional-engineer": "/membership/certification#professional-engineer",
+    "#section-ab": "/membership/certification#section-ab",
+    "#academics-certification": "/membership/certification",
+    "#publications": "/membership/publications",
+    "#network-activities": "/membership/events-cpd",
+    "#student-chapters": "/membership/events-cpd#student-chapters",
+    "#announcements": "/membership/events-cpd#announcements",
+    "#auth-panel": "/membership/member-services#auth-panel",
+    "#fees-subscriptions": "/membership/member-services#fees-subscriptions",
+    "#faq": "/membership/member-services#faq",
+  };
+
+  if (normalizedHash && hashRouteMap[normalizedHash]) {
+    return <Navigate to={hashRouteMap[normalizedHash]} replace />;
+  }
+
+  return <MembershipForm />;
+}
+
 function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -51,7 +81,7 @@ function PublicLayout({ children }) {
 
 function MembershipLayout({ children }) {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="membership-page min-h-screen bg-white text-gray-900">
       <MembershipNavbar />
       <main id="main-content">{children}</main>
       <MembershipFooter />
@@ -140,7 +170,7 @@ export default function App() {
         path="/membership"
         element={
           <MembershipLayout>
-            <MembershipForm />
+            <MembershipHomeRoute />
           </MembershipLayout>
         }
       />
@@ -183,6 +213,22 @@ export default function App() {
         element={
           <MembershipLayout>
             <MemberServicesPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/benefits"
+        element={
+          <MembershipLayout>
+            <MembershipBenefitsPage />
+          </MembershipLayout>
+        }
+      />
+      <Route
+        path="/membership/grades"
+        element={
+          <MembershipLayout>
+            <MembershipGradesPage />
           </MembershipLayout>
         }
       />

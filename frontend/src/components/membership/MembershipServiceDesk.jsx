@@ -10,19 +10,19 @@ const serviceCards = [
   {
     title: "Chartered Engineer Certification",
     detail: "Access CEng pathway details for technical authority-focused roles.",
-    to: "/membership#chartered-engineer",
+    to: "/membership/certification#chartered-engineer",
     cta: "View CEng",
   },
   {
     title: "Professional Engineer Certification",
     detail: "Review PEng-aligned progression for advanced engineering assignments.",
-    to: "/membership#professional-engineer",
+    to: "/membership/certification#professional-engineer",
     cta: "View PEng",
   },
   {
     title: "Section A and B Examination",
     detail: "Use exam support routes for forms, cards, and result tracking.",
-    to: "/membership#section-ab",
+    to: "/membership/certification#section-ab",
     cta: "Open Track",
   },
   {

@@ -1,7 +1,11 @@
-import { Link } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import SectionHeader from "../../components/SectionHeader";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import LoadingSpinner from "../../components/LoadingSpinner";
+
+const MembershipRegisterWizard = lazy(() =>
+  import("../../components/membership/MembershipRegisterWizard")
+);
 
 const onboardingSteps = [
   {
@@ -38,19 +42,11 @@ export default function BecomeMemberPage() {
         ))}
       </div>
 
-      <Card className="mt-6 border-gray-200 bg-gray-50" padded={false}>
-        <div className="p-6">
-          <p className="text-sm text-gray-600">
-            Use the membership home application wizard to complete your registration with full profile data.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Button as={Link} to="/membership#apply-membership">Open Application Wizard</Button>
-            <Button as={Link} to="/membership#auth-panel" variant="secondary">
-              Existing Member Sign In
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <div className="mt-6">
+        <Suspense fallback={<LoadingSpinner text="Loading registration module..." />}>
+          <MembershipRegisterWizard />
+        </Suspense>
+      </div>
     </section>
   );
 }

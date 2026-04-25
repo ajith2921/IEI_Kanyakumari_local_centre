@@ -1,444 +1,839 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import './membership-navbar.css';
 
-/* ─── Nav data matching ieindia.org exactly ─────────────────── */
-const navItems = [
+const IEI_LOGO =
+  'https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png';
+
+const NAV_ITEMS = [
   {
-    label: "About",
-    to: "/membership",
-    end: true,
+    id: 'about',
+    label: 'About',
+    icon: 'about',
+    to: '/membership',
     dropdown: [
-      { label: "About IEI",                to: "/membership"                    },
-      { label: "Engg Divisions",           to: null                             },
-      { label: "IEI Council",              to: null                             },
-      { label: "Policies and Regulations", to: null                             },
-      { label: "IEI Centres & Network",    to: null                             },
-      { label: "IEI Guest House",          to: null                             },
-      { label: "Tender Notice",            to: null                             },
-      { label: "Leadership",               to: null                             },
-      { label: "Career",                   to: null                             },
+      { label: 'About IEI', to: '/membership' },
+      { label: 'Engg Divisions', to: null },
+      { label: 'IEI Council', to: null },
+      { label: 'Policies and Regulations', to: null },
+      { label: 'IEI Centres & Network', to: null },
+      { label: 'IEI Guest House', to: null },
+      { label: 'Tender Notice', to: null },
+      { label: 'Leadership', to: null },
+      { label: 'Career', to: null },
     ],
   },
   {
-    label: "Membership",
+    id: 'membership',
+    label: 'Membership',
+    icon: 'membership',
+    to: '/membership/become-member',
+    dropdown: [
+      { label: 'Membership Overview', to: '/membership' },
+      { label: 'Become a Member', to: '/membership/become-member' },
+      { label: 'Membership Types', to: '/membership/grades' },
+      { label: 'Subscription / Renewal', to: '/membership/member-services' },
+      { label: 'Member Benefits', to: '/membership/benefits' },
+      { label: 'Downloads / Forms', to: null },
+      { label: 'FAQ', to: '/membership/member-services' },
+    ],
+  },
+  {
+    id: 'certification',
+    label: 'Certification and Arbitration',
+    icon: 'certification',
+    to: '/membership/certification',
+    dropdown: [
+      { label: 'Certification Overview', to: '/membership/certification' },
+      { label: 'Chartered Engineer (CEng)', to: '/membership/certification' },
+      { label: 'Professional Engineer (PEng)', to: '/membership/certification' },
+      { label: 'Section A & B Examination', to: '/membership/certification' },
+      { label: 'Arbitration Services', to: null },
+      { label: 'Apply / Track Status', to: '/membership/certification' },
+    ],
+  },
+  {
+    id: 'publication',
+    label: 'Publication',
+    icon: 'publication',
+    to: '/membership/publications',
+    dropdown: [
+      { label: 'Journals & Transactions', to: '/membership/publications' },
+      { label: 'Newsletters', to: '/membership/publications' },
+      { label: 'Conference Proceedings', to: '/membership/publications' },
+      { label: 'IEI–Springer Book Series', to: null },
+      { label: 'Publication Guidelines', to: null },
+    ],
+  },
+  {
+    id: 'technical-events',
+    label: 'Technical Events',
+    icon: 'events',
+    to: '/membership/events-cpd',
+    dropdown: [
+      { label: 'Upcoming Events', to: '/membership/events-cpd' },
+      { label: 'Conferences & Seminars', to: '/membership/events-cpd' },
+      { label: 'Workshops', to: '/membership/events-cpd' },
+      { label: 'Student Chapters', to: '/membership/events-cpd' },
+      { label: 'Technical Competitions', to: null },
+    ],
+  },
+  {
+    id: 'prize-awards',
+    label: 'Prize & Awards',
+    icon: 'awards',
     to: null,
     dropdown: [
-      { label: "Join IEI", to: "/membership/become-member" },
-      { label: "Member Benefits", to: "/membership#membership-info" },
-      { label: "Grades of Membership", to: "/membership#membership-info" },
-      { label: "Upgrade Membership", to: null },
-      { label: "Institutional Membership", to: null },
-      { label: "Fees & Subscriptions", to: null },
-      { label: "Student Chapters", to: null },
-      { label: "Announcement for Members", to: null },
-      { label: "FAQ", to: null },
-      { label: "Downloads", to: "/links-downloads" },
+      { label: 'Award Categories', to: null },
+      { label: 'Eligibility Criteria', to: null },
+      { label: 'Nomination Process', to: null },
+      { label: 'Past Awardees', to: null },
     ],
   },
   {
-    label: "Certification and Arbitration",
-    to: "/membership/certification",
-    dropdown: null,
-  },
-  {
-    label: "Publication",
-    to: "/membership/publications",
-    dropdown: null,
-  },
-  {
-    label: "Technical Events",
-    to: "/membership/events-cpd",
-    dropdown: null,
-  },
-  {
-    label: "Prize & Awards",
+    id: 'research-grant',
+    label: 'Research Grant-in-Aid',
+    icon: 'research',
     to: null,
     dropdown: [
-      { label: "Prize & Awards", to: null },
+      { label: 'Scheme Details', to: null },
+      { label: 'Eligibility & Guidelines', to: null },
+      { label: 'Apply for Grant', to: null },
+      { label: 'Check Status', to: null },
     ],
   },
   {
-    label: "Research Grant-in-Aid",
-    to: null,
+    id: 'education-cpd',
+    label: 'Education and CPD',
+    icon: 'cpd',
+    to: '/membership/events-cpd',
     dropdown: [
-      { label: "Research Grant-in-Aid", to: null },
+      { label: 'CPD Programs', to: '/membership/events-cpd' },
+      { label: 'Courses & Workshops', to: '/membership/events-cpd' },
+      { label: 'Online Learning', to: null },
+      { label: 'Registration', to: '/membership/events-cpd' },
+      { label: 'CPD Certificate', to: null },
     ],
-  },
-  {
-    label: "Education and CPD",
-    to: "/membership/events-cpd",
-    dropdown: null,
   },
 ];
 
-const socialLinks = [
-  {
-    href: "https://twitter.com",
-    title: "X",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L2 2.25h6.956l4.26 5.632L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
-      </svg>
-    ),
-  },
-  {
-    href: "https://facebook.com",
-    title: "Facebook",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.027 4.388 11.021 10.125 11.927v-8.437H7.078v-3.49h3.047V9.413c0-3.022 1.792-4.688 4.533-4.688 1.312 0 2.686.234 2.686.234v2.97h-1.513c-1.491 0-1.956.928-1.956 1.879v2.255h3.328l-.532 3.49h-2.796v8.437C19.612 23.094 24 18.1 24 12.073Z" />
-      </svg>
-    ),
-  },
-  {
-    href: "https://youtube.com",
-    title: "YouTube",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-      </svg>
-    ),
-  },
-  {
-    href: "https://linkedin.com",
-    title: "LinkedIn",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-      </svg>
-    ),
-  },
-  {
-    href: "https://instagram.com",
-    title: "Instagram",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
-      </svg>
-    ),
-  },
+const SOCIAL_LINKS = [
+  { id: 'x', label: 'X', href: 'https://x.com' },
+  { id: 'facebook', label: 'Facebook', href: 'https://facebook.com' },
+  { id: 'youtube', label: 'YouTube', href: 'https://youtube.com' },
+  { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com' },
+  { id: 'instagram', label: 'Instagram', href: 'https://instagram.com' },
 ];
 
-/* ─── Chevron icon ───────────────────────────────────────────── */
-function ChevronDown({ open }) {
+function normalizePath(value = '') {
+  return String(value).split('#')[0] || '';
+}
+
+function isPathActive(pathname, to) {
+  const targetPath = normalizePath(to);
+  if (!targetPath) return false;
+  if (targetPath === '/membership') {
+    return pathname === '/membership';
+  }
+  return pathname === targetPath || pathname.startsWith(`${targetPath}/`);
+}
+
+function isMenuItemActive(pathname, item) {
+  if (item.to && isPathActive(pathname, item.to)) return true;
+  if (!item.dropdown) return false;
+  return item.dropdown.some((entry) => isPathActive(pathname, entry.to));
+}
+
+function CaretIcon({ open }) {
   return (
     <svg
-      viewBox="0 0 12 12"
-      fill="none"
-      className={`ml-1 inline-block h-2.5 w-2.5 flex-shrink-0 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+      viewBox='0 0 12 12'
+      aria-hidden='true'
+      className={`iei-membership-navbar__caret ${open ? 'is-open' : ''}`}
     >
-      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d='M2 4.25L6 8l4-3.75' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
     </svg>
   );
 }
 
-/* ─── Desktop dropdown ────────────────────────────────────────── */
-function DesktopNavItem({ item }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const location = useLocation();
+function MenuIcon({ name }) {
+  switch (name) {
+    case 'about':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <circle cx='10' cy='10' r='8' fill='none' stroke='currentColor' strokeWidth='1.5' />
+          <path d='M10 8v5' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+          <circle cx='10' cy='5.7' r='0.9' fill='currentColor' />
+        </svg>
+      );
+    case 'membership':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <circle cx='7' cy='7' r='2.5' fill='none' stroke='currentColor' strokeWidth='1.5' />
+          <circle cx='13' cy='8' r='2.1' fill='none' stroke='currentColor' strokeWidth='1.5' />
+          <path d='M3.2 15.2c0-2.1 1.7-3.9 3.8-3.9s3.8 1.8 3.8 3.9' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+          <path d='M10.2 15.2c0-1.7 1.3-3.1 2.9-3.1s2.9 1.4 2.9 3.1' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+        </svg>
+      );
+    case 'certification':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <path d='M10 2.5l2.6 1.2 2.8-.4.7 2.8 2.2 1.8-1.7 2.2.2 2.8-2.8.7-1.5 2.4-2.5-1.3-2.5 1.3-1.5-2.4-2.8-.7.2-2.8L1.7 8.9l2.2-1.8.7-2.8 2.8.4L10 2.5z' fill='none' stroke='currentColor' strokeWidth='1.3' strokeLinejoin='round' />
+          <path d='M7 10.3l1.8 1.8 3.4-3.6' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
+        </svg>
+      );
+    case 'publication':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <path d='M4.2 3.7h8.3a3 3 0 0 1 3 3v9.6H7.3a3.1 3.1 0 0 0-3.1 3V3.7z' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinejoin='round' />
+          <path d='M7.3 19.3V8.1h8.2' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinejoin='round' />
+        </svg>
+      );
+    case 'events':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <rect x='3' y='4.2' width='14' height='12.5' rx='2' fill='none' stroke='currentColor' strokeWidth='1.5' />
+          <path d='M6 2.8v3M14 2.8v3M3.5 8.3h13' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+          <circle cx='8' cy='11.6' r='1.1' fill='currentColor' />
+          <circle cx='12.1' cy='11.6' r='1.1' fill='currentColor' />
+        </svg>
+      );
+    case 'awards':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <path d='M6 3h8v2.8a4 4 0 0 1-8 0V3z' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinejoin='round' />
+          <path d='M6 4.8H3.5a2.3 2.3 0 0 0 2.3 2.3H6m8-2.3h2.5a2.3 2.3 0 0 1-2.3 2.3H14' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+          <path d='M10 9.8v4.2M7.1 16.8h5.8' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+        </svg>
+      );
+    case 'research':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <path d='M7 3.2h6M8.1 3.2v3.6l-3.4 6.1a2 2 0 0 0 1.8 3h7a2 2 0 0 0 1.8-3L12 6.8V3.2' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
+          <path d='M7.1 11.2h5.8' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+        </svg>
+      );
+    case 'cpd':
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <path d='M2.5 7.4L10 3.5l7.5 3.9L10 11.3 2.5 7.4z' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinejoin='round' />
+          <path d='M5.4 9.2v3.2c0 .8 2.1 2.1 4.6 2.1s4.6-1.3 4.6-2.1V9.2' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox='0 0 20 20' className='iei-membership-navbar__menu-icon' aria-hidden='true'>
+          <circle cx='10' cy='10' r='7' fill='none' stroke='currentColor' strokeWidth='1.5' />
+        </svg>
+      );
+  }
+}
 
-  useEffect(() => { setOpen(false); }, [location.pathname]);
+function SocialIcon({ name }) {
+  switch (name) {
+    case 'x':
+      return (
+        <svg viewBox='0 0 24 24' className='iei-membership-navbar__social-icon' aria-hidden='true'>
+          <path d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L2 2.25h6.956l4.26 5.632L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z' fill='currentColor' />
+        </svg>
+      );
+    case 'facebook':
+      return (
+        <svg viewBox='0 0 24 24' className='iei-membership-navbar__social-icon' aria-hidden='true'>
+          <path d='M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.027 4.388 11.021 10.125 11.927v-8.437H7.078v-3.49h3.047V9.413c0-3.022 1.792-4.688 4.533-4.688 1.312 0 2.686.234 2.686.234v2.97h-1.513c-1.491 0-1.956.928-1.956 1.879v2.255h3.328l-.532 3.49h-2.796v8.437C19.612 23.094 24 18.1 24 12.073z' fill='currentColor' />
+        </svg>
+      );
+    case 'youtube':
+      return (
+        <svg viewBox='0 0 24 24' className='iei-membership-navbar__social-icon' aria-hidden='true'>
+          <path d='M23.5 6.2a3 3 0 0 0-2.1-2.1c-1.9-.5-9.4-.5-9.4-.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z' fill='currentColor' />
+        </svg>
+      );
+    case 'linkedin':
+      return (
+        <svg viewBox='0 0 24 24' className='iei-membership-navbar__social-icon' aria-hidden='true'>
+          <path d='M20.4 20.4h-3.5v-5.6c0-1.3 0-3-1.9-3s-2.1 1.5-2.1 2.9v5.7H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.8 3.3-1.8 3.6 0 4.3 2.4 4.3 5.4v6.2zM5.3 7.4a2.1 2.1 0 1 1 0-4.1 2.1 2.1 0 0 1 0 4.1zm1.8 13H3.6V9h3.5v11.4zM22.2 0H1.8C.8 0 0 .8 0 1.8v20.4C0 23.2.8 24 1.8 24h20.4c1 0 1.8-.8 1.8-1.8V1.8C24 .8 23.2 0 22.2 0z' fill='currentColor' />
+        </svg>
+      );
+    case 'instagram':
+      return (
+        <svg viewBox='0 0 24 24' className='iei-membership-navbar__social-icon' aria-hidden='true'>
+          <path d='M7.1.1C5.9.2 5 .4 4.1.8a6.6 6.6 0 0 0-2.4 1.6A6.6 6.6 0 0 0 .1 4.8C-.3 5.7-.5 6.6-.6 7.8A59 59 0 0 0-.7 12c0 1.5 0 2.9.1 4.2.1 1.2.3 2.1.7 3a6.6 6.6 0 0 0 1.6 2.4 6.6 6.6 0 0 0 2.4 1.6c.9.4 1.8.6 3 .7A59 59 0 0 0 12 24c1.5 0 2.9 0 4.2-.1 1.2-.1 2.1-.3 3-.7a6.6 6.6 0 0 0 2.4-1.6 6.6 6.6 0 0 0 1.6-2.4c.4-.9.6-1.8.7-3 .1-1.3.1-2.7.1-4.2s0-2.9-.1-4.2c-.1-1.2-.3-2.1-.7-3a6.6 6.6 0 0 0-1.6-2.4A6.6 6.6 0 0 0 19.2.8c-.9-.4-1.8-.6-3-.7A59 59 0 0 0 12 0C10.5 0 9.1 0 7.8.1h-.7zm9 2.1c1.1.1 1.7.2 2.1.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.3 1 .4 2.1.1 1.2.1 1.6.1 4.9s0 3.7-.1 4.9c-.1 1.1-.2 1.7-.4 2.1-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .3-2.1.4-1.2.1-1.6.1-4.9.1s-3.7 0-4.9-.1c-1.1-.1-1.7-.2-2.1-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.3-1-.4-2.1-.1-1.2-.1-1.6-.1-4.9s0-3.7.1-4.9c.1-1.1.2-1.7.4-2.1.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.3 2.1-.4 1.2-.1 1.6-.1 4.9-.1s3.7 0 4.9.1zM12 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4zm0 10.2a4 4 0 1 1 0-8.1 4 4 0 0 1 0 8.1zm6.4-11.9a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z' fill='currentColor' />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+function HamburgerIcon({ open }) {
+  return (
+    <span className='iei-membership-navbar__hamburger' aria-hidden='true'>
+      <span className={open ? 'is-open' : ''} />
+      <span className={open ? 'is-open' : ''} />
+      <span className={open ? 'is-open' : ''} />
+    </span>
+  );
+}
 
-  const isChildActive = item.dropdown?.some((d) => d.to && location.pathname === d.to) ?? false;
-
-  /* Active nav item: solid indigo-blue block exactly like ieindia.org */
-  const activeCls = "bg-[#394d93] text-white";
-  const inactiveCls = "text-[#1c2647] hover:bg-[#394d93]/10 hover:text-[#394d93]";
-
-  /* Simple link */
+function DesktopMenuItem({
+  item,
+  isOpen,
+  isActive,
+  openMenu,
+  closeMenu,
+  toggleMenu,
+  scheduleClose,
+  cancelScheduledClose,
+  registerContainer,
+  registerTrigger,
+  registerSubItem,
+  onTriggerKeyDown,
+  onSubmenuKeyDown,
+}) {
   if (!item.dropdown) {
     return (
-      <NavLink
-        to={item.to}
-        end={item.end}
-        className={({ isActive }) =>
-          `flex h-full items-center gap-1.5 px-3 py-2.5 text-[12.5px] font-semibold transition-colors duration-150 ${isActive ? activeCls : inactiveCls}`
-        }
-      >
-        {item.label}
-      </NavLink>
+      <li className='iei-membership-navbar__menu-item'>
+        <NavLink
+          to={item.to || '/membership'}
+          className={() =>
+            `iei-membership-navbar__menu-link ${isActive ? 'is-active' : ''}`
+          }
+        >
+          <MenuIcon name={item.icon} />
+          <span>{item.label}</span>
+        </NavLink>
+      </li>
     );
   }
 
-  /* Dropdown button */
-  const isActive = open || isChildActive;
+  const menuPanelId = `iei-membership-menu-${item.id}`;
+
   return (
-    <div ref={ref} className="relative h-full">
+    <li
+      className={`iei-membership-navbar__menu-item iei-membership-navbar__menu-item--dropdown ${isOpen ? 'is-open' : ''}`}
+      ref={(node) => registerContainer(item.id, node)}
+      onMouseEnter={() => openMenu(item.id)}
+      onMouseLeave={() => scheduleClose(item.id)}
+      onFocusCapture={() => cancelScheduledClose()}
+      onBlurCapture={() => {
+        window.requestAnimationFrame(() => {
+          const container = registerContainer(item.id);
+          if (container && !container.contains(document.activeElement)) {
+            closeMenu(item.id);
+          }
+        });
+      }}
+    >
       <button
-        type="button"
-        onClick={() => setOpen((p) => !p)}
-        className={`flex h-full items-center gap-1 px-3 py-2.5 text-[12.5px] font-semibold transition-colors duration-150 ${isActive ? activeCls : inactiveCls}`}
+        type='button'
+        ref={(node) => registerTrigger(item.id, node)}
+        className={`iei-membership-navbar__menu-trigger ${isOpen || isActive ? 'is-active' : ''}`}
+        aria-expanded={isOpen ? 'true' : 'false'}
+        aria-controls={menuPanelId}
+        aria-haspopup='menu'
+        onClick={() => toggleMenu(item.id)}
+        onKeyDown={(event) => onTriggerKeyDown(event, item.id)}
       >
-        {item.label}
-        <ChevronDown open={open} />
+        <MenuIcon name={item.icon} />
+        <span>{item.label}</span>
+        <CaretIcon open={isOpen} />
       </button>
 
-      {open && (
-        <div className="absolute left-0 top-full z-50 min-w-[220px] overflow-hidden rounded-b-lg border border-t-0 border-gray-200 bg-white shadow-[0_8px_24px_-8px_rgba(28,38,71,0.25)]">
-          {item.dropdown.map((d, i) => (
-            d.to ? (
-              <NavLink
-                key={d.label + i}
-                to={d.to}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `block px-4 py-2.5 text-[13px] font-medium transition-colors duration-100 ${isActive
-                    ? "bg-[#394d93] text-white"
-                    : "text-[#1c2647] hover:bg-[#394d93] hover:text-white"
-                  }`
-                }
-              >
-                {d.label}
-              </NavLink>
-            ) : (
+      <ul
+        id={menuPanelId}
+        role='menu'
+        className='iei-membership-navbar__dropdown'
+        onMouseEnter={() => cancelScheduledClose()}
+        onMouseLeave={() => scheduleClose(item.id)}
+      >
+        {item.dropdown.map((entry, index) => {
+          if (entry.to) {
+            return (
+              <li key={`${item.id}-${entry.label}`} role='none'>
+                <NavLink
+                  to={entry.to}
+                  role='menuitem'
+                  tabIndex={isOpen ? 0 : -1}
+                  ref={(node) => registerSubItem(item.id, index, node)}
+                  className={({ isActive: isChildActive }) =>
+                    `iei-membership-navbar__dropdown-item ${isChildActive ? 'is-active' : ''}`
+                  }
+                  onClick={() => closeMenu(item.id)}
+                  onKeyDown={(event) => onSubmenuKeyDown(event, item.id)}
+                >
+                  {entry.label}
+                </NavLink>
+              </li>
+            );
+          }
+
+          return (
+            <li key={`${item.id}-${entry.label}`} role='none'>
               <span
-                key={d.label + i}
-                className="flex cursor-not-allowed items-center justify-between px-4 py-2.5 text-[13px] font-medium text-gray-400 select-none"
+                role='menuitem'
+                tabIndex={isOpen ? 0 : -1}
+                ref={(node) => registerSubItem(item.id, index, node)}
+                className='iei-membership-navbar__dropdown-item is-disabled'
+                onKeyDown={(event) => onSubmenuKeyDown(event, item.id)}
               >
-                {d.label}
-                <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-gray-400">
-                  Soon
-                </span>
+                {entry.label}
+                <em>Soon</em>
               </span>
-            )
-          ))}
-        </div>
-      )}
-    </div>
+            </li>
+          );
+        })}
+      </ul>
+    </li>
   );
 }
 
-/* ─── Mobile accordion item ───────────────────────────────────── */
-function MobileNavItem({ item, onClose }) {
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
-  useEffect(() => { setOpen(false); }, [location.pathname]);
-
-  const activeCls = "border-l-4 border-[#394d93] bg-[#394d93]/8 text-[#394d93]";
-  const inactiveCls = "border-l-4 border-transparent text-[#1c2647]";
+function MobileMenuItem({ item, expanded, onToggle, onNavigate }) {
+  const panelId = `iei-membership-mobile-panel-${item.id}`;
 
   if (!item.dropdown) {
     return (
-      <NavLink
-        to={item.to}
-        end={item.end}
-        onClick={onClose}
-        className={({ isActive }) =>
-          `flex items-center gap-2 px-5 py-3.5 text-[13.5px] font-semibold transition-colors ${isActive ? activeCls : inactiveCls} hover:bg-gray-50`
-        }
-      >
-        {item.label}
-      </NavLink>
+      <li className='iei-membership-navbar__mobile-item'>
+        <NavLink
+          to={item.to || '/membership'}
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            `iei-membership-navbar__mobile-link ${isActive ? 'is-active' : ''}`
+          }
+        >
+          <span className='iei-membership-navbar__mobile-trigger-label'>
+            <MenuIcon name={item.icon} />
+            <span>{item.label}</span>
+          </span>
+        </NavLink>
+      </li>
     );
   }
 
   return (
-    <div className="border-b border-gray-100">
+    <li className='iei-membership-navbar__mobile-item'>
       <button
-        type="button"
-        onClick={() => setOpen((p) => !p)}
-        className="flex w-full items-center justify-between px-5 py-3.5 text-[13.5px] font-semibold text-[#1c2647] hover:bg-gray-50"
+        type='button'
+        className={`iei-membership-navbar__mobile-trigger ${expanded ? 'is-open' : ''}`}
+        aria-expanded={expanded ? 'true' : 'false'}
+        aria-controls={panelId}
+        onClick={() => onToggle(item.id)}
       >
-        {item.label}
-        <ChevronDown open={open} />
+        <span className='iei-membership-navbar__mobile-trigger-label'>
+          <MenuIcon name={item.icon} />
+          <span>{item.label}</span>
+        </span>
+        <CaretIcon open={expanded} />
       </button>
-      {open && (
-        <div className="bg-gray-50">
-          {item.dropdown.map((d, i) =>
-            d.to ? (
-              <NavLink
-                key={d.label + i}
-                to={d.to}
-                onClick={() => { setOpen(false); onClose(); }}
-                className={({ isActive }) =>
-                  `block px-8 py-2.5 text-[13px] font-medium transition-colors ${isActive
-                    ? "bg-[#394d93] text-white"
-                    : "text-[#1c2647] hover:bg-[#394d93] hover:text-white"
-                  }`
-                }
-              >
-                {d.label}
-              </NavLink>
-            ) : (
-              <span key={d.label + i} className="flex cursor-not-allowed items-center justify-between px-8 py-2.5 text-[13px] text-gray-400">
-                {d.label}
-                <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-bold uppercase text-gray-400">Soon</span>
+
+      <ul id={panelId} className={`iei-membership-navbar__mobile-submenu ${expanded ? 'is-open' : ''}`}>
+        {item.dropdown.map((entry) => {
+          if (entry.to) {
+            return (
+              <li key={`${item.id}-${entry.label}`}>
+                <NavLink
+                  to={entry.to}
+                  className={({ isActive }) =>
+                    `iei-membership-navbar__mobile-submenu-link ${isActive ? 'is-active' : ''}`
+                  }
+                  onClick={onNavigate}
+                >
+                  {entry.label}
+                </NavLink>
+              </li>
+            );
+          }
+
+          return (
+            <li key={`${item.id}-${entry.label}`}>
+              <span className='iei-membership-navbar__mobile-submenu-link is-disabled'>
+                {entry.label}
+                <em>Soon</em>
               </span>
-            )
-          )}
-        </div>
-      )}
-    </div>
+            </li>
+          );
+        })}
+      </ul>
+    </li>
   );
 }
 
-/* ─── Main navbar ─────────────────────────────────────────────── */
 export default function MembershipNavbar() {
+  const [openDesktopMenuId, setOpenDesktopMenuId] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileExpandedMenus, setMobileExpandedMenus] = useState({});
+
   const location = useLocation();
 
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  const desktopCloseTimerRef = useRef(null);
+  const desktopContainerRefs = useRef({});
+  const desktopTriggerRefs = useRef({});
+  const desktopMenuItemRefs = useRef({});
 
   useEffect(() => {
-    if (!mobileOpen) return;
-    const h = (e) => { if (e.key === "Escape") setMobileOpen(false); };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
+    setOpenDesktopMenuId(null);
+    setMobileOpen(false);
+    setMobileExpandedMenus({});
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!openDesktopMenuId) return undefined;
+
+    const handleOutsidePointer = (event) => {
+      const container = desktopContainerRefs.current[openDesktopMenuId];
+      if (container && !container.contains(event.target)) {
+        setOpenDesktopMenuId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsidePointer);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsidePointer);
+    };
+  }, [openDesktopMenuId]);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key !== 'Escape') return;
+
+      if (mobileOpen) {
+        setMobileOpen(false);
+      }
+
+      if (openDesktopMenuId) {
+        setOpenDesktopMenuId(null);
+        const trigger = desktopTriggerRefs.current[openDesktopMenuId];
+        trigger?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [mobileOpen, openDesktopMenuId]);
+
+  useEffect(() => {
+    return () => {
+      if (desktopCloseTimerRef.current) {
+        window.clearTimeout(desktopCloseTimerRef.current);
+      }
+    };
+  }, []);
+
+  const clearDesktopCloseTimer = () => {
+    if (desktopCloseTimerRef.current) {
+      window.clearTimeout(desktopCloseTimerRef.current);
+      desktopCloseTimerRef.current = null;
+    }
+  };
+
+  const openDesktopMenu = (menuId) => {
+    clearDesktopCloseTimer();
+    setOpenDesktopMenuId(menuId);
+  };
+
+  const closeDesktopMenu = (menuId) => {
+    clearDesktopCloseTimer();
+    setOpenDesktopMenuId((current) => (current === menuId ? null : current));
+  };
+
+  const toggleDesktopMenu = (menuId) => {
+    clearDesktopCloseTimer();
+    setOpenDesktopMenuId((current) => (current === menuId ? null : menuId));
+  };
+
+  const scheduleDesktopClose = (menuId) => {
+    clearDesktopCloseTimer();
+    desktopCloseTimerRef.current = window.setTimeout(() => {
+      setOpenDesktopMenuId((current) => (current === menuId ? null : current));
+    }, 140);
+  };
+
+  const registerDesktopContainer = (menuId, node) => {
+    if (typeof node !== 'undefined') {
+      desktopContainerRefs.current[menuId] = node;
+    }
+    return desktopContainerRefs.current[menuId];
+  };
+
+  const registerDesktopTrigger = (menuId, node) => {
+    if (typeof node !== 'undefined') {
+      desktopTriggerRefs.current[menuId] = node;
+    }
+    return desktopTriggerRefs.current[menuId];
+  };
+
+  const registerDesktopSubItem = (menuId, index, node) => {
+    if (!desktopMenuItemRefs.current[menuId]) {
+      desktopMenuItemRefs.current[menuId] = [];
+    }
+    desktopMenuItemRefs.current[menuId][index] = node;
+  };
+
+  const getDesktopSubItems = (menuId) => {
+    return (desktopMenuItemRefs.current[menuId] || []).filter(Boolean);
+  };
+
+  const focusDesktopSubItem = (menuId, index) => {
+    const items = getDesktopSubItems(menuId);
+    if (!items.length) return;
+
+    const safeIndex = (index + items.length) % items.length;
+    items[safeIndex].focus();
+  };
+
+  const handleDesktopTriggerKeyDown = (event, menuId) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      openDesktopMenu(menuId);
+      window.requestAnimationFrame(() => focusDesktopSubItem(menuId, 0));
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      openDesktopMenu(menuId);
+      window.requestAnimationFrame(() => {
+        const items = getDesktopSubItems(menuId);
+        focusDesktopSubItem(menuId, items.length - 1);
+      });
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleDesktopMenu(menuId);
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeDesktopMenu(menuId);
+    }
+  };
+
+  const handleDesktopSubmenuKeyDown = (event, menuId) => {
+    const items = getDesktopSubItems(menuId);
+    const currentIndex = items.indexOf(document.activeElement);
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusDesktopSubItem(menuId, currentIndex + 1);
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusDesktopSubItem(menuId, currentIndex - 1);
+      return;
+    }
+
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusDesktopSubItem(menuId, 0);
+      return;
+    }
+
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusDesktopSubItem(menuId, items.length - 1);
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeDesktopMenu(menuId);
+      const trigger = desktopTriggerRefs.current[menuId];
+      trigger?.focus();
+      return;
+    }
+
+    if (event.key === 'Tab') {
+      if (!event.shiftKey && currentIndex === items.length - 1) {
+        closeDesktopMenu(menuId);
+      }
+      if (event.shiftKey && currentIndex === 0) {
+        closeDesktopMenu(menuId);
+      }
+    }
+  };
+
+  const toggleMobileMenuSection = (menuId) => {
+    setMobileExpandedMenus((current) => ({
+      ...current,
+      [menuId]: !current[menuId],
+    }));
+  };
+
+  const closeMobileMenu = () => {
+    setMobileOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full overflow-x-hidden">
+    <header className='iei-membership-navbar'>
+      <a href='#main-content' className='iei-membership-navbar__skip-link'>
+        Skip to main content
+      </a>
 
-      {/* ══ TOP UTILITY BAR — dark navy #1c2647 ══════════════════ */}
-      <div className="w-full overflow-hidden bg-[#1c2647]">
-        <div className="mx-auto flex max-w-[1380px] items-center px-3 py-1.5 sm:px-5">
+      <div className='iei-membership-navbar__utility-bar'>
+        <div className='iei-membership-navbar__utility-inner'>
+          <Link to='/membership' className='iei-membership-navbar__brand' aria-label='Institution of Engineers India membership portal'>
+            <img
+              src={IEI_LOGO}
+              alt='Institution of Engineers India logo'
+              className='iei-membership-navbar__brand-logo'
+              loading='eager'
+              decoding='async'
+              referrerPolicy='no-referrer'
+            />
+            <span className='iei-membership-navbar__brand-title'>Institution of Engineers (India)</span>
+          </Link>
 
-          {/* Left spacer */}
-          <div className="flex-1" />
+          <div className='iei-membership-navbar__utility-actions'>
+            <Link to='/contact' className='iei-membership-navbar__contact-btn'>
+              Contact Us
+            </Link>
 
-          {/* Right: Contact + Socials + LOGIN */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-
-            {/* Contact Us */}
-            <a
-              href="/contact"
-              className="flex shrink-0 items-center gap-1 rounded border border-[#f4c430]/70 px-2 py-0.5 text-[10px] font-semibold text-[#f4c430] transition-colors hover:bg-[#f4c430] hover:text-[#1c2647] sm:px-2.5 sm:text-[11px]"
-            >
-              <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 shrink-0">
-                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z" />
-              </svg>
-              <span className="hidden min-[380px]:inline">Contact Us</span>
-            </a>
-
-            {/* Social icons */}
-            <div className="hidden min-[500px]:flex items-center gap-2">
-              {socialLinks.map(({ href, icon, title }) => (
+            <div className='iei-membership-navbar__social-list' aria-label='Social links'>
+              {SOCIAL_LINKS.map((social) => (
                 <a
-                  key={title}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={title}
-                  className="text-gray-400 transition-colors hover:text-[#f4c430]"
+                  key={social.id}
+                  href={social.href}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  title={social.label}
+                  className='iei-membership-navbar__social-link'
+                  aria-label={social.label}
                 >
-                  {icon}
+                  <SocialIcon name={social.id} />
                 </a>
               ))}
             </div>
 
-            {/* LOGIN — solid gold block exactly like ieindia.org */}
             <Link
-              to="/membership#auth-panel"
-              className="flex shrink-0 items-center gap-1 bg-[#f4c430] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#1c2647] transition-opacity hover:opacity-90 sm:px-4 sm:text-[11px]"
+              to='/membership/member-services#auth-panel'
+              className='iei-membership-navbar__login-btn'
             >
-              <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 shrink-0">
-                <path d="M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM6.5 13c-2 0-3.5 1-3.5 2.5V16h10v-.5c0-1.5-1.5-2.5-3.5-2.5H6.5Z"/>
-                <path d="M13 4V2h-2v2H3v8h10V4h-2Z"/>
-              </svg>
               LOGIN
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ══ MAIN NAV BAR — light blue #dce0f5 like ieindia.org ═══ */}
-      <div className="w-full overflow-visible border-b border-[#b8c4d8] bg-[#dce0f5]">
-        <div className="mx-auto flex max-w-[1380px] items-stretch px-2 sm:px-4">
+      <div className='iei-membership-navbar__main-bar'>
+        <div className='iei-membership-navbar__main-inner'>
+          <nav className='iei-membership-navbar__desktop-nav' aria-label='Membership desktop menu'>
+            <ul className='iei-membership-navbar__menu-list'>
+              {NAV_ITEMS.map((item) => {
+                const isOpen = openDesktopMenuId === item.id;
+                const isActive = isMenuItemActive(location.pathname, item);
 
-          {/* Logo */}
-          <Link
-            to="/membership"
-            className="relative mr-2 flex shrink-0 items-center py-1"
-            style={{ marginTop: "-20px", marginBottom: "-2px" }}
-          >
-            <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxmIZ-qa5ZjmZA_1f-vsRiLgIwDuwaawFh0g&s"
-              alt="IEI Kanyakumari Local Centre"
-              className="h-[72px] w-[72px] rounded-full border-4 border-[#1c2647] bg-white object-contain shadow-md"
-              loading="eager"
-              decoding="async"
-              referrerPolicy="no-referrer"
-            />
-          </Link>
-
-          {/* Mobile toggle */}
-          <button
-            type="button"
-            className="ml-auto flex flex-col justify-center gap-[5px] p-3 lg:hidden"
-            onClick={() => setMobileOpen((p) => !p)}
-            aria-label="Toggle menu"
-            aria-expanded={mobileOpen}
-          >
-            <span className={`block h-0.5 w-5 bg-[#1c2647] transition-transform duration-200 ${mobileOpen ? "translate-y-1.5 rotate-45" : ""}`} />
-            <span className={`block h-0.5 w-5 bg-[#1c2647] transition-opacity duration-200 ${mobileOpen ? "opacity-0" : ""}`} />
-            <span className={`block h-0.5 w-5 bg-[#1c2647] transition-transform duration-200 ${mobileOpen ? "-translate-y-1.5 -rotate-45" : ""}`} />
-          </button>
-
-          {/* Desktop nav — full height items with solid active block */}
-          <nav className="hidden h-full items-stretch lg:flex lg:flex-nowrap overflow-x-auto" aria-label="Main navigation">
-            {navItems.map((item) => (
-              <DesktopNavItem key={item.label} item={item} />
-            ))}
+                return (
+                  <DesktopMenuItem
+                    key={item.id}
+                    item={item}
+                    isOpen={isOpen}
+                    isActive={isActive}
+                    openMenu={openDesktopMenu}
+                    closeMenu={closeDesktopMenu}
+                    toggleMenu={toggleDesktopMenu}
+                    scheduleClose={scheduleDesktopClose}
+                    cancelScheduledClose={clearDesktopCloseTimer}
+                    registerContainer={registerDesktopContainer}
+                    registerTrigger={registerDesktopTrigger}
+                    registerSubItem={registerDesktopSubItem}
+                    onTriggerKeyDown={handleDesktopTriggerKeyDown}
+                    onSubmenuKeyDown={handleDesktopSubmenuKeyDown}
+                  />
+                );
+              })}
+            </ul>
           </nav>
+
+          <button
+            type='button'
+            className='iei-membership-navbar__menu-toggle'
+            aria-label='Open membership menu'
+            aria-controls='iei-membership-mobile-nav'
+            aria-expanded={mobileOpen ? 'true' : 'false'}
+            onClick={() => setMobileOpen((current) => !current)}
+          >
+            <HamburgerIcon open={mobileOpen} />
+          </button>
         </div>
       </div>
 
-      {/* ══ MOBILE DRAWER ═══════════════════════════════════════ */}
-      {mobileOpen && (
-        <div className="border-t border-gray-200 bg-white shadow-lg lg:hidden">
-          <nav className="flex flex-col" aria-label="Mobile navigation">
-            {navItems.map((item) => (
-              <MobileNavItem
-                key={item.label}
+      <div
+        className={`iei-membership-navbar__offcanvas-backdrop ${mobileOpen ? 'is-open' : ''}`}
+        onClick={closeMobileMenu}
+        aria-hidden='true'
+      />
+
+      <aside
+        id='iei-membership-mobile-nav'
+        className={`iei-membership-navbar__offcanvas ${mobileOpen ? 'is-open' : ''}`}
+        aria-hidden={mobileOpen ? 'false' : 'true'}
+      >
+        <div className='iei-membership-navbar__offcanvas-header'>
+          <p>Membership Menu</p>
+          <button type='button' onClick={closeMobileMenu} aria-label='Close membership menu'>
+            Close
+          </button>
+        </div>
+
+        <nav className='iei-membership-navbar__mobile-nav' aria-label='Membership mobile menu'>
+          <ul>
+            {NAV_ITEMS.map((item) => (
+              <MobileMenuItem
+                key={item.id}
                 item={item}
-                onClose={() => setMobileOpen(false)}
+                expanded={Boolean(mobileExpandedMenus[item.id])}
+                onToggle={toggleMobileMenuSection}
+                onNavigate={closeMobileMenu}
               />
             ))}
+          </ul>
+        </nav>
 
-            {/* Mobile CTAs */}
-            <div className="border-t border-gray-100 px-5 py-4">
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  to="/membership#auth-panel"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-1.5 bg-[#f4c430] px-4 py-2 text-[12px] font-bold uppercase tracking-wide text-[#1c2647]"
-                >
-                  LOGIN
-                </Link>
-                <a
-                  href="/contact"
-                  className="flex items-center border border-[#1c2647] px-4 py-2 text-[12px] font-semibold text-[#1c2647] hover:bg-[#1c2647] hover:text-white"
-                >
-                  Contact Us
-                </a>
-              </div>
-              {/* Mobile socials */}
-              <div className="mt-4 flex items-center gap-4">
-                {socialLinks.map(({ href, icon, title }) => (
-                  <a
-                    key={title}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={title}
-                    className="text-[#1c2647] transition-colors hover:text-[#f4c430]"
-                  >
-                    {icon}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </nav>
+        <div className='iei-membership-navbar__offcanvas-footer'>
+          <Link to='/contact' className='iei-membership-navbar__offcanvas-contact' onClick={closeMobileMenu}>
+            Contact Us
+          </Link>
+          <Link
+            to='/membership/member-services#auth-panel'
+            className='iei-membership-navbar__offcanvas-login'
+            onClick={closeMobileMenu}
+          >
+            LOGIN
+          </Link>
+
+          <div className='iei-membership-navbar__offcanvas-social'>
+            {SOCIAL_LINKS.map((social) => (
+              <a
+                key={social.id}
+                href={social.href}
+                target='_blank'
+                rel='noopener noreferrer'
+                title={social.label}
+                className='iei-membership-navbar__social-link'
+                aria-label={social.label}
+              >
+                <SocialIcon name={social.id} />
+              </a>
+            ))}
+          </div>
         </div>
-      )}
+      </aside>
     </header>
   );
 }

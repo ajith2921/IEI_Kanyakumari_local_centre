@@ -8,7 +8,7 @@ const campaigns = [
     title: "Engineering Excellence Since 1920",
     subtitle:
       "A dedicated membership website for applications, certification pathways, publications, and CPD growth.",
-    primaryTo: "/membership#apply-membership",
+    primaryTo: "/membership/become-member",
     primaryLabel: "Apply Now",
     secondaryTo: "/membership/member-services",
     secondaryLabel: "Member Services",
@@ -20,7 +20,7 @@ const campaigns = [
       "Move through Chartered Engineer, Professional Engineer, and Section A & B pathways with structured support.",
     primaryTo: "/membership/certification",
     primaryLabel: "Open Certification",
-    secondaryTo: "/membership#chartered-engineer",
+    secondaryTo: "/membership/certification#chartered-engineer",
     secondaryLabel: "View CEng",
   },
   {

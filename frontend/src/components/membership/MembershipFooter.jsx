@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 
 const membershipQuickLinks = [
-  { to: "/membership#be-member", label: "Become a Member" },
-  { to: "/membership#membership-info", label: "Membership Benefits" },
-  { to: "/membership#chartered-engineer", label: "Chartered Engineer" },
-  { to: "/membership#professional-engineer", label: "Professional Engineer" },
-  { to: "/membership#section-ab", label: "Section A & B" },
-  { to: "/membership#publications", label: "Publications" },
-  { to: "/membership#network-activities", label: "Events & CPD" },
+  { to: "/membership/become-member", label: "Become a Member" },
+  { to: "/membership/benefits", label: "Membership Benefits" },
+  { to: "/membership/certification#chartered-engineer", label: "Chartered Engineer" },
+  { to: "/membership/certification#professional-engineer", label: "Professional Engineer" },
+  { to: "/membership/certification#section-ab", label: "Section A & B" },
+  { to: "/membership/publications", label: "Publications" },
+  { to: "/membership/events-cpd", label: "Events & CPD" },
 ];
 
 export default function MembershipFooter() {
