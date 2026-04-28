@@ -1,24 +1,24 @@
 .membership-page .iei-membership-navbar {
-  --iei-utility-bg: #f1f1f1;
-  --iei-main-bg: #f1f1f1;
-  --iei-active-bg: #e8eef8;
-  --iei-text: #1a1a1a;
-  --iei-gold: #1a1a1a;
+  --iei-utility-bg: #0b3a67;
+  --iei-main-bg: #ffffff;
+  --iei-active-bg: #f0f6ff;
+  --iei-text: #1a2a3a;
+  --iei-gold: #f4c430;
   --iei-dropdown-bg: #ffffff;
-  --iei-main-stroke: #dddddd;
+  --iei-main-stroke: #e2eaf4;
 
   position: sticky;
   top: 0;
   z-index: 120;
   width: 100%;
-  border-bottom: 1px solid #dddddd;
-  box-shadow: none;
+  border-bottom: 1px solid #e2eaf4;
+  box-shadow: 0 2px 12px rgba(11,58,103,0.07);
 }
 
 .membership-page .iei-membership-navbar,
 .membership-page .iei-membership-navbar button,
 .membership-page .iei-membership-navbar a {
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: inherit;
 }
 
 .membership-page .iei-membership-navbar__skip-link {
@@ -45,8 +45,8 @@
 
 .membership-page .iei-membership-navbar__utility-bar {
   background: var(--iei-utility-bg);
-  color: #1a1a1a;
-  border-bottom: 1px solid #dddddd;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
 }
 
 .membership-page .iei-membership-navbar__utility-inner {
@@ -65,28 +65,29 @@
   gap: 0.45rem;
   min-width: 0;
   text-decoration: none;
-  color: #1a1a1a;
+  color: #ffffff;
 }
 
 .membership-page .iei-membership-navbar__brand-logo {
   width: 1.7rem;
   height: 1.7rem;
   flex-shrink: 0;
-  border-radius: 0;
-  border: 1px solid #dddddd;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
   background: #ffffff;
   object-fit: contain;
   padding: 0.1rem;
 }
 
 .membership-page .iei-membership-navbar__brand-title {
-  font-size: 0.72rem;
+  font-size: 0.73rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #ffffff;
 }
 
 .membership-page .iei-membership-navbar__utility-actions {
@@ -103,7 +104,7 @@
   align-items: center;
   justify-content: center;
   min-height: 1.65rem;
-  border-radius: 0;
+  border-radius: 4px;
   text-decoration: none;
   font-size: 0.65rem;
   font-weight: 700;
@@ -111,33 +112,35 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .membership-page .iei-membership-navbar__contact-btn {
-  border: 1px solid #dddddd;
-  color: #1a1a1a;
-  background: #ffffff;
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #ffffff;
+  background: transparent;
   padding: 0.24rem 0.48rem;
 }
 
 .membership-page .iei-membership-navbar__contact-btn:hover,
 .membership-page .iei-membership-navbar__contact-btn:focus-visible {
-  background: #e8eef8;
-  color: #1a1a1a;
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
 }
 
 .membership-page .iei-membership-navbar__login-btn {
-  border: 1px solid #dddddd;
-  color: #1a1a1a;
-  background: #ffffff;
-  padding: 0.24rem 0.52rem;
+  border: 1px solid #f4c430;
+  color: #0b3a67;
+  background: #f4c430;
+  padding: 0.24rem 0.62rem;
+  font-weight: 800;
 }
 
 .membership-page .iei-membership-navbar__login-btn:hover,
 .membership-page .iei-membership-navbar__login-btn:focus-visible {
-  background: #e8eef8;
-  border-color: #dddddd;
+  background: #ffd34d;
+  border-color: #ffd34d;
+  color: #0b3a67;
 }
 
 .membership-page .iei-membership-navbar__social-list {
@@ -152,18 +155,18 @@
   justify-content: center;
   width: 1.45rem;
   height: 1.45rem;
-  border: 1px solid #dddddd;
-  border-radius: 0;
-  color: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  color: rgba(255,255,255,0.8);
   text-decoration: none;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .membership-page .iei-membership-navbar__social-link:hover,
 .membership-page .iei-membership-navbar__social-link:focus-visible {
-  background: #e8eef8;
-  color: #1a1a1a;
-  border-color: #dddddd;
+  background: rgba(255,255,255,0.15);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.4);
 }
 
 .membership-page .iei-membership-navbar__social-icon {
@@ -174,6 +177,7 @@
 .membership-page .iei-membership-navbar__main-bar {
   background: var(--iei-main-bg);
   border-bottom: 1px solid var(--iei-main-stroke);
+  box-shadow: none;
 }
 
 .membership-page .iei-membership-navbar__main-inner {
@@ -227,12 +231,13 @@
   justify-content: center;
   gap: 0.24rem;
   min-height: 2.6rem;
-  padding: 0.42rem 0.44rem;
-  font-size: 0.72rem;
+  padding: 0.42rem 0.5rem;
+  font-size: 0.76rem;
   font-weight: 600;
   line-height: 1.15;
   white-space: nowrap;
   cursor: pointer;
+  position: relative;
   transition: background-color 0.14s ease, color 0.14s ease;
 }
 
@@ -264,8 +269,20 @@
 .membership-page .iei-membership-navbar__menu-link.is-active,
 .membership-page .iei-membership-navbar__menu-trigger.is-active {
   background: var(--iei-active-bg);
-  color: #1a1a1a;
-  box-shadow: none;
+  color: #0b3a67;
+  font-weight: 700;
+}
+
+.membership-page .iei-membership-navbar__menu-link.is-active::after,
+.membership-page .iei-membership-navbar__menu-trigger.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: #0b3a67;
 }
 
 .membership-page .iei-membership-navbar__menu-icon {
@@ -287,20 +304,21 @@
 .membership-page .iei-membership-navbar__dropdown {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 4px 0;
   position: absolute;
   top: 100%;
   left: 0;
-  width: 13.75rem;
-  min-width: 13.75rem;
-  max-width: 13.75rem;
-  border-radius: 0;
-  border: 1px solid #dddddd;
+  width: 16rem;
+  min-width: 16rem;
+  max-width: 16rem;
+  border-radius: 12px;
+  border: 1px solid #e2eaf4;
   background: var(--iei-dropdown-bg);
-  box-shadow: none;
+  box-shadow: 0 8px 32px rgba(11,58,103,0.12), 0 2px 8px rgba(11,58,103,0.06);
   z-index: 220;
   display: none;
-  will-change: auto;
+  margin-top: 6px;
+  will-change: transform, opacity;
 }
 
 .membership-page .iei-membership-navbar__menu-item--dropdown.is-align-right .iei-membership-navbar__dropdown {
@@ -310,23 +328,25 @@
 
 .membership-page .iei-membership-navbar__menu-item--dropdown.is-open .iei-membership-navbar__dropdown {
   display: block;
-  animation: none;
+  animation: ieiMembershipDropdownEnter 0.16s ease;
 }
 
 .membership-page .iei-membership-navbar__dropdown-item {
   display: block;
   width: 100%;
   border: 0;
-  border-bottom: 1px solid #efefef;
   background: transparent;
   text-align: left;
-  color: #1a1a1a;
+  color: #334e68;
   text-decoration: none;
-  padding: 0.42rem 0.62rem;
-  font-size: 0.72rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   line-height: 1.28;
   cursor: pointer;
+  position: relative;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  border-radius: 0;
 }
 
 .membership-page .iei-membership-navbar__dropdown > li:last-child .iei-membership-navbar__dropdown-item {
@@ -336,9 +356,11 @@
 .membership-page .iei-membership-navbar__dropdown-item:hover,
 .membership-page .iei-membership-navbar__dropdown-item:focus-visible,
 .membership-page .iei-membership-navbar__dropdown-item.is-active {
-  background: #e8eef8;
-  color: #1a1a1a;
+  background: #f0f6ff;
+  color: #0b3a67;
+  font-weight: 600;
   outline: none;
+  padding-left: 1rem;
 }
 
 .membership-page .iei-membership-navbar__dropdown-item.is-disabled {
@@ -351,6 +373,83 @@
 .membership-page .iei-membership-navbar__dropdown-item.is-disabled:focus-visible {
   color: #7a7a7a;
   background: #f7f7f7;
+}
+
+.membership-page .iei-membership-navbar__dropdown-group {
+  position: relative;
+}
+
+.membership-page .iei-membership-navbar__dropdown > li:last-child,
+.membership-page .iei-membership-navbar__dropdown > li:last-child .iei-membership-navbar__dropdown-group {
+  border-bottom: 0;
+}
+
+.membership-page .iei-membership-navbar__dropdown-group-label {
+  display: block;
+  padding: 0.38rem 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #5b7ea0;
+  background: #f7fbff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.membership-page .iei-membership-navbar__dropdown-group-trigger {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #334e68;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.membership-page .iei-membership-navbar__dropdown-group-trigger:hover,
+.membership-page .iei-membership-navbar__dropdown-group-trigger:focus-visible {
+  background: #f0f6ff;
+  color: #0b3a67;
+  outline: none;
+}
+
+.membership-page .iei-membership-navbar__dropdown-nested {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: none;
+}
+
+.membership-page .iei-membership-navbar__dropdown-nested.is-open {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  min-width: 15rem;
+  background: var(--iei-dropdown-bg);
+  border: 1px solid #e2eaf4;
+  border-left: 3px solid #0b3a67;
+  border-radius: 0 12px 12px 0;
+  z-index: 240;
+  box-shadow: 4px 4px 20px rgba(11,58,103,0.10);
+  padding: 4px 0;
+}
+
+.membership-page .iei-membership-navbar__dropdown-nested .iei-membership-navbar__dropdown-item {
+  padding-left: 1rem;
+}
+
+.membership-page .iei-membership-navbar__dropdown-group.is-open > .iei-membership-navbar__dropdown-group-trigger {
+  background: #f0f6ff;
+  color: #0b3a67;
+}
+
+.membership-page .iei-membership-navbar__dropdown-group.is-open > .iei-membership-navbar__dropdown-group-trigger .iei-membership-navbar__caret {
+  transform: rotate(-90deg);
 }
 
 .membership-page .iei-membership-navbar__dropdown-item em,
@@ -461,22 +560,23 @@
   justify-content: space-between;
   gap: 0.45rem;
   padding: 0.7rem 0.82rem;
-  background: var(--iei-utility-bg);
-  color: #1a1a1a;
-  border-bottom: 1px solid #dddddd;
+  background: #0b3a67;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
 }
 
 .membership-page .iei-membership-navbar__offcanvas-header p {
   margin: 0;
   font-size: 0.86rem;
   font-weight: 700;
+  color: #ffffff;
 }
 
 .membership-page .iei-membership-navbar__offcanvas-header button {
-  border: 1px solid #dddddd;
-  border-radius: 0;
-  background: #ffffff;
-  color: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 4px;
+  background: transparent;
+  color: #ffffff;
   padding: 0.22rem 0.45rem;
   font-size: 0.68rem;
   font-weight: 700;
@@ -577,6 +677,56 @@
   color: #7a7a7a;
 }
 
+.membership-page .iei-membership-navbar__mobile-submenu-group {
+  border-bottom: 1px solid #efefef;
+}
+
+.membership-page .iei-membership-navbar__mobile-submenu-group-label {
+  display: block;
+  padding: 0.5rem 1.08rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  background: #f7f7f7;
+  border-bottom: 1px solid #efefef;
+}
+
+.membership-page .iei-membership-navbar__mobile-submenu-group-trigger {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #efefef;
+  background: transparent;
+  color: #1a1a1a;
+  padding: 0.5rem 1.08rem;
+  font-size: 0.74rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.membership-page .iei-membership-navbar__mobile-submenu-group-trigger:hover,
+.membership-page .iei-membership-navbar__mobile-submenu-group-trigger:focus-visible {
+  background: #e8eef8;
+  outline: none;
+}
+
+.membership-page .iei-membership-navbar__mobile-submenu-nested {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: none;
+}
+
+.membership-page .iei-membership-navbar__mobile-submenu-nested.is-open {
+  display: block;
+}
+
+.membership-page .iei-membership-navbar__mobile-submenu-nested .iei-membership-navbar__mobile-submenu-link {
+  padding-left: 1.5rem;
+}
+
 .membership-page .iei-membership-navbar__offcanvas-footer {
   margin-top: auto;
   border-top: 1px solid #dddddd;
@@ -589,7 +739,7 @@
 .membership-page .iei-membership-navbar__offcanvas-contact,
 .membership-page .iei-membership-navbar__offcanvas-login {
   text-decoration: none;
-  border-radius: 0;
+  border-radius: 4px;
   min-height: 1.85rem;
   display: inline-flex;
   align-items: center;
@@ -601,15 +751,16 @@
 }
 
 .membership-page .iei-membership-navbar__offcanvas-contact {
-  border: 1px solid #dddddd;
-  color: #1a1a1a;
-  background: #ffffff;
+  border: 1px solid #d0dcea;
+  color: #334e68;
+  background: #f0f6ff;
 }
 
 .membership-page .iei-membership-navbar__offcanvas-login {
-  border: 1px solid #dddddd;
-  color: #1a1a1a;
-  background: #ffffff;
+  border: 1px solid #f4c430;
+  color: #0b3a67;
+  background: #f4c430;
+  font-weight: 800;
 }
 
 .membership-page .iei-membership-navbar__offcanvas-social {
@@ -628,6 +779,20 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Mega-menu: 2-column layout for wide dropdowns ── */
+.membership-page .iei-membership-navbar__dropdown[data-wide] {
+  width: 30rem;
+  min-width: 30rem;
+  max-width: 30rem;
+  columns: 2;
+  column-gap: 0;
+  padding: 6px 0;
+}
+
+.membership-page .iei-membership-navbar__dropdown[data-wide] > li {
+  break-inside: avoid;
 }
 
 @media (min-width: 1024px) {

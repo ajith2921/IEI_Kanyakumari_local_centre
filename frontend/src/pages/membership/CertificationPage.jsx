@@ -19,6 +19,13 @@ const certificationTracks = [
       "Advanced competency route for high-stakes assignments in infrastructure, consultancy-led execution, and institutional review workflows.",
   },
   {
+    id: "international-professional-engineer",
+    eyebrow: "Global Recognition",
+    title: "International Professional Engineers",
+    detail:
+      "International recognition pathway for engineers seeking cross-border professional visibility, credibility, and technical standing.",
+  },
+  {
     id: "section-ab",
     eyebrow: "Academic Services",
     title: "Section A & B Examination",

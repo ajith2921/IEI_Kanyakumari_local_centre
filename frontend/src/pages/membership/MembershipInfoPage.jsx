@@ -137,6 +137,90 @@ const infoSections = [
     ],
   },
   {
+    id: "industry-excellence-award",
+    title: "Industry Excellence Award",
+    overview:
+      "This award highlights outstanding industrial practice, applied engineering leadership, and measurable contribution to engineering excellence in industry settings.",
+    audience: "Industry members and teams showcasing applied engineering impact.",
+    actions: [
+      "Review the recognition focus for industrial achievement.",
+      "Assess project and operational impact evidence.",
+      "Track award submission and review updates.",
+    ],
+  },
+  {
+    id: "education-excellence-award",
+    title: "Education Excellence Award",
+    overview:
+      "This award recognizes exceptional contributions to engineering education, teaching practice, curriculum leadership, and learning innovation.",
+    audience: "Educators, academic leaders, and institutions advancing engineering education.",
+    actions: [
+      "Review education-focused recognition criteria.",
+      "Document teaching and learning outcomes.",
+      "Prepare supporting academic evidence.",
+    ],
+  },
+  {
+    id: "iei-young-engineers-award",
+    title: "IEI Young Engineers Award",
+    overview:
+      "This award celebrates emerging engineers for technical promise, early-career achievement, and professional development contributions.",
+    audience: "Young engineers and mentors preparing nomination materials.",
+    actions: [
+      "Verify early-career eligibility requirements.",
+      "Highlight technical and professional milestones.",
+      "Follow nomination and shortlist updates.",
+    ],
+  },
+  {
+    id: "best-journal-prize",
+    title: "Best Journal Prize",
+    overview:
+      "The Best Journal Prize identifies strong scholarly publication quality, original contribution, and technical relevance in IEI journal output.",
+    audience: "Authors and editorial contributors focused on journal excellence.",
+    actions: [
+      "Review journal evaluation emphasis.",
+      "Check contribution and originality expectations.",
+      "Track editorial recognition cycles.",
+    ],
+  },
+  {
+    id: "the-sail-awards",
+    title: "The SAIL Awards",
+    overview:
+      "The SAIL Awards recognize notable achievement and contribution within an award framework associated with industrial and engineering excellence.",
+    audience: "Nominees, nominators, and industry stakeholders.",
+    actions: [
+      "Review award scope and recognition context.",
+      "Prepare nomination evidence and references.",
+      "Monitor award communication timelines.",
+    ],
+  },
+  {
+    id: "ndrf-design-awards",
+    title: "NDRF Design Awards",
+    overview:
+      "These awards acknowledge design excellence, resilience-focused thinking, and engineering solutions with strong practical and social value.",
+    audience: "Design teams, engineers, and institutions with resilient engineering work.",
+    actions: [
+      "Review design-oriented recognition criteria.",
+      "Document design intent and impact.",
+      "Confirm award submission requirements.",
+    ],
+  },
+  {
+    id: "the-coal-india-awards",
+    title: "The Coal India Awards",
+    overview:
+      "The Coal India Awards honor engineering performance, innovation, and impactful contribution within the associated industrial domain.",
+    audience: "Industry participants and technical contributors in the award domain.",
+    actions: [
+      "Review industrial recognition parameters.",
+      "Assemble impact evidence and references.",
+      "Track nomination and award status updates.",
+    ],
+  },
+  {
     id: "award-categories",
     title: "Award Categories",
     overview:
@@ -218,6 +302,78 @@ const infoSections = [
       "Track current review stage.",
       "Monitor pending actions and response windows.",
       "Follow official communication milestones.",
+    ],
+  },
+  {
+    id: "research-grant-overview",
+    title: "Research Grant-in-Aid — Overview",
+    overview:
+      "IEI's Research Grant-in-Aid programme funds engineering-focused research initiatives aligned with national priorities. Grants support applied research, prototype development, and technical studies undertaken by member researchers.",
+    audience: "IEI members, faculty researchers, and engineers with active or planned R&D projects.",
+    actions: [
+      "Understand the grant programme's institutional purpose.",
+      "Review the scope of fundable engineering research areas.",
+      "Determine if your project qualifies for submission.",
+    ],
+  },
+  {
+    id: "research-grant-highlights",
+    title: "Research Grant-in-Aid — Key Highlights",
+    overview:
+      "Key highlights include structured funding cycles, multi-domain scope covering civil, mechanical, electrical, and emerging technologies, milestone-based disbursement, and a formal review board to evaluate technical merit.",
+    audience: "Prospective applicants evaluating grant suitability and benefit alignment.",
+    actions: [
+      "Note the funding cycle timelines for the current year.",
+      "Identify your engineering domain within the eligible categories.",
+      "Review milestone disbursement schedule and deliverable expectations.",
+    ],
+  },
+  {
+    id: "research-grant-eligibility",
+    title: "Research Grant-in-Aid — Eligibility Criteria",
+    overview:
+      "Applicants must be corporate members of IEI in good standing. Projects must have a clear engineering focus, defined objectives, and measurable outcomes. Collaborative proposals with institutions are encouraged.",
+    audience: "IEI corporate members (AMIE, MIE, FIE) planning a research project submission.",
+    actions: [
+      "Confirm active IEI corporate membership status.",
+      "Validate project scope against stated engineering eligibility criteria.",
+      "Prepare evidence of institutional affiliation if applicable.",
+    ],
+  },
+  {
+    id: "research-grant-apply",
+    title: "Research Grant-in-Aid — How to Apply",
+    overview:
+      "Applications are submitted through the IEI portal using the prescribed proposal format. Required documents include project synopsis, budget justification, timeline, and recommender details. Review happens in two stages: technical and administrative.",
+    audience: "Eligible IEI members ready to submit a structured research proposal.",
+    actions: [
+      "Download the official proposal template from the Downloads section.",
+      "Complete all mandatory fields including budget and timeline.",
+      "Submit through the IEI portal before the notified deadline.",
+    ],
+  },
+  {
+    id: "research-grant-funded-projects",
+    title: "Research Grant-in-Aid — Funded Projects",
+    overview:
+      "A repository of previously funded projects is maintained to provide applicants with reference examples, scope clarity, and thematic direction. Completed projects contribute to IEI's technical knowledge base.",
+    audience: "Researchers seeking inspiration, scope reference, or outcome benchmarks.",
+    actions: [
+      "Browse funded project summaries relevant to your domain.",
+      "Identify outcome reporting standards from completed projects.",
+      "Use funded project themes as scope alignment reference.",
+    ],
+  },
+  {
+    id: "research-grant-rd-compendium",
+    title: "Research Grant-in-Aid — R&D Compendium",
+    overview:
+      "The R&D Compendium compiles research outcomes, technical findings, and engineering insights from IEI-funded projects. It serves as a reference publication for members and the broader engineering community.",
+    audience: "Members, researchers, and engineering stakeholders referencing applied R&D outcomes.",
+    actions: [
+      "Download the latest R&D Compendium edition.",
+      "Reference specific domain findings for ongoing project work.",
+      "Submit completed project summaries for compendium inclusion.",
     ],
   },
 ];

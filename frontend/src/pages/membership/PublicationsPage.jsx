@@ -18,6 +18,54 @@ const publicationServices = [
   },
 ];
 
+const publicationSections = [
+  {
+    id: "journals",
+    title: "Journals",
+    detail: "Access engineering journals, research papers, and editorial collections for technical reading and reference.",
+  },
+  {
+    id: "books",
+    title: "Books",
+    detail: "Browse publication titles and reference books relevant to engineering practice and study support.",
+  },
+  {
+    id: "proceedings",
+    title: "Proceedings",
+    detail: "Review conference and seminar proceedings for updated technical knowledge and presented papers.",
+  },
+  {
+    id: "compendium",
+    title: "Compendium",
+    detail: "Find curated collections of institutional knowledge, technical summaries, and reference compendiums.",
+  },
+  {
+    id: "annual-reports",
+    title: "Annual Reports",
+    detail: "Read institutional annual reports covering activities, outcomes, and published highlights.",
+  },
+  {
+    id: "iei-news",
+    title: "IEI News",
+    detail: "Access current news updates, announcements, and newsworthy institutional publication items.",
+  },
+  {
+    id: "iei-epitome",
+    title: "IEI Epitome",
+    detail: "View IEI epitome-style publications and summary documents for a concise institutional snapshot.",
+  },
+  {
+    id: "annual-technical-volume",
+    title: "Annual Technical Volume",
+    detail: "Explore yearly technical volumes compiling papers, reports, and domain-specific contributions.",
+  },
+  {
+    id: "schedule-and-rate",
+    title: "Schedule and Rate",
+    detail: "Review publication schedules, issue calendars, and rate references for current publication services.",
+  },
+];
+
 export default function PublicationsPage() {
   return (
     <section className="page-shell section-block">
@@ -42,6 +90,15 @@ export default function PublicationsPage() {
           ))}
         </div>
       </Card>
+
+      <div className="mt-6 grid gap-4">
+        {publicationSections.map((section) => (
+          <Card key={section.id} id={section.id} className="border border-gray-200 bg-white p-5 scroll-mt-28" padded={false}>
+            <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-gray-500">{section.detail}</p>
+          </Card>
+        ))}
+      </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Button as={Link} to="/membership/events-cpd">Explore Events & CPD</Button>

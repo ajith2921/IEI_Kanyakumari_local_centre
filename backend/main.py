@@ -22,6 +22,7 @@ from routes import (
     membership,
     membership_premium,
     membership_portal,
+    membership_search,
     newsletters,
 )
 
@@ -651,6 +652,7 @@ app.include_router(contact.router, prefix="/api")
 app.include_router(membership.router, prefix="/api")
 app.include_router(membership_portal.router, prefix="/api")
 app.include_router(membership_premium.router, prefix="/api")
+app.include_router(membership_search.router, prefix="/api")
 
 
 @app.get("/api/health")

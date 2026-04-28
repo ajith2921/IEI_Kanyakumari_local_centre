@@ -36,10 +36,18 @@ function isPathActive(pathname, to) {
   return pathname === targetPath || pathname.startsWith(`${targetPath}/`);
 }
 
+function hasActiveEntry(pathname, entries = []) {
+  return entries.some((entry) => {
+    if (entry.to && isPathActive(pathname, entry.to)) return true;
+    if (entry.dropdown?.length) return hasActiveEntry(pathname, entry.dropdown);
+    return false;
+  });
+}
+
 function isMenuItemActive(pathname, item) {
   if (item.to && isPathActive(pathname, item.to)) return true;
   if (!item.dropdown) return false;
-  return item.dropdown.some((entry) => isPathActive(pathname, entry.to));
+  return hasActiveEntry(pathname, item.dropdown);
 }
 
 function CaretIcon({ open }) {
@@ -189,6 +197,14 @@ function DesktopMenuItem({
   onTriggerKeyDown,
   onSubmenuKeyDown,
 }) {
+  const [expandedDesktopGroups, setExpandedDesktopGroups] = useState({});
+
+  useEffect(() => {
+    if (!isOpen) {
+      setExpandedDesktopGroups({});
+    }
+  }, [isOpen]);
+
   if (!item.dropdown) {
     return (
       <li className='iei-membership-navbar__menu-item'>
@@ -206,6 +222,116 @@ function DesktopMenuItem({
   }
 
   const menuPanelId = `iei-membership-menu-${item.id}`;
+  let focusableItemIndex = 0;
+
+  const toggleDesktopGroup = (groupKey) => {
+    setExpandedDesktopGroups((current) => ({
+      ...current,
+      [groupKey]: !current[groupKey],
+    }));
+  };
+
+  const openDesktopGroup = (groupKey) => {
+    setExpandedDesktopGroups((current) => ({
+      ...current,
+      [groupKey]: true,
+    }));
+  };
+
+  const closeDesktopGroup = (groupKey) => {
+    setExpandedDesktopGroups((current) => ({
+      ...current,
+      [groupKey]: false,
+    }));
+  };
+
+  const renderDesktopDropdownEntry = (entry, entryKeyPrefix) => {
+    if (entry.dropdown?.length) {
+      const groupKey = `${item.id}-${entryKeyPrefix}`;
+      const isGroupOpen = Boolean(expandedDesktopGroups[groupKey]);
+      const groupIndex = focusableItemIndex;
+      focusableItemIndex += 1;
+
+      return (
+        <li
+          key={entryKeyPrefix}
+          role='none'
+          className={`iei-membership-navbar__dropdown-group ${isGroupOpen ? 'is-open' : ''}`}
+          onMouseEnter={() => openDesktopGroup(groupKey)}
+          onMouseLeave={() => closeDesktopGroup(groupKey)}
+        >
+          <button
+            type='button'
+            role='menuitem'
+            tabIndex={isOpen ? 0 : -1}
+            ref={(node) => registerSubItem(item.id, groupIndex, node)}
+            className='iei-membership-navbar__dropdown-group-trigger'
+            onClick={() => toggleDesktopGroup(groupKey)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleDesktopGroup(groupKey);
+                return;
+              }
+              onSubmenuKeyDown(event, item.id);
+            }}
+          >
+            <span>{entry.label}</span>
+            <CaretIcon open={isGroupOpen} />
+          </button>
+
+          <ul
+            className={`iei-membership-navbar__dropdown-nested ${isGroupOpen ? 'is-open' : ''}`}
+            role='none'
+          >
+            {isGroupOpen
+              ? entry.dropdown.map((childEntry, childIndex) =>
+                  renderDesktopDropdownEntry(childEntry, `${entryKeyPrefix}-${childIndex}`)
+                )
+              : null}
+          </ul>
+        </li>
+      );
+    }
+
+    const currentIndex = focusableItemIndex;
+    focusableItemIndex += 1;
+
+    if (entry.to) {
+      return (
+        <li key={entryKeyPrefix} role='none'>
+          <NavLink
+            to={entry.to}
+            role='menuitem'
+            tabIndex={isOpen ? 0 : -1}
+            ref={(node) => registerSubItem(item.id, currentIndex, node)}
+            className={({ isActive: isChildActive }) =>
+              `iei-membership-navbar__dropdown-item ${isChildActive ? 'is-active' : ''}`
+            }
+            onClick={() => closeMenu(item.id)}
+            onKeyDown={(event) => onSubmenuKeyDown(event, item.id)}
+          >
+            {entry.label}
+          </NavLink>
+        </li>
+      );
+    }
+
+    return (
+      <li key={entryKeyPrefix} role='none'>
+        <span
+          role='menuitem'
+          tabIndex={isOpen ? 0 : -1}
+          ref={(node) => registerSubItem(item.id, currentIndex, node)}
+          className='iei-membership-navbar__dropdown-item is-disabled'
+          onKeyDown={(event) => onSubmenuKeyDown(event, item.id)}
+        >
+          {entry.label}
+          <em>Soon</em>
+        </span>
+      </li>
+    );
+  };
 
   return (
     <li
@@ -242,45 +368,13 @@ function DesktopMenuItem({
         id={menuPanelId}
         role='menu'
         className='iei-membership-navbar__dropdown'
+        data-wide={(['membership', 'publication'].includes(item.id)) ? 'true' : undefined}
         onMouseEnter={() => cancelScheduledClose()}
         onMouseLeave={() => scheduleClose(item.id)}
       >
-        {item.dropdown.map((entry, index) => {
-          if (entry.to) {
-            return (
-              <li key={`${item.id}-${entry.label}`} role='none'>
-                <NavLink
-                  to={entry.to}
-                  role='menuitem'
-                  tabIndex={isOpen ? 0 : -1}
-                  ref={(node) => registerSubItem(item.id, index, node)}
-                  className={({ isActive: isChildActive }) =>
-                    `iei-membership-navbar__dropdown-item ${isChildActive ? 'is-active' : ''}`
-                  }
-                  onClick={() => closeMenu(item.id)}
-                  onKeyDown={(event) => onSubmenuKeyDown(event, item.id)}
-                >
-                  {entry.label}
-                </NavLink>
-              </li>
-            );
-          }
-
-          return (
-            <li key={`${item.id}-${entry.label}`} role='none'>
-              <span
-                role='menuitem'
-                tabIndex={isOpen ? 0 : -1}
-                ref={(node) => registerSubItem(item.id, index, node)}
-                className='iei-membership-navbar__dropdown-item is-disabled'
-                onKeyDown={(event) => onSubmenuKeyDown(event, item.id)}
-              >
-                {entry.label}
-                <em>Soon</em>
-              </span>
-            </li>
-          );
-        })}
+        {item.dropdown.map((entry, entryIndex) =>
+          renderDesktopDropdownEntry(entry, `${item.id}-${entryIndex}`)
+        )}
       </ul>
     </li>
   );
@@ -288,6 +382,72 @@ function DesktopMenuItem({
 
 function MobileMenuItem({ item, expanded, onToggle, onNavigate }) {
   const panelId = `iei-membership-mobile-panel-${item.id}`;
+  const [expandedMobileGroups, setExpandedMobileGroups] = useState({});
+
+  useEffect(() => {
+    if (!expanded) {
+      setExpandedMobileGroups({});
+    }
+  }, [expanded]);
+
+  const toggleMobileGroup = (groupKey) => {
+    setExpandedMobileGroups((current) => ({
+      ...current,
+      [groupKey]: !current[groupKey],
+    }));
+  };
+
+  const renderMobileDropdownEntry = (entry, entryKeyPrefix) => {
+    if (entry.dropdown?.length) {
+      const groupKey = `${item.id}-${entryKeyPrefix}`;
+      const isGroupOpen = Boolean(expandedMobileGroups[groupKey]);
+
+      return (
+        <li key={entryKeyPrefix} className={`iei-membership-navbar__mobile-submenu-group ${isGroupOpen ? 'is-open' : ''}`}>
+          <button
+            type='button'
+            className='iei-membership-navbar__mobile-submenu-group-trigger'
+            onClick={() => toggleMobileGroup(groupKey)}
+          >
+            <span>{entry.label}</span>
+            <CaretIcon open={isGroupOpen} />
+          </button>
+          <ul className={`iei-membership-navbar__mobile-submenu-nested ${isGroupOpen ? 'is-open' : ''}`}>
+            {isGroupOpen
+              ? entry.dropdown.map((childEntry, childIndex) =>
+                  renderMobileDropdownEntry(childEntry, `${entryKeyPrefix}-${childIndex}`)
+                )
+              : null}
+          </ul>
+        </li>
+      );
+    }
+
+    if (entry.to) {
+      return (
+        <li key={entryKeyPrefix}>
+          <NavLink
+            to={entry.to}
+            className={({ isActive }) =>
+              `iei-membership-navbar__mobile-submenu-link ${isActive ? 'is-active' : ''}`
+            }
+            onClick={onNavigate}
+          >
+            {entry.label}
+          </NavLink>
+        </li>
+      );
+    }
+
+    return (
+      <li key={entryKeyPrefix}>
+        <span className='iei-membership-navbar__mobile-submenu-link is-disabled'>
+          {entry.label}
+          <em>Soon</em>
+        </span>
+      </li>
+    );
+  };
 
   if (!item.dropdown) {
     return (
@@ -325,32 +485,9 @@ function MobileMenuItem({ item, expanded, onToggle, onNavigate }) {
       </button>
 
       <ul id={panelId} className={`iei-membership-navbar__mobile-submenu ${expanded ? 'is-open' : ''}`}>
-        {item.dropdown.map((entry) => {
-          if (entry.to) {
-            return (
-              <li key={`${item.id}-${entry.label}`}>
-                <NavLink
-                  to={entry.to}
-                  className={({ isActive }) =>
-                    `iei-membership-navbar__mobile-submenu-link ${isActive ? 'is-active' : ''}`
-                  }
-                  onClick={onNavigate}
-                >
-                  {entry.label}
-                </NavLink>
-              </li>
-            );
-          }
-
-          return (
-            <li key={`${item.id}-${entry.label}`}>
-              <span className='iei-membership-navbar__mobile-submenu-link is-disabled'>
-                {entry.label}
-                <em>Soon</em>
-              </span>
-            </li>
-          );
-        })}
+        {item.dropdown.map((entry, entryIndex) =>
+          renderMobileDropdownEntry(entry, `${item.id}-${entryIndex}`)
+        )}
       </ul>
     </li>
   );

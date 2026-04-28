@@ -243,6 +243,16 @@ export const publicApi = {
       "/membership-portal/certificate",
       membershipAuthConfig({ responseType: "blob" })
     ),
+  searchMembershipMembers: (query = "") =>
+    api.get("/membership-search/members", { params: query ? { query } : {} }),
+  searchMembershipCentres: (query = "") =>
+    api.get("/membership-search/centres", { params: query ? { query } : {} }),
+  searchPracticingEngineers: (query = "") =>
+    api.get("/membership-search/practicing-engineers", { params: query ? { query } : {} }),
+  getDiscrepancyStatus: (ticket) =>
+    api.get(`/membership-search/discrepancies/${encodeURIComponent(ticket)}`),
+  getDespatchStatus: (reference) =>
+    api.get(`/membership-search/despatch/${encodeURIComponent(reference)}`),
 };
 
 export const adminApi = {
