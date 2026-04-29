@@ -1,11 +1,25 @@
 .membership-page .membership-premium-experience {
-  --premium-primary: #0b3a67;
-  --premium-primary-2: #124a83;
-  --premium-accent: #f4c430;
-  --premium-surface: #f7fbff;
-  --premium-stroke: #d4e1f1;
-  --premium-shadow: rgb(11 58 103 / 0.58);
+  --premium-primary: var(--perimem-ink, #0b3a67);
+  --premium-primary-2: #1e3b55;
+  --premium-accent: var(--perimem-gold, #f4c430);
+  --premium-surface: var(--perimem-surface-2, #f7fbff);
+  --premium-stroke: var(--perimem-line, #d4e1f1);
+  --premium-shadow: var(--perimem-shadow, rgb(11 58 103 / 0.58));
   position: relative;
+}
+
+@media (min-width: 768px) {
+  .membership-page .membership-premium-desktop-dock {
+    display: block;
+  }
+}
+
+.membership-page .membership-premium-shell {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(240, 198, 111, 0.22), transparent 38%),
+    radial-gradient(circle at 92% 18%, rgba(19, 37, 55, 0.16), transparent 42%),
+    linear-gradient(180deg, #f6f1e6 0%, #ffffff 55%, #ffffff 100%);
+  padding-bottom: max(7rem, 12vh);
 }
 
 .membership-page .membership-premium-hub {

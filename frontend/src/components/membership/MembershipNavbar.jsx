@@ -742,7 +742,6 @@ export default function MembershipNavbar() {
               decoding='async'
               referrerPolicy='no-referrer'
             />
-            <span className='iei-membership-navbar__brand-title'>Institution of Engineers (India)</span>
           </Link>
 
           <div className='iei-membership-navbar__utility-actions'>
