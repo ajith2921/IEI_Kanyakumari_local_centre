@@ -12,8 +12,6 @@ const navItems = [
   { to: "/admin/facilities", label: "Facilities" },
   { to: "/admin/downloads", label: "Downloads" },
   { to: "/admin/messages", label: "Contact Messages" },
-  { to: "/admin/memberships", label: "Membership Requests" },
-  { to: "/admin/premium", label: "Premium Billing" },
 ];
 
 export default function AdminLayout() {

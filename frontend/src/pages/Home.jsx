@@ -11,41 +11,43 @@ import Button from "../components/ui/Button";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi } from "../services/api";
 
+const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
+
 const membershipServiceCards = [
   {
     title: "Become a Member",
     description: "Start your IEI membership application and activate professional access.",
-    to: "/membership#be-member",
+    href: MEMBERSHIP_PORTAL_URL,
     cta: "Know More",
   },
   {
     title: "Chartered Engineer",
     description: "Follow the CEng pathway for design, valuation, and project authority work.",
-    to: "/membership#chartered-engineer",
+    href: MEMBERSHIP_PORTAL_URL,
     cta: "Apply Pathway",
   },
   {
     title: "Professional Engineer",
     description: "Advance to PEng-grade recognition for high-responsibility engineering practice.",
-    to: "/membership#professional-engineer",
+    href: MEMBERSHIP_PORTAL_URL,
     cta: "Explore Track",
   },
   {
     title: "Section A & B Examination",
     description: "Get exam-oriented support for forms, admit cards, and progression planning.",
-    to: "/membership#section-ab",
+    href: MEMBERSHIP_PORTAL_URL,
     cta: "Exam Services",
   },
   {
     title: "Journals & Publications",
     description: "Browse IEI-oriented journals, publications, and knowledge resources.",
-    to: "/membership#publications",
+    href: MEMBERSHIP_PORTAL_URL,
     cta: "View Resources",
   },
   {
     title: "Events & CPD",
     description: "Join seminars, workshops, and continuous professional development activities.",
-    to: "/membership#network-activities",
+    href: MEMBERSHIP_PORTAL_URL,
     cta: "Join Programs",
   },
 ];
@@ -55,7 +57,7 @@ const highlightPanels = [
     title: "Career Manager Support",
     detail:
       "Build professional visibility through portfolio positioning, chapter networking, and mentorship channels.",
-    to: "/membership#network-activities",
+    to: MEMBERSHIP_PORTAL_URL,
   },
   {
     title: "Downloads and Circulars",
@@ -145,7 +147,7 @@ export default function Home() {
     },
   ];
 
-  const isMembershipTarget = (to = "") => String(to).startsWith("/membership");
+  const isMembershipTarget = (to = "") => String(to).startsWith(MEMBERSHIP_PORTAL_URL);
 
   return (
     <>
@@ -169,8 +171,8 @@ export default function Home() {
 
                 <div className="home-premium-cta-row mt-6">
                   <Button
-                    as={Link}
-                    to="/membership"
+                    as="a"
+                    href={MEMBERSHIP_PORTAL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     size="sm"
@@ -222,8 +224,8 @@ export default function Home() {
               </h2>
             </div>
             <Button
-              as={Link}
-              to="/membership"
+              as="a"
+              href={MEMBERSHIP_PORTAL_URL}
               target="_blank"
               rel="noopener noreferrer"
               variant="secondary"
@@ -235,9 +237,9 @@ export default function Home() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {membershipServiceCards.map((item, idx) => (
-              <Link
+              <a
                 key={item.title}
-                to={item.to}
+                href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`focus-ring home-premium-card home-reveal-card animate-fade-up ${getStaggerClass(idx)} group flex h-full flex-col rounded-2xl border border-gray-200 bg-gray-50 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-white hover:shadow-sm`}
@@ -247,7 +249,7 @@ export default function Home() {
                 <span className="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
                   {item.cta}
                 </span>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
@@ -274,8 +276,8 @@ export default function Home() {
                 professional networking, industry collaboration, and community service.
               </p>
               <Button
-                as={Link}
-                to="/membership"
+                as="a"
+                href={MEMBERSHIP_PORTAL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="primary"
@@ -336,23 +338,29 @@ export default function Home() {
             descriptionClassName="home-premium-section-copy"
           />
           <div className="grid gap-4 md:grid-cols-3">
-            {highlightPanels.map((item, idx) => (
-              <Link
-                key={item.title}
-                to={item.to}
-                target={isMembershipTarget(item.to) ? "_blank" : undefined}
-                rel={isMembershipTarget(item.to) ? "noopener noreferrer" : undefined}
-                className={`focus-ring home-premium-card home-reveal-card animate-fade-up ${getStaggerClass(idx)} group flex h-full flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-md`}
-              >
-                <h2 className="text-base font-semibold text-gray-900">
-                  {item.title}
-                </h2>
-                <p className="flex-1 text-sm leading-relaxed text-gray-500">{item.detail}</p>
-                <span className="text-xs font-medium text-gray-300 transition-colors duration-200 group-hover:text-gray-900">
-                  Learn More →
-                </span>
-              </Link>
-            ))}
+            {highlightPanels.map((item, idx) => {
+              const isExternal = isMembershipTarget(item.to);
+              const PanelLink = isExternal ? "a" : Link;
+              const linkProps = isExternal
+                ? { href: item.to, target: "_blank", rel: "noopener noreferrer" }
+                : { to: item.to };
+
+              return (
+                <PanelLink
+                  key={item.title}
+                  {...linkProps}
+                  className={`focus-ring home-premium-card home-reveal-card animate-fade-up ${getStaggerClass(idx)} group flex h-full flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:shadow-md`}
+                >
+                  <h2 className="text-base font-semibold text-gray-900">
+                    {item.title}
+                  </h2>
+                  <p className="flex-1 text-sm leading-relaxed text-gray-500">{item.detail}</p>
+                  <span className="text-xs font-medium text-gray-300 transition-colors duration-200 group-hover:text-gray-900">
+                    Learn More ->
+                  </span>
+                </PanelLink>
+              );
+            })}
           </div>
         </div>
       </section>

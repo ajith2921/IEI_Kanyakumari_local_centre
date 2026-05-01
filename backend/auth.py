@@ -12,9 +12,12 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Member, User
+from models import User
 
-load_dotenv()
+# Load .env file - explicit path to handle imports from different directories
+from pathlib import Path
+_env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=_env_path)
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 ALGORITHM = "HS256"
@@ -25,7 +28,6 @@ if not SECRET_KEY or SECRET_KEY == "change-me":
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-membership_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -75,32 +77,3 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
     return current_user
 
 
-def get_current_membership_member(
-    token: str = Depends(membership_oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> Member:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate membership credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        token_type: Optional[str] = payload.get("typ")
-        if token_type and token_type != "access":
-            raise credentials_exception
-
-        subject: Optional[str] = payload.get("sub")
-        if not subject or not subject.startswith("member:"):
-            raise credentials_exception
-
-        member_id_text = subject.split(":", 1)[1]
-        member_id = int(member_id_text)
-    except (JWTError, ValueError) as exc:
-        raise credentials_exception from exc
-
-    member = db.query(Member).filter(Member.id == member_id).first()
-    if member is None or not member.password_hash:
-        raise credentials_exception
-    return member

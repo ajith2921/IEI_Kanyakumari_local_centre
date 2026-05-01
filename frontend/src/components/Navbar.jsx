@@ -17,6 +17,8 @@ const moreLinks = [
   { to: "/links-downloads", label: "Resources" },
 ];
 
+const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
+
 function NavItem({ to, label, onClick, mobile = false }) {
   return (
     <NavLink
@@ -187,7 +189,13 @@ Skip to main content
           ))}
           <MoreDropdown />
           <div className="ml-2.5 flex h-11 items-center gap-2 border-l border-gray-200 pl-3">
-            <Button as={Link} to="/membership" target="_blank" rel="noopener noreferrer" size="sm">
+            <Button
+              as="a"
+              href={MEMBERSHIP_PORTAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="sm"
+            >
               Membership
             </Button>
             <Button as={Link} to="/admin/login" variant="secondary" size="sm">
@@ -212,8 +220,8 @@ Skip to main content
             ))}
             <div className="mt-4 grid gap-2.5">
               <Button
-                as={Link}
-                to="/membership"
+                as="a"
+                href={MEMBERSHIP_PORTAL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}

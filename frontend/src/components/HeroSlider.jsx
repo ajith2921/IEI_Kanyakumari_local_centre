@@ -25,6 +25,8 @@ const defaultStats = [
   { value: "8", label: "Engineering Divisions" },
 ];
 
+const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
+
 export default function HeroSlider({ stats = defaultStats }) {
  const [active, setActive] = useState(0);
 
@@ -62,7 +64,7 @@ export default function HeroSlider({ stats = defaultStats }) {
             </div>
 
                <div className="flex flex-wrap items-center gap-3">
-              <Button as={Link} to="/membership" target="_blank" rel="noopener noreferrer">
+              <Button as="a" href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer">
                 Apply for Membership
               </Button>
               <Button as={Link} to="/technical-activities" variant="secondary">
@@ -103,26 +105,25 @@ export default function HeroSlider({ stats = defaultStats }) {
             <p className="eyebrow-chip mb-5">Membership Service Hub</p>
             <div className="grid gap-2.5">
               {[
-                { to: "/membership#be-member", title: "Become a Member", hint: "Apply to IEI membership" },
+                { href: MEMBERSHIP_PORTAL_URL, title: "Become a Member", hint: "Apply to IEI membership" },
                 {
-                  to: "/membership#chartered-engineer",
+                  href: MEMBERSHIP_PORTAL_URL,
                   title: "Chartered Engineer (CEng)",
                   hint: "Technical authority pathway",
                 },
                 {
-                  to: "/membership#professional-engineer",
+                  href: MEMBERSHIP_PORTAL_URL,
                   title: "Professional Engineer (PEng)",
                   hint: "Advanced competency recognition",
                 },
-                { to: "/membership#section-ab", title: "Section A & B", hint: "Exam and progression services" },
+                { href: MEMBERSHIP_PORTAL_URL, title: "Section A & B", hint: "Exam and progression services" },
               ].map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
+                <a
+                  key={item.title}
+                  href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="focus-ring group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3.5 transition-all duration-200 hover:border-gray-200 hover:bg-white hover:shadow-sm"
-
                 >
                   <div>
                     <p className="text-sm font-medium text-gray-900">{item.title}</p>
@@ -135,7 +136,7 @@ export default function HeroSlider({ stats = defaultStats }) {
                   >
                     <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </Link>
+                </a>
               ))}
             </div>
             <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4">

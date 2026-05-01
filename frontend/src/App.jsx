@@ -1,8 +1,7 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import MembershipNavbar from "./components/membership/MembershipNavbar";
-import MembershipFooter from "./components/membership/MembershipFooter";
 import Home from "./pages/Home";
 import Conference from "./pages/Conference";
 import MembersList from "./pages/MembersList";
@@ -12,15 +11,6 @@ import Facilities from "./pages/Facilities";
 import TechnicalActivities from "./pages/TechnicalActivities";
 import LinksDownloads from "./pages/LinksDownloads";
 import Contact from "./pages/Contact";
-import MembershipForm from "./pages/MembershipForm";
-import BecomeMemberPage from "./pages/membership/BecomeMemberPage";
-import CertificationPage from "./pages/membership/CertificationPage";
-import PublicationsPage from "./pages/membership/PublicationsPage";
-import EventsCpdPage from "./pages/membership/EventsCpdPage";
-import MemberServicesPage from "./pages/membership/MemberServicesPage";
-import MembershipBenefitsPage from "./pages/membership/MembershipBenefitsPage";
-import MembershipGradesPage from "./pages/membership/MembershipGradesPage";
-import MembershipInfoPage from "./pages/membership/MembershipInfoPage";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "./admin/AdminRoute";
 import AdminLogin from "./admin/AdminLogin";
@@ -33,41 +23,15 @@ import AdminActivities from "./admin/AdminActivities";
 import AdminFacilities from "./admin/AdminFacilities";
 import AdminDownloads from "./admin/AdminDownloads";
 import AdminMessages from "./admin/AdminMessages";
-import AdminMembershipRequests from "./admin/AdminMembershipRequests";
-import AdminPremiumSubscriptions from "./admin/AdminPremiumSubscriptions";
 
-function LegacyMembershipRedirect() {
-  const location = useLocation();
+const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
 
-  return <Navigate to={{ pathname: "/membership", hash: location.hash }} replace />;
-}
+function ExternalRedirect({ to }) {
+  useEffect(() => {
+    window.location.assign(to);
+  }, [to]);
 
-function MembershipHomeRoute() {
-  const location = useLocation();
-  const normalizedHash = String(location.hash || "").toLowerCase();
-
-  const hashRouteMap = {
-    "#be-member": "/membership/become-member",
-    "#apply-membership": "/membership/become-member",
-    "#membership-info": "/membership/benefits",
-    "#chartered-engineer": "/membership/certification#chartered-engineer",
-    "#professional-engineer": "/membership/certification#professional-engineer",
-    "#section-ab": "/membership/certification#section-ab",
-    "#academics-certification": "/membership/certification",
-    "#publications": "/membership/publications",
-    "#network-activities": "/membership/events-cpd",
-    "#student-chapters": "/membership/events-cpd#student-chapters",
-    "#announcements": "/membership/events-cpd#announcements",
-    "#auth-panel": "/membership/member-services#auth-panel",
-    "#fees-subscriptions": "/membership/member-services#fees-subscriptions",
-    "#faq": "/membership/member-services#faq",
-  };
-
-  if (normalizedHash && hashRouteMap[normalizedHash]) {
-    return <Navigate to={hashRouteMap[normalizedHash]} replace />;
-  }
-
-  return <MembershipForm />;
+  return null;
 }
 
 function PublicLayout({ children }) {
@@ -76,16 +40,6 @@ function PublicLayout({ children }) {
       <Navbar />
       <main id="main-content">{children}</main>
       <Footer />
-    </div>
-  );
-}
-
-function MembershipLayout({ children }) {
-  return (
-    <div className="membership-page min-h-screen bg-white text-gray-900">
-      <MembershipNavbar />
-      <main id="main-content">{children}</main>
-      <MembershipFooter />
     </div>
   );
 }
@@ -167,80 +121,8 @@ export default function App() {
           </PublicLayout>
         }
       />
-      <Route
-        path="/membership"
-        element={
-          <MembershipLayout>
-            <MembershipHomeRoute />
-          </MembershipLayout>
-        }
-      />
-      <Route path="/membership-form" element={<LegacyMembershipRedirect />} />
-      <Route path="/membership-form/*" element={<LegacyMembershipRedirect />} />
-      <Route
-        path="/membership/become-member"
-        element={
-          <MembershipLayout>
-            <BecomeMemberPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/certification"
-        element={
-          <MembershipLayout>
-            <CertificationPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/publications"
-        element={
-          <MembershipLayout>
-            <PublicationsPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/events-cpd"
-        element={
-          <MembershipLayout>
-            <EventsCpdPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/member-services"
-        element={
-          <MembershipLayout>
-            <MemberServicesPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/benefits"
-        element={
-          <MembershipLayout>
-            <MembershipBenefitsPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/grades"
-        element={
-          <MembershipLayout>
-            <MembershipGradesPage />
-          </MembershipLayout>
-        }
-      />
-      <Route
-        path="/membership/info"
-        element={
-          <MembershipLayout>
-            <MembershipInfoPage />
-          </MembershipLayout>
-        }
-      />
+      <Route path="/membership" element={<ExternalRedirect to={MEMBERSHIP_PORTAL_URL} />} />
+      <Route path="/membership/*" element={<ExternalRedirect to={MEMBERSHIP_PORTAL_URL} />} />
 
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route
@@ -259,8 +141,6 @@ export default function App() {
         <Route path="facilities" element={<AdminFacilities />} />
         <Route path="downloads" element={<AdminDownloads />} />
         <Route path="messages" element={<AdminMessages />} />
-        <Route path="memberships" element={<AdminMembershipRequests />} />
-        <Route path="premium" element={<AdminPremiumSubscriptions />} />
       </Route>
 
       <Route path="/admin/*" element={<Navigate to="/admin" replace />} />

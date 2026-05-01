@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
+
 export default function Footer() {
   return (
     <footer className="border-t border-gray-100 bg-white">
@@ -56,11 +58,11 @@ export default function Footer() {
         <div>
           <p className="eyebrow-chip mb-5">Services</p>
           <div className="grid gap-3 text-sm text-gray-400">
-            <Link to="/membership" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Membership</Link>
-            <Link to="/membership#chartered-engineer" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Chartered Engineer</Link>
-            <Link to="/membership#professional-engineer" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Professional Engineer</Link>
-            <Link to="/membership#section-ab" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Section A & B</Link>
-            <Link to="/membership#publications" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Publications</Link>
+            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Membership</a>
+            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Chartered Engineer</a>
+            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Professional Engineer</a>
+            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Section A & B</a>
+            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Publications</a>
             <Link to="/newsletter" className="transition-colors duration-200 hover:text-gray-900">Newsletter</Link>
             <Link to="/links-downloads" className="transition-colors duration-200 hover:text-gray-900">Downloads</Link>
             <Link to="/facilities" className="transition-colors duration-200 hover:text-gray-900">Facilities</Link>
