@@ -356,7 +356,7 @@ export default function Home() {
                   </h2>
                   <p className="flex-1 text-sm leading-relaxed text-gray-500">{item.detail}</p>
                   <span className="text-xs font-medium text-gray-300 transition-colors duration-200 group-hover:text-gray-900">
-                    Learn More ->
+                    Learn More {'->'} 
                   </span>
                 </PanelLink>
               );
