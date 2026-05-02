@@ -116,16 +116,14 @@ export default function Home() {
 
       <section className="bg-white">
         <div className="page-shell home-rhythm-shell">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="home-premium-section-title mb-5">Chairman&apos;s Message</h2>
-            <div className="home-premium-card animate-fade-up stagger-2 rounded-2xl border border-gray-200 bg-gray-50/60 p-6 sm:p-8">
-              <blockquote className="home-premium-quote mb-4 mr-auto max-w-[66ch] text-left italic sm:mb-5">
-                {cleanChairmanMessage}
-              </blockquote>
-              <div className="mt-5 text-left">
-                <p className="text-sm font-semibold text-gray-900">Dr. M. Marsaline Beno</p>
-                <p className="mt-0.5 text-xs text-gray-400">Chairman, IEI Kanyakumari Local Centre</p>
-              </div>
+          <h2 className="home-premium-section-title mb-5">Chairman&apos;s Message</h2>
+          <div className="home-premium-card animate-fade-up stagger-2 rounded-2xl border border-gray-200 bg-gray-50/60 p-6 sm:p-8">
+            <blockquote className="home-premium-quote mb-4 mr-auto max-w-none text-left italic sm:mb-5">
+              {cleanChairmanMessage}
+            </blockquote>
+            <div className="mt-5 text-left">
+              <p className="text-sm font-semibold text-gray-900">Dr. M. Marsaline Beno</p>
+              <p className="mt-0.5 text-xs text-gray-400">Chairman, IEI Kanyakumari Local Centre</p>
             </div>
           </div>
         </div>
