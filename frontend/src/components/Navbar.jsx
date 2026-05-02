@@ -5,8 +5,8 @@ import Button from "./ui/Button";
 const primaryLinks = [
   { to: "/", label: "Home" },
   { to: "/conference", label: "Conference" },
+  { to: "/members", label: "Office Bearers" },
   { to: "/technical-activities", label: "Events" },
-  { to: "/members", label: "Committee" },
   { to: "/gallery", label: "Gallery" },
 ];
 
@@ -184,7 +184,10 @@ Skip to main content
         </button>
 
  <nav className="hidden items-center gap-0.5 lg:flex">
-          {primaryLinks.map((item) => (
+          {primaryLinks.slice(0, 2).map((item) => (
+            <NavItem key={item.to} {...item} />
+          ))}
+          {primaryLinks.slice(2).map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
           <MoreDropdown />
@@ -212,7 +215,7 @@ Skip to main content
             {primaryLinks.map((item) => (
               <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />
             ))}
-        <p className="mb-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+            <p className="mb-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
               More
             </p>
             {moreLinks.map((item) => (
