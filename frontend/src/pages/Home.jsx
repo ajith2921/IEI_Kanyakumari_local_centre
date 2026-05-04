@@ -18,6 +18,21 @@ export default function Home() {
 
   return (
     <>
+      {/* Full-screen hero image */}
+      <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+        <img
+          src="/home-bg.jpg"
+          alt="IEI Kanyakumari Local Centre Event"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block',
+          }}
+        />
+      </div>
+
       <section className="bg-white">
         <div className="page-shell home-rhythm-shell">
           <h2 className="home-premium-section-title mb-5">About IEI Kolkata</h2>

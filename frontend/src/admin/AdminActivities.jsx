@@ -3,7 +3,7 @@ import { adminApi } from "../services/api";
 
 const fields = [
   { name: "title", label: "Title", required: true },
-  { name: "event_date", label: "Event Date" },
+  { name: "event_date", label: "Event Date", type: "date" },
   { name: "image_url", label: "Image URL (optional)" },
   { name: "description", label: "Description", type: "textarea" },
 ];

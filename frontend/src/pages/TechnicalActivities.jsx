@@ -7,29 +7,28 @@ import { SkeletonGrid } from "../components/Skeletons";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi } from "../services/api";
 
-const HEADING_ORDER = [
-  "Technical Programmes",
-  "Student Events",
-  "Professional Development",
-  "Social Outreach",
-];
-const OTHER_HEADING = "Other Activities";
-
-function getActivityHeading(activity) {
-  const description = String(activity?.description || "").trim();
-  const [prefix] = description.split(" - ");
-  const heading = String(prefix || "").trim();
-  return HEADING_ORDER.includes(heading) ? heading : OTHER_HEADING;
-}
-
 function getActivityTime(activity) {
   const eventDateText = String(activity?.event_date || "").trim();
-  if (!eventDateText) {
-    return Number.NaN;
+  if (!eventDateText) return Number.NaN;
+  
+  // Try standard parsing first
+  const parsed = Date.parse(eventDateText);
+  if (Number.isFinite(parsed)) return parsed;
+
+  // Fallback for DD-MM-YYYY or DD/MM/YYYY
+  const parts = eventDateText.split(/[-/]/);
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // 0-indexed
+    const year = parseInt(parts[2], 10);
+    
+    // Check if it looks like a valid DD-MM-YYYY (or MM-DD-YYYY if day > 12)
+    if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year > 1900) {
+      return new Date(year, month, day).getTime();
+    }
   }
 
-  const parsed = Date.parse(eventDateText);
-  return Number.isFinite(parsed) ? parsed : Number.NaN;
+  return Number.NaN;
 }
 
 function isUpcomingActivity(activity, todayStartMs) {
@@ -45,46 +44,32 @@ export default function TechnicalActivities() {
     return today.getTime();
   }, []);
 
-  const upcomingActivities = useMemo(
-    () =>
-      data
-        .filter((activity) => isUpcomingActivity(activity, todayStartMs))
-        .slice()
-        .sort((left, right) => getActivityTime(left) - getActivityTime(right)),
-    [data, todayStartMs]
-  );
+  // Separate upcoming and past events for perfectly synced counts and robust sorting
+  const sortedUpcoming = useMemo(() => {
+    return data
+      .filter((a) => isUpcomingActivity(a, todayStartMs))
+      .sort((a, b) => getActivityTime(a) - getActivityTime(b)); // soonest first
+  }, [data, todayStartMs]);
 
-  const conductedActivities = useMemo(
-    () => data.filter((activity) => !isUpcomingActivity(activity, todayStartMs)),
-    [data, todayStartMs]
-  );
+  const sortedPast = useMemo(() => {
+    return data
+      .filter((a) => !isUpcomingActivity(a, todayStartMs))
+      .sort((a, b) => {
+        const timeA = getActivityTime(a);
+        const timeB = getActivityTime(b);
+        // Handle events with no valid dates (push to bottom)
+        if (Number.isNaN(timeA) && Number.isNaN(timeB)) return 0;
+        if (Number.isNaN(timeA)) return 1;
+        if (Number.isNaN(timeB)) return -1;
+        return timeB - timeA; // most recent first
+      });
+  }, [data, todayStartMs]);
 
-  const groupedActivities = useMemo(() => {
-    const grouped = new Map();
-
-    HEADING_ORDER.forEach((heading) => grouped.set(heading, []));
-    grouped.set(OTHER_HEADING, []);
-
-    conductedActivities.forEach((activity) => {
-      const heading = getActivityHeading(activity);
-      grouped.get(heading).push(activity);
-    });
-
-    const orderedSections = HEADING_ORDER
-      .map((heading) => ({ heading, activities: grouped.get(heading) }))
-      .filter((section) => section.activities.length > 0);
-
-    const otherActivities = grouped.get(OTHER_HEADING);
-    if (otherActivities.length > 0) {
-      orderedSections.push({ heading: OTHER_HEADING, activities: otherActivities });
-    }
-
-    return orderedSections;
-  }, [conductedActivities]);
+  const allSortedActivities = useMemo(() => [...sortedUpcoming, ...sortedPast], [sortedUpcoming, sortedPast]);
 
   const totalActivities = data.length;
-  const totalUpcoming = upcomingActivities.length;
-  const totalConducted = conductedActivities.length;
+  const totalUpcoming = sortedUpcoming.length;
+  const totalConducted = totalActivities - totalUpcoming;
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -96,7 +81,7 @@ export default function TechnicalActivities() {
 
           <div className="relative">
             <p className="eyebrow-chip mb-3">Knowledge Exchange · Professional Development · Innovation</p>
-            <h1 className="heading-h1 text-gray-900">Events & Technical Activities</h1>
+            <h1 className="heading-h1 text-gray-900">Events &amp; Technical Activities</h1>
             <p className="mt-3 text-sm text-gray-500">IEI Kanyakumari Local Centre</p>
 
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
@@ -116,66 +101,27 @@ export default function TechnicalActivities() {
           </div>
         </header>
 
-        {/* ── Upcoming events (API) ───────────────────── */}
+        {/* ── All events sorted by date ────────────────── */}
         <section className="mb-20 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <SectionHeader
-            eyebrow="Upcoming Events"
-            title="Upcoming Technical Programs"
-            description="Scheduled conferences, seminars, and chapter-led activities from IEI KKLC."
+            eyebrow="IEI KKLC Activities"
+            title="All Events & Activities"
+            description="All technical activities sorted by date — upcoming events first, followed by past events."
             className="mb-8"
           />
-          {loading && <SkeletonGrid count={1} />}
+          {loading && <SkeletonGrid count={3} />}
           {error && <ErrorState message={error} onRetry={reload} />}
           {!loading && !error && (
-            upcomingActivities.length > 0 ? (
+            allSortedActivities.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                {upcomingActivities.map((activity) => (
+                {allSortedActivities.map((activity) => (
                   <EventCard key={activity.id} activity={activity} />
                 ))}
               </div>
             ) : (
               <EmptyState
-                title="No upcoming events yet"
-                description="Upcoming conferences and events will appear here once scheduled."
-              />
-            )
-          )}
-        </section>
-
-        {/* ── Conducted activities (API) ──────────────── */}
-        <section className="mb-20 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <SectionHeader
-            eyebrow="Conducted by IEI KKLC"
-            title="Major Activities Conducted"
-            description="Archived technical activities grouped by program type and chapter focus area."
-            className="mb-8"
-          />
-          {!loading && !error && (
-            groupedActivities.length > 0 ? (
-              <div className="space-y-10">
-                {groupedActivities.map((section) => (
-                  <section key={section.heading}>
-                    <div className="mb-5 flex items-center justify-between gap-3 border-b border-gray-100 pb-2">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 sm:text-base">
-                        {section.heading}
-                      </h3>
-                      <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-500">
-                        {section.activities.length}
-                      </span>
-                    </div>
-
-                    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                      {section.activities.map((activity) => (
-                        <EventCard key={activity.id} activity={activity} />
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="No conducted activities published yet"
-                description="Conducted events will appear here after they are added by the admin team."
+                title="No activities published yet"
+                description="Events and technical activities will appear here once added by the admin team."
               />
             )
           )}
