@@ -1,3 +1,4 @@
+import ConferenceNotification from "../components/conference/ConferenceNotification";
 
 const focusAreas = [
   "Technical Seminars & Conferences",
@@ -18,7 +19,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Full-screen hero image */}
+      {/* ── Full-screen hero image + floating conference notification ── */}
       <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
         <img
           src="/home-bg.jpg"
@@ -31,6 +32,15 @@ export default function Home() {
             display: 'block',
           }}
         />
+        {/* Desktop + Tablet: floating absolutely over the hero */}
+        <div className="hidden sm:block">
+          <ConferenceNotification />
+        </div>
+      </div>
+
+      {/* Mobile: stacked below hero in normal flow */}
+      <div className="block sm:hidden px-4 pt-5 pb-1 bg-white">
+        <ConferenceNotification />
       </div>
 
       <section className="bg-white">

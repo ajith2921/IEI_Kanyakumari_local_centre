@@ -4,7 +4,6 @@ import Button from "./ui/Button";
 
 const primaryLinks = [
   { to: "/", label: "Home" },
-  { to: "/conference", label: "Conference" },
   { to: "/members", label: "Office Bearers" },
   { to: "/technical-activities", label: "Events" },
   { to: "/gallery", label: "Gallery" },

@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import EventCard from "../components/EventCard";
 import SectionHeader from "../components/SectionHeader";
 import { SkeletonGrid } from "../components/Skeletons";
+import Button from "../components/ui/Button";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi } from "../services/api";
 
@@ -83,6 +85,17 @@ export default function TechnicalActivities() {
             <p className="eyebrow-chip mb-3">Knowledge Exchange · Professional Development · Innovation</p>
             <h1 className="heading-h1 text-gray-900">Events &amp; Technical Activities</h1>
             <p className="mt-3 text-sm text-gray-500">IEI Kanyakumari Local Centre</p>
+
+            {/* Conference Banner/Button */}
+            <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
+              <div>
+                <p className="text-sm font-semibold text-emerald-900">SUSTAIN-TECH 2026</p>
+                <p className="text-xs text-emerald-700">Advancing Science & Technology for SDGs — Oct 30-31, 2026</p>
+              </div>
+              <Button as={Link} to="/conference" className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
+                View Conference Details
+              </Button>
+            </div>
 
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">

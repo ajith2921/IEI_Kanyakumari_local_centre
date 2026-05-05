@@ -674,3 +674,381 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateX(0) !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   CONFERENCE NOTIFICATION SYSTEM
+═══════════════════════════════════════════════════════ */
+
+/* ── Keyframes ─────────────────────────────────────── */
+@keyframes confSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes confFloat {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes confBadgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50%       { box-shadow: 0 0 0 5px transparent; opacity: 0.6; }
+}
+
+@keyframes confDotPulse {
+  0%, 100% { transform: scale(1);   opacity: 1;   }
+  50%       { transform: scale(1.6); opacity: 0.5; }
+}
+
+/* ── Wrapper — positions the card over the hero ────── */
+.conf-notification-wrapper {
+  position: absolute;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  z-index: 30;
+  width: 17rem;
+  max-width: calc(100vw - 2rem);
+
+  /* Entry animation (triggered by JS class) */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0s;
+}
+
+.conf-notification-wrapper--visible {
+  opacity: 1;
+  pointer-events: auto;
+  animation: confSlideIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) both,
+             confFloat 5s ease-in-out 1.2s infinite;
+}
+
+/* ── Card ──────────────────────────────────────────── */
+.conf-card {
+  position: relative;
+  border-radius: 0.3rem; /* sharper corners for paper */
+  padding: 1rem 1rem 1.1rem;
+  overflow: hidden;
+
+  /* Classic yellow sticky-note feel */
+  background: linear-gradient(148deg, #fffce0 0%, #fffaaa 55%, #ffe670 100%);
+  border: 1px solid #e5cc5b;
+
+  /* Premium layered shadow */
+  box-shadow:
+    2px 2px 4px rgb(0 0 0 / 0.05),
+    4px 10px 15px -5px rgb(0 0 0 / 0.15),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.7);
+
+  /* Subtle rotation for the sticky-note feel */
+  transform-origin: top center;
+  transform: rotate(1deg);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease;
+}
+
+.conf-card:hover {
+  transform: translateY(-3px) rotate(0deg) scale(1.02);
+  box-shadow:
+    3px 5px 8px rgb(0 0 0 / 0.08),
+    6px 15px 25px -8px rgb(0 0 0 / 0.2),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.7);
+}
+
+/* ── Folded bottom-right corner ────────────────────── */
+.conf-card__fold {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  background: linear-gradient(
+    225deg,
+    #e5ce6c 0%,
+    #d1b953 40%,
+    transparent 41%
+  );
+  border-top-left-radius: 0.2rem;
+}
+
+.conf-card__fold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    225deg,
+    rgb(0 0 0 / 0.12) 0%,
+    transparent 55%
+  );
+  border-top-left-radius: 0.2rem;
+}
+
+/* ── Top row: badge + close button ─────────────────── */
+.conf-card__toprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Close button ──────────────────────────────────── */
+.conf-card__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.05);
+  border: none;
+  cursor: pointer;
+  color: #8a7640;
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.conf-card__close:hover {
+  background: rgb(0 0 0 / 0.1);
+  color: #5c4a18;
+  transform: scale(1.1);
+}
+
+.conf-card__close svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* ── Badges ────────────────────────────────────────── */
+.conf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.22rem 0.65rem 0.22rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.conf-badge__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: confDotPulse 1.8s ease-in-out infinite;
+}
+
+/* NEW — emerald */
+.conf-badge--new {
+  background: rgb(16 185 129 / 0.14);
+  border: 1px solid rgb(16 185 129 / 0.35);
+  color: #065f46;
+}
+.conf-badge__dot--new { background: #10b981; }
+
+/* CLOSING SOON — amber */
+.conf-badge--warning {
+  background: rgb(245 158 11 / 0.14);
+  border: 1px solid rgb(245 158 11 / 0.35);
+  color: #92400e;
+}
+.conf-badge__dot--warning { background: #f59e0b; }
+
+/* LAST DATE — red */
+.conf-badge--urgent {
+  background: rgb(239 68 68 / 0.14);
+  border: 1px solid rgb(239 68 68 / 0.35);
+  color: #991b1b;
+}
+.conf-badge__dot--urgent { background: #ef4444; }
+
+/* ── Short-title chip ──────────────────────────────── */
+.conf-card__chip {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  background: rgb(160 120 30 / 0.15);
+  border: 1px solid rgb(160 120 30 / 0.3);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b5010;
+}
+
+/* ── Title ─────────────────────────────────────────── */
+.conf-card__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #1e1a0e;
+}
+
+/* ── Description ───────────────────────────────────── */
+.conf-card__desc {
+  margin: 0 0 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #6b5c2a;
+}
+
+/* ── Divider ───────────────────────────────────────── */
+.conf-card__divider {
+  height: 1px;
+  margin-bottom: 0.6rem;
+  background: linear-gradient(to right, #d4be5c, transparent);
+}
+
+/* ── Meta list ─────────────────────────────────────── */
+.conf-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 0.8rem;
+}
+
+.conf-card__meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.conf-card__meta-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #826a25;
+}
+
+.conf-meta-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  color: #a3852d;
+}
+
+.conf-card__meta-value {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2c2410;
+  padding-left: 1rem; /* align under label text, past the icon */
+}
+
+.conf-card__meta-value--urgent {
+  color: #b91c1c;
+}
+
+/* ── CTA button ────────────────────────────────────── */
+.conf-card__cta {
+  margin-top: 0.2rem;
+}
+
+.conf-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+
+  /* Gold/amber gradient */
+  background: linear-gradient(135deg, #f0c94a 0%, #d4a017 100%);
+  color: #2c1e04;
+  border: 1px solid #c89010;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 4px 10px -4px rgb(140 90 10 / 0.45);
+
+  transition: background 0.2s ease, box-shadow 0.2s ease,
+              transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.conf-cta-btn:hover {
+  background: linear-gradient(135deg, #f8d660 0%, #dfa820 100%);
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.1),
+    0 8px 16px -6px rgb(140 90 10 / 0.5);
+  transform: translateY(-1px);
+  color: #1c1304;
+}
+
+.conf-cta-btn:active {
+  transform: translateY(0);
+}
+
+.conf-cta-btn__icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.conf-cta-btn:hover .conf-cta-btn__icon {
+  transform: translateX(3px);
+}
+
+/* ── Tablet: smaller card ──────────────────────────── */
+@media (max-width: 1024px) and (min-width: 641px) {
+  .conf-notification-wrapper {
+    width: 15rem;
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+
+  .conf-card {
+    padding: 0.8rem 0.9rem 1rem;
+  }
+
+  .conf-card__title {
+    font-size: 0.8rem;
+  }
+}
+
+/* ── Mobile: below hero, full-width ────────────────── */
+@media (max-width: 640px) {
+  .conf-notification-wrapper {
+    position: static;          /* pull out of absolute stacking */
+    width: 100%;
+    max-width: none;
+    animation: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* On mobile the card appears in normal flow (see Home.jsx) */
+  .conf-notification-wrapper--visible {
+    animation: confSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .conf-card {
+    border-radius: 0.3rem;
+    padding: 1rem 1.1rem 1.15rem;
+    transform: none !important;
+  }
+
+  .conf-card:hover {
+    transform: none !important;
+  }
+}
+
