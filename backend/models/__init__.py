@@ -117,3 +117,21 @@ class ContactMessage(Base):
     phone: Mapped[str] = mapped_column(String(30), default="")
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class Conference(Base):
+    __tablename__ = "conferences"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    short_title: Mapped[str] = mapped_column(String(50), nullable=False)
+    description: Mapped[str] = mapped_column(Text, default="")
+    start_date: Mapped[str] = mapped_column(String(40), nullable=False)
+    end_date: Mapped[str] = mapped_column(String(40), nullable=False)
+    registration_deadline: Mapped[str] = mapped_column(String(40), nullable=False)
+    venue: Mapped[str] = mapped_column(String(200), default="")
+    button_text: Mapped[str] = mapped_column(String(50), default="More Details")
+    link: Mapped[str] = mapped_column(String(255), default="/conference")
+    status: Mapped[str] = mapped_column(String(20), default="active")  # active, completed, cancelled
+    is_new: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

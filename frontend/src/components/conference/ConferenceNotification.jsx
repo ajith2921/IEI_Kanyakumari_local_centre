@@ -1,22 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
 import ConferenceBadge from "./ConferenceBadge";
 import ConferenceButton from "./ConferenceButton";
+import { publicApi } from "../../services/api";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CONFERENCE DATA
-   Swap this out for an API call / props when backend is ready.
-   Backend integration hint:
-     useEffect(() => { fetch('/api/conferences/active').then(r=>r.json()).then(setConference) }, [])
+   Initially hardcoded as a fallback.
 ───────────────────────────────────────────────────────────────────────────── */
-const CONFERENCE_DATA = {
+const FALLBACK_CONFERENCE = {
   id: 1,
   title: "Advancing Science & Technology for SDGs",
   shortTitle: "SUSTAIN-TECH 2026",
   startDate: "2026-10-30",
   endDate: "2026-10-31",
-  registrationDeadline: "2026-09-30", // Educated guess based on timeline
+  registrationDeadline: "2026-09-30",
   venue: "IEI KKLC Region",
-  status: "active",   // "active" | "completed" | "cancelled"
+  status: "active",
   description: "Engineering Sustainable Futures Through Innovation and Collaboration.",
   buttonText: "More Details",
   link: "/conference",
@@ -29,6 +28,7 @@ const CONFERENCE_DATA = {
 const STORAGE_KEY = (id) => `conf_dismissed_${id}`;
 
 function formatDate(dateStr) {
+  if (!dateStr) return "";
   const d = new Date(dateStr);
   return d.toLocaleDateString("en-IN", {
     day: "numeric",
@@ -51,14 +51,35 @@ function isConferenceVisible(conference) {
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
 export default function ConferenceNotification() {
-  const [conference, setConference] = useState(CONFERENCE_DATA);
+  const [conference, setConference] = useState(null);
   const [dismissed, setDismissed] = useState(false);
   const [visible, setVisible] = useState(false); // drives CSS entry animation
 
-  /* Backend integration point: replace this effect with a real fetch */
   useEffect(() => {
-    // TODO: fetch('/api/conferences/active').then(r=>r.json()).then(setConference);
-    setConference(CONFERENCE_DATA);
+    publicApi.getActiveConference()
+      .then((res) => {
+        const data = res.data;
+        // Map snake_case from API to camelCase for the component if needed
+        // but here the component uses camelCase.
+        setConference({
+          id: data.id,
+          title: data.title,
+          shortTitle: data.short_title,
+          startDate: data.start_date,
+          endDate: data.end_date,
+          registrationDeadline: data.registration_deadline,
+          venue: data.venue,
+          status: data.status,
+          description: data.description,
+          buttonText: data.button_text,
+          link: data.link,
+          isNew: data.is_new,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to fetch conference:", err);
+        setConference(FALLBACK_CONFERENCE);
+      });
   }, []);
 
   /* Trigger entry animation after a short delay */

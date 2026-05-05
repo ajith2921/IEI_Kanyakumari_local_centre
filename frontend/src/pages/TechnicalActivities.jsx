@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
@@ -38,8 +38,29 @@ function isUpcomingActivity(activity, todayStartMs) {
   return Number.isFinite(activityTime) && activityTime >= todayStartMs;
 }
 
+function formatDateRange(start, end) {
+  if (!start || !end) return "";
+  const s = new Date(start);
+  const e = new Date(end);
+  const options = { month: "short", day: "numeric" };
+  const yearOptions = { year: "numeric" };
+  
+  const startStr = s.toLocaleDateString("en-IN", options);
+  const endStr = e.toLocaleDateString("en-IN", { ...options, ...yearOptions });
+  
+  return `${startStr}-${endStr}`;
+}
+
 export default function TechnicalActivities() {
   const { data, loading, error, reload } = useFetchList(publicApi.getActivities);
+  const [activeConference, setActiveConference] = useState(null);
+
+  useEffect(() => {
+    publicApi.getActiveConference()
+      .then(res => setActiveConference(res.data))
+      .catch(err => console.error("Failed to fetch conference banner info:", err));
+  }, []);
+
   const todayStartMs = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -87,15 +108,19 @@ export default function TechnicalActivities() {
             <p className="mt-3 text-sm text-gray-500">IEI Kanyakumari Local Centre</p>
 
             {/* Conference Banner/Button */}
-            <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-              <div>
-                <p className="text-sm font-semibold text-emerald-900">SUSTAIN-TECH 2026</p>
-                <p className="text-xs text-emerald-700">Advancing Science & Technology for SDGs — Oct 30-31, 2026</p>
+            {activeConference && (
+              <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-900">{activeConference.short_title}</p>
+                  <p className="text-xs text-emerald-700">
+                    {activeConference.title} — {formatDateRange(activeConference.start_date, activeConference.end_date)}
+                  </p>
+                </div>
+                <Button as={Link} to={activeConference.link} className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
+                  {activeConference.button_text}
+                </Button>
               </div>
-              <Button as={Link} to="/conference" className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
-                View Conference Details
-              </Button>
-            </div>
+            )}
 
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">

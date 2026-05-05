@@ -61,6 +61,7 @@ export const publicApi = {
   getFacilities: () => api.get("/facilities"),
   getDownloads: () => api.get("/downloads"),
   submitContact: (payload) => api.post("/contact", payload),
+  getActiveConference: () => api.get("/conferences/active"),
 };
 
 export const adminApi = {
@@ -106,6 +107,13 @@ export const adminApi = {
   imageAudit: {
     list: () => api.get("/image-audit"),
     autoFix: (entity, id) => api.post(`/image-audit/auto-fix/${entity}/${id}`),
+  },
+  conferences: {
+    list: () => api.get("/conferences"),
+    active: () => api.get("/conferences/active"),
+    create: (payload) => api.post("/conferences", payload),
+    update: (id, payload) => api.put(`/conferences/${id}`, payload),
+    remove: (id) => api.delete(`/conferences/${id}`),
   },
 };
 

@@ -9,6 +9,7 @@ const navItems = [
   { to: "/admin/gallery", label: "Gallery" },
   { to: "/admin/newsletters", label: "Newsletters" },
   { to: "/admin/activities", label: "Activities" },
+  { to: "/admin/conference", label: "Conference" },
   { to: "/admin/facilities", label: "Facilities" },
   { to: "/admin/downloads", label: "Downloads" },
   { to: "/admin/messages", label: "Contact Messages" },

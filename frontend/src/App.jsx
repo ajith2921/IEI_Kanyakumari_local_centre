@@ -23,6 +23,7 @@ import AdminActivities from "./admin/AdminActivities";
 import AdminFacilities from "./admin/AdminFacilities";
 import AdminDownloads from "./admin/AdminDownloads";
 import AdminMessages from "./admin/AdminMessages";
+import AdminConference from "./admin/AdminConference";
 
 const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
 
@@ -138,6 +139,7 @@ export default function App() {
         <Route path="gallery" element={<AdminGallery />} />
         <Route path="newsletters" element={<AdminNewsletters />} />
         <Route path="activities" element={<AdminActivities />} />
+        <Route path="conference" element={<AdminConference />} />
         <Route path="facilities" element={<AdminFacilities />} />
         <Route path="downloads" element={<AdminDownloads />} />
         <Route path="messages" element={<AdminMessages />} />

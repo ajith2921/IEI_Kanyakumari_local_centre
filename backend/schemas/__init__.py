@@ -169,3 +169,32 @@ class ContactOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class ConferenceBase(BaseModel):
+    title: str
+    short_title: str
+    description: str = ""
+    start_date: str
+    end_date: str
+    registration_deadline: str
+    venue: str = ""
+    button_text: str = "More Details"
+    link: str = "/conference"
+    status: str = "active"
+    is_new: bool = True
+
+
+class ConferenceCreate(ConferenceBase):
+    pass
+
+
+class ConferenceUpdate(ConferenceBase):
+    pass
+
+
+class ConferenceOut(ConferenceBase):
+    id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+

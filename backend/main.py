@@ -26,6 +26,7 @@ from routes import (
     image_audit,
     members,
     newsletters,
+    conferences,
 )
 
 app = FastAPI(title="Institution Website API", version="1.0.0")
@@ -355,8 +356,34 @@ def seed_members_from_program_data() -> None:
         db.close()
 
 
+def seed_conference_data() -> None:
+    from models import Conference
+    db = SessionLocal()
+    try:
+        if db.query(Conference).count() == 0:
+            db.add(
+                Conference(
+                    title="Advancing Science & Technology for SDGs",
+                    short_title="SUSTAIN-TECH 2026",
+                    description="Engineering Sustainable Futures Through Innovation and Collaboration.",
+                    start_date="2026-10-30",
+                    end_date="2026-10-31",
+                    registration_deadline="2026-09-30",
+                    venue="IEI KKLC Region",
+                    button_text="More Details",
+                    link="/conference",
+                    status="active",
+                    is_new=True,
+                )
+            )
+            db.commit()
+    finally:
+        db.close()
+
+
 seed_admin_user()
 seed_members_from_program_data()
+seed_conference_data()
 
 upload_dir = Path(__file__).resolve().parent / "uploads"
 upload_dir.mkdir(parents=True, exist_ok=True)
@@ -372,6 +399,7 @@ app.include_router(activities.router, prefix="/api")
 app.include_router(facilities.router, prefix="/api")
 app.include_router(downloads.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
+app.include_router(conferences.router, prefix="/api")
 
 
 @app.get("/api/health")
