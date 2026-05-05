@@ -71,6 +71,7 @@ export default function ResourceManager({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [extraFiles, setExtraFiles] = useState({});
   const imageFieldValue = String(form[imageFieldName] || "");
   const visibleFields = useMemo(
     () => fields.filter((field) => isFieldVisible(field, form)),
@@ -113,6 +114,7 @@ export default function ResourceManager({
   const resetForm = () => {
     setForm(emptyForm);
     setImageFile(null);
+    setExtraFiles({});
     setFileInputKey((value) => value + 1);
     setEditingId(null);
   };
@@ -125,6 +127,7 @@ export default function ResourceManager({
   const onEdit = (item) => {
     setEditingId(item.id);
     setImageFile(null);
+    setExtraFiles({});
     setFileInputKey((value) => value + 1);
     setForm(
       fields.reduce(
@@ -184,6 +187,19 @@ export default function ResourceManager({
     setImageFile(file);
   };
 
+  const onExtraFileChange = (event) => {
+    const { name, files } = event.target;
+    setExtraFiles((prev) => {
+      const updated = { ...prev };
+      if (files && files[0]) {
+        updated[name] = files[0];
+      } else {
+        delete updated[name];
+      }
+      return updated;
+    });
+  };
+
   const onImageFileChange = (event) => {
     const file = event.target.files?.[0] || null;
     assignImageFile(file);
@@ -236,8 +252,10 @@ export default function ResourceManager({
     }
 
     const payloadEntries = fields
-      .filter((field) => !field.excludeFromPayload)
+      .filter((field) => !field.excludeFromPayload && field.type !== "file")
       .map((field) => [field.name, normalizedForm[field.name]]);
+
+    const hasExtraFiles = Object.keys(extraFiles).length > 0;
 
     if (imageUploadEnabled) {
       const imageUrl = String(normalizedForm[imageFieldName] || "").trim();
@@ -259,7 +277,7 @@ export default function ResourceManager({
     setSaving(true);
     setError("");
     try {
-      const payload = imageUploadEnabled
+      const payload = (imageUploadEnabled || hasExtraFiles)
         ? (() => {
             const data = new FormData();
             payloadEntries.forEach(([key, value]) => {
@@ -268,6 +286,9 @@ export default function ResourceManager({
             if (imageFile) {
               data.append(imageFileFieldName, imageFile);
             }
+            Object.entries(extraFiles).forEach(([key, file]) => {
+              data.append(key, file);
+            });
             return data;
           })()
         : Object.fromEntries(payloadEntries);
@@ -342,6 +363,22 @@ export default function ResourceManager({
                   </option>
                 ))}
               </Input>
+            );
+          }
+
+          if (field.type === "file") {
+            return (
+              <div key={field.name} className={colSpanClass}>
+                <label className="mb-1 block text-sm font-medium text-gray-700">{field.label}</label>
+                <input
+                  type="file"
+                  name={field.name}
+                  accept={field.accept}
+                  onChange={onExtraFileChange}
+                  className="input-base cursor-pointer bg-white"
+                  key={`${fileInputKey}-${field.name}`}
+                />
+              </div>
             );
           }
 

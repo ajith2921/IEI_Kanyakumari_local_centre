@@ -11,6 +11,7 @@ from routes.file_utils import (
     delete_local_upload_if_exists,
     normalize_remote_image_url,
     save_optimized_image_file,
+    save_upload_file,
 )
 from schemas import ActivityOut
 
@@ -39,6 +40,8 @@ def create_activity(
     event_date: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
+    pdf: Optional[UploadFile] = File(default=None),
+    colab: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_active_user),
 ) -> Activity:
@@ -67,11 +70,27 @@ def create_activity(
     else:
         image_url_value = normalized_url
 
+    pdf_url_value = ""
+    if pdf and pdf.filename:
+        try:
+            pdf_url_value = save_upload_file(pdf, BASE_UPLOAD_DIR, "activities_docs", {".pdf"})
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    colab_url_value = ""
+    if colab and colab.filename:
+        try:
+            colab_url_value = save_upload_file(colab, BASE_UPLOAD_DIR, "activities_docs", {".ipynb", ".zip", ".txt", ".pdf"})
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     activity = Activity(
         title=normalized_title,
         description=normalized_description,
         event_date=normalized_event_date,
         image_url=image_url_value,
+        pdf_url=pdf_url_value,
+        colab_url=colab_url_value,
     )
     db.add(activity)
     db.commit()
@@ -87,6 +106,8 @@ def update_activity(
     event_date: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
+    pdf: Optional[UploadFile] = File(default=None),
+    colab: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_active_user),
 ) -> Activity:
@@ -126,6 +147,22 @@ def update_activity(
     else:
         activity.image_url = normalized_url
 
+    if pdf and pdf.filename:
+        try:
+            next_pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "activities_docs", {".pdf"})
+            delete_local_upload_if_exists(activity.pdf_url, BASE_UPLOAD_DIR)
+            activity.pdf_url = next_pdf_url
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if colab and colab.filename:
+        try:
+            next_colab_url = save_upload_file(colab, BASE_UPLOAD_DIR, "activities_docs", {".ipynb", ".zip", ".txt", ".pdf"})
+            delete_local_upload_if_exists(activity.colab_url, BASE_UPLOAD_DIR)
+            activity.colab_url = next_colab_url
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     db.commit()
     db.refresh(activity)
     return activity
@@ -146,5 +183,7 @@ def delete_activity(
         raise HTTPException(status_code=404, detail="Activity not found")
 
     delete_local_upload_if_exists(activity.image_url, BASE_UPLOAD_DIR)
+    delete_local_upload_if_exists(activity.pdf_url, BASE_UPLOAD_DIR)
+    delete_local_upload_if_exists(activity.colab_url, BASE_UPLOAD_DIR)
     db.delete(activity)
     db.commit()

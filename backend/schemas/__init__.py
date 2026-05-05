@@ -78,6 +78,8 @@ class ActivityBase(BaseModel):
     description: str = ""
     event_date: str = ""
     image_url: str = ""
+    pdf_url: str = ""
+    colab_url: str = ""
 
 
 class ActivityCreate(ActivityBase):

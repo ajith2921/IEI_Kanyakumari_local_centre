@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { toAbsoluteUploadUrl } from "../services/api";
 import ImageMedia from "./ImageMedia";
 import Card from "./ui/Card";
@@ -51,7 +52,9 @@ function EventImageFallback({ title, category }) {
   );
 }
 
-export default function EventCard({ activity}) {
+export default function EventCard({ activity }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const title = activity.title?.trim() || "Technical Activity";
   const description = activity.description?.trim() || "Details will be updated soon.";
   const category = getCategory(description);
@@ -88,11 +91,60 @@ export default function EventCard({ activity}) {
       <div className="space-y-2 p-5">
          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400">Hosted by IEI KKLC</p>
         <h3 className="text-base font-semibold leading-snug text-gray-900">{title}</h3>
-        <p className="line-clamp-3 text-sm leading-relaxed text-gray-500">{description}</p>
-        <p className="truncate pt-1 text-xs text-gray-400">{venue}</p>
-        <p className="pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">
-          View Event Details →
+        
+        <p className={`text-sm leading-relaxed text-gray-500 ${isExpanded ? '' : 'line-clamp-3'}`}>
+          {description}
         </p>
+        
+        <p className="truncate pt-1 text-xs text-gray-400">{venue}</p>
+
+        {isExpanded ? (
+          <>
+            {(activity.pdf_url || activity.colab_url) && (
+              <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                {activity.pdf_url && (
+                  <a
+                    href={toAbsoluteUploadUrl(activity.pdf_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M4 1.5A1.5 1.5 0 0 0 2.5 3v10A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V5.5L9.5 1.5H4zM10 2v3.5a.5.5 0 0 0 .5.5H14L10 2zM5.5 11v-1h5v1h-5zm0-2V8h5v1h-5z"/>
+                    </svg>
+                    View PDF
+                  </a>
+                )}
+                {activity.colab_url && (
+                  <a
+                    href={toAbsoluteUploadUrl(activity.colab_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-100"
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4zm3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM8 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                    </svg>
+                    Colab / Resources
+                  </a>
+                )}
+              </div>
+            )}
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="mt-2 block pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 hover:text-gray-900"
+            >
+              Hide Details ↑
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => setIsExpanded(true)}
+            className="block pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 hover:text-gray-900"
+          >
+            View Event Details →
+          </button>
+        )}
       </div>
     </Card>
   );

@@ -83,6 +83,8 @@ class Activity(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     event_date: Mapped[str] = mapped_column(String(40), default="")
     image_url: Mapped[str] = mapped_column(String(255), default="")
+    pdf_url: Mapped[str] = mapped_column(String(255), default="")
+    colab_url: Mapped[str] = mapped_column(String(255), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
