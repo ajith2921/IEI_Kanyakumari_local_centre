@@ -2,24 +2,32 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+import os
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
+from supabase import create_client
 
 from auth import get_current_active_user
-from database import get_db
-from models import Newsletter, User
-from routes.file_utils import delete_local_upload_if_exists, save_upload_file
+from supabase_db import admin_db
 from schemas import NewsletterOut
 
+# Supabase client
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
 router = APIRouter(prefix="/newsletters", tags=["Newsletters"])
-BASE_UPLOAD_DIR = Path(__file__).resolve().parents[1] / "uploads"
-PDF_TYPES = {".pdf"}
 
 
 @router.get("", response_model=list[NewsletterOut])
-def list_newsletters(db: Session = Depends(get_db)) -> list[Newsletter]:
-    return db.query(Newsletter).order_by(Newsletter.published_at.desc()).all()
+def list_newsletters() -> list[dict]:
+    """Get all newsletters"""
+    try:
+        newsletters = admin_db.order_by("newsletters", "published_at", ascending=False)
+        return newsletters
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("", response_model=NewsletterOut, status_code=status.HTTP_201_CREATED)
@@ -27,21 +35,44 @@ def create_newsletter(
     title: str = Form(...),
     summary: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Newsletter:
-    pdf_url = ""
-    if pdf:
-        try:
-            pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "newsletters", PDF_TYPES)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Create newsletter with PDF upload to Supabase Storage"""
+    try:
+        pdf_url = ""
+        
+        # Upload PDF to Supabase Storage
+        if pdf and pdf.filename:
+            content = pdf.file.read()
+            
+            if len(content) > 50 * 1024 * 1024:  # 50MB max
+                raise HTTPException(status_code=413, detail="PDF too large. Max 50MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path = f"newsletter_{timestamp}{Path(pdf.filename).suffix}"
+            
+            supabase.storage.from_("newsletters").upload(
+                path=pdf_path,
+                file=content,
+                file_options={"content-type": "application/pdf"}
+            )
+            
+            pdf_url = supabase.storage.from_("newsletters").get_public_url(pdf_path)
 
-    newsletter = Newsletter(title=title, summary=summary, pdf_url=pdf_url)
-    db.add(newsletter)
-    db.commit()
-    db.refresh(newsletter)
-    return newsletter
+        # Create newsletter in Supabase
+        newsletter_data = {
+            "title": title,
+            "summary": summary,
+            "pdf_url": pdf_url,
+        }
+        
+        created_newsletter = admin_db.insert("newsletters", newsletter_data)
+        return created_newsletter
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating newsletter: {str(e)}")
 
 
 @router.put("/{newsletter_id}", response_model=NewsletterOut)
@@ -50,33 +81,58 @@ def update_newsletter(
     title: str = Form(...),
     summary: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Newsletter:
-    newsletter = db.query(Newsletter).filter(Newsletter.id == newsletter_id).first()
-    if not newsletter:
-        raise HTTPException(status_code=404, detail="Newsletter not found")
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Update newsletter with optional PDF upload to Supabase Storage"""
+    try:
+        # Check newsletter exists
+        newsletter = admin_db.select_one("newsletters", {"id": newsletter_id})
+        if not newsletter:
+            raise HTTPException(status_code=404, detail="Newsletter not found")
 
-    newsletter.title = title
-    newsletter.summary = summary
+        update_data = {
+            "title": title,
+            "summary": summary,
+        }
 
-    if pdf:
-        try:
-            next_pdf_url = save_upload_file(
-                pdf,
-                BASE_UPLOAD_DIR,
-                "newsletters",
-                PDF_TYPES,
+        # Handle PDF upload
+        if pdf and pdf.filename:
+            content = pdf.file.read()
+            if len(content) > 50 * 1024 * 1024:
+                raise HTTPException(status_code=413, detail="PDF too large. Max 50MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path = f"newsletter_{newsletter_id}_{timestamp}{Path(pdf.filename).suffix}"
+            
+            supabase.storage.from_("newsletters").upload(
+                path=pdf_path,
+                file=content,
+                file_options={"content-type": "application/pdf"}
             )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+            update_data["pdf_url"] = supabase.storage.from_("newsletters").get_public_url(pdf_path)
 
-        delete_local_upload_if_exists(newsletter.pdf_url, BASE_UPLOAD_DIR)
-        newsletter.pdf_url = next_pdf_url
+        # Update in Supabase
+        updated_newsletter = admin_db.update("newsletters", update_data, {"id": newsletter_id})
+        return updated_newsletter
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating newsletter: {str(e)}")
 
-    db.commit()
-    db.refresh(newsletter)
-    return newsletter
+
+@router.get("/{newsletter_id}", response_model=NewsletterOut)
+def get_newsletter(newsletter_id: int) -> dict:
+    """Get single newsletter"""
+    try:
+        newsletter = admin_db.select_one("newsletters", {"id": newsletter_id})
+        if not newsletter:
+            raise HTTPException(status_code=404, detail="Newsletter not found")
+        return newsletter
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete(
@@ -86,13 +142,15 @@ def update_newsletter(
 )
 def delete_newsletter(
     newsletter_id: int,
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
+    _current_user = Depends(get_current_active_user),
 ) -> None:
-    newsletter = db.query(Newsletter).filter(Newsletter.id == newsletter_id).first()
-    if not newsletter:
-        raise HTTPException(status_code=404, detail="Newsletter not found")
-
-    delete_local_upload_if_exists(newsletter.pdf_url, BASE_UPLOAD_DIR)
-    db.delete(newsletter)
-    db.commit()
+    """Delete newsletter"""
+    try:
+        count = admin_db.delete("newsletters", {"id": newsletter_id})
+        if count == 0:
+            raise HTTPException(status_code=404, detail="Newsletter not found")
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting newsletter: {str(e)}")

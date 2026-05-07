@@ -2,24 +2,32 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+import os
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
+from supabase import create_client
 
 from auth import get_current_active_user
-from database import get_db
-from models import Download, User
-from routes.file_utils import delete_local_upload_if_exists, save_upload_file
+from supabase_db import admin_db
 from schemas import DownloadOut
 
+# Supabase client
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
 router = APIRouter(prefix="/downloads", tags=["Downloads"])
-BASE_UPLOAD_DIR = Path(__file__).resolve().parents[1] / "uploads"
-PDF_TYPES = {".pdf"}
 
 
 @router.get("", response_model=list[DownloadOut])
-def list_downloads(db: Session = Depends(get_db)) -> list[Download]:
-    return db.query(Download).order_by(Download.created_at.desc()).all()
+def list_downloads() -> list[dict]:
+    """Get all downloads"""
+    try:
+        downloads = admin_db.order_by("downloads", "created_at", ascending=False)
+        return downloads
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("", response_model=DownloadOut, status_code=status.HTTP_201_CREATED)
@@ -27,19 +35,40 @@ def create_download(
     title: str = Form(...),
     description: str = Form(default=""),
     pdf: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Download:
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Create download with PDF upload to Supabase Storage"""
     try:
-        pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "downloads", PDF_TYPES)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        content = pdf.file.read()
+        
+        if len(content) > 100 * 1024 * 1024:  # 100MB max
+            raise HTTPException(status_code=413, detail="PDF too large. Max 100MB.")
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        pdf_path = f"download_{timestamp}{Path(pdf.filename).suffix}"
+        
+        supabase.storage.from_("downloads").upload(
+            path=pdf_path,
+            file=content,
+            file_options={"content-type": "application/pdf"}
+        )
+        
+        pdf_url = supabase.storage.from_("downloads").get_public_url(pdf_path)
 
-    download = Download(title=title, description=description, pdf_url=pdf_url)
-    db.add(download)
-    db.commit()
-    db.refresh(download)
-    return download
+        # Create download in Supabase
+        download_data = {
+            "title": title,
+            "description": description,
+            "pdf_url": pdf_url,
+        }
+        
+        created_download = admin_db.insert("downloads", download_data)
+        return created_download
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating download: {str(e)}")
 
 
 @router.put("/{download_id}", response_model=DownloadOut)
@@ -48,28 +77,58 @@ def update_download(
     title: str = Form(...),
     description: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Download:
-    download = db.query(Download).filter(Download.id == download_id).first()
-    if not download:
-        raise HTTPException(status_code=404, detail="Download not found")
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Update download with optional PDF upload to Supabase Storage"""
+    try:
+        # Check download exists
+        download = admin_db.select_one("downloads", {"id": download_id})
+        if not download:
+            raise HTTPException(status_code=404, detail="Download not found")
 
-    download.title = title
-    download.description = description
+        update_data = {
+            "title": title,
+            "description": description,
+        }
 
-    if pdf:
-        try:
-            next_pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "downloads", PDF_TYPES)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Handle PDF upload
+        if pdf and pdf.filename:
+            content = pdf.file.read()
+            if len(content) > 100 * 1024 * 1024:
+                raise HTTPException(status_code=413, detail="PDF too large. Max 100MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path = f"download_{download_id}_{timestamp}{Path(pdf.filename).suffix}"
+            
+            supabase.storage.from_("downloads").upload(
+                path=pdf_path,
+                file=content,
+                file_options={"content-type": "application/pdf"}
+            )
+            update_data["pdf_url"] = supabase.storage.from_("downloads").get_public_url(pdf_path)
 
-        delete_local_upload_if_exists(download.pdf_url, BASE_UPLOAD_DIR)
-        download.pdf_url = next_pdf_url
+        # Update in Supabase
+        updated_download = admin_db.update("downloads", update_data, {"id": download_id})
+        return updated_download
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating download: {str(e)}")
 
-    db.commit()
-    db.refresh(download)
-    return download
+
+@router.get("/{download_id}", response_model=DownloadOut)
+def get_download(download_id: int) -> dict:
+    """Get single download"""
+    try:
+        download = admin_db.select_one("downloads", {"id": download_id})
+        if not download:
+            raise HTTPException(status_code=404, detail="Download not found")
+        return download
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete(
@@ -79,13 +138,15 @@ def update_download(
 )
 def delete_download(
     download_id: int,
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
+    _current_user = Depends(get_current_active_user),
 ) -> None:
-    download = db.query(Download).filter(Download.id == download_id).first()
-    if not download:
-        raise HTTPException(status_code=404, detail="Download not found")
-
-    delete_local_upload_if_exists(download.pdf_url, BASE_UPLOAD_DIR)
-    db.delete(download)
-    db.commit()
+    """Delete download"""
+    try:
+        count = admin_db.delete("downloads", {"id": download_id})
+        if count == 0:
+            raise HTTPException(status_code=404, detail="Download not found")
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting download: {str(e)}")

@@ -1,23 +1,21 @@
 from pathlib import Path
 from typing import Optional
+import os
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
+from supabase import create_client
 
 from auth import get_current_active_user
-from database import get_db
-from models import Facility, User
-from routes.file_utils import (
-    delete_local_upload_if_exists,
-    normalize_remote_image_url,
-    save_optimized_image_file,
-)
+from supabase_db import admin_db
 from schemas import FacilityOut
 
+# Supabase client
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
 router = APIRouter(prefix="/facilities", tags=["Facilities"])
-BASE_UPLOAD_DIR = Path(__file__).resolve().parents[1] / "uploads"
-IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp"}
-CARD_IMAGE_SIZE = (400, 300)
 
 
 def _require_value(value: str, field_label: str) -> str:
@@ -28,8 +26,13 @@ def _require_value(value: str, field_label: str) -> str:
 
 
 @router.get("", response_model=list[FacilityOut])
-def list_facilities(db: Session = Depends(get_db)) -> list[Facility]:
-    return db.query(Facility).order_by(Facility.created_at.desc()).all()
+def list_facilities() -> list[dict]:
+    """Get all facilities"""
+    try:
+        facilities = admin_db.order_by("facilities", "created_at", ascending=False)
+        return facilities
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("", response_model=FacilityOut, status_code=status.HTTP_201_CREATED)
@@ -38,42 +41,49 @@ def create_facility(
     description: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Facility:
-    normalized_name = _require_value(name, "Name")
-    normalized_description = description.strip()
-
-    selected_file = image if image and image.filename else None
-
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Create facility with image upload to Supabase Storage"""
     try:
-        normalized_url = normalize_remote_image_url(image_url)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        normalized_name = _require_value(name, "Name")
+        normalized_description = description.strip()
 
-    if selected_file:
-        try:
-            image_url_value = save_optimized_image_file(
-                selected_file,
-                BASE_UPLOAD_DIR,
-                "facilities",
-                IMAGE_TYPES,
-                CARD_IMAGE_SIZE,
+        image_url_value = ""
+
+        # Upload image to Supabase Storage
+        if image and image.filename:
+            content = image.file.read()
+            
+            if len(content) > 10 * 1024 * 1024:  # 10MB max
+                raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            img_path = f"facility_{timestamp}{Path(image.filename).suffix}"
+            
+            supabase.storage.from_("facilities").upload(
+                path=img_path,
+                file=content,
+                file_options={"content-type": image.content_type or "image/jpeg"}
             )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-    else:
-        image_url_value = normalized_url
+            
+            image_url_value = supabase.storage.from_("facilities").get_public_url(img_path)
+        elif image_url.strip():
+            image_url_value = image_url.strip()
 
-    facility = Facility(
-        name=normalized_name,
-        description=normalized_description,
-        image_url=image_url_value,
-    )
-    db.add(facility)
-    db.commit()
-    db.refresh(facility)
-    return facility
+        # Create facility in Supabase
+        facility_data = {
+            "name": normalized_name,
+            "description": normalized_description,
+            "image_url": image_url_value,
+        }
+        
+        created_facility = admin_db.insert("facilities", facility_data)
+        return created_facility
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating facility: {str(e)}")
 
 
 @router.put("/{facility_id}", response_model=FacilityOut)
@@ -83,46 +93,63 @@ def update_facility(
     description: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Facility:
-    facility = db.query(Facility).filter(Facility.id == facility_id).first()
-    if not facility:
-        raise HTTPException(status_code=404, detail="Facility not found")
-
-    normalized_name = _require_value(name, "Name")
-    normalized_description = description.strip()
-
-    selected_file = image if image and image.filename else None
-
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Update facility with optional image upload to Supabase Storage"""
     try:
-        normalized_url = normalize_remote_image_url(image_url)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Check facility exists
+        facility = admin_db.select_one("facilities", {"id": facility_id})
+        if not facility:
+            raise HTTPException(status_code=404, detail="Facility not found")
 
-    facility.name = normalized_name
-    facility.description = normalized_description
+        normalized_name = _require_value(name, "Name")
+        normalized_description = description.strip()
 
-    if selected_file:
-        try:
-            next_image_url = save_optimized_image_file(
-                selected_file,
-                BASE_UPLOAD_DIR,
-                "facilities",
-                IMAGE_TYPES,
-                CARD_IMAGE_SIZE,
+        update_data = {
+            "name": normalized_name,
+            "description": normalized_description,
+        }
+
+        # Handle image upload
+        if image and image.filename:
+            content = image.file.read()
+            if len(content) > 10 * 1024 * 1024:
+                raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            img_path = f"facility_{facility_id}_{timestamp}{Path(image.filename).suffix}"
+            
+            supabase.storage.from_("facilities").upload(
+                path=img_path,
+                file=content,
+                file_options={"content-type": image.content_type}
             )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+            update_data["image_url"] = supabase.storage.from_("facilities").get_public_url(img_path)
+        elif image_url.strip():
+            update_data["image_url"] = image_url.strip()
 
-        delete_local_upload_if_exists(facility.image_url, BASE_UPLOAD_DIR)
-        facility.image_url = next_image_url
-    else:
-        facility.image_url = normalized_url
+        # Update in Supabase
+        updated_facility = admin_db.update("facilities", update_data, {"id": facility_id})
+        return updated_facility
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating facility: {str(e)}")
 
-    db.commit()
-    db.refresh(facility)
-    return facility
+
+@router.get("/{facility_id}", response_model=FacilityOut)
+def get_facility(facility_id: int) -> dict:
+    """Get single facility"""
+    try:
+        facility = admin_db.select_one("facilities", {"id": facility_id})
+        if not facility:
+            raise HTTPException(status_code=404, detail="Facility not found")
+        return facility
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete(
@@ -132,13 +159,15 @@ def update_facility(
 )
 def delete_facility(
     facility_id: int,
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
+    _current_user = Depends(get_current_active_user),
 ) -> None:
-    facility = db.query(Facility).filter(Facility.id == facility_id).first()
-    if not facility:
-        raise HTTPException(status_code=404, detail="Facility not found")
-
-    delete_local_upload_if_exists(facility.image_url, BASE_UPLOAD_DIR)
-    db.delete(facility)
-    db.commit()
+    """Delete facility"""
+    try:
+        count = admin_db.delete("facilities", {"id": facility_id})
+        if count == 0:
+            raise HTTPException(status_code=404, detail="Facility not found")
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting facility: {str(e)}")
