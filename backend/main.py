@@ -10,12 +10,7 @@ load_dotenv(dotenv_path=env_path)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy import inspect, text
 
-from auth import hash_password, verify_password
-from database import Base, SessionLocal, engine
-from models import Member, User
 from routes import (
     activities,
     auth,
@@ -55,8 +50,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-Base.metadata.create_all(bind=engine)
 
 PROGRAM_OFFICE_BEARERS = [
     {"role": "Chairman", "name": "Dr. M. Marsaline Beno"},
@@ -116,164 +109,8 @@ PROGRAM_DIVISIONS = [
 ]
 
 
-def migrate_members_table() -> None:
-    inspector = inspect(engine)
-    if "members" not in inspector.get_table_names():
-        return
-
-    existing_columns = {column["name"] for column in inspector.get_columns("members")}
-
-    add_column_statements: list[str] = []
-    if "position" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN position VARCHAR(120) NOT NULL DEFAULT ''"
-        )
-    if "membership_id" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN membership_id VARCHAR(80) NOT NULL DEFAULT ''"
-        )
-    if "address" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN address TEXT NOT NULL DEFAULT ''"
-        )
-    if "email" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN email VARCHAR(120) NOT NULL DEFAULT ''"
-        )
-    if "mobile" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN mobile VARCHAR(30) NOT NULL DEFAULT ''"
-        )
-    if "password_hash" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT ''"
-        )
-    if "failed_login_attempts" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0"
-        )
-    if "locked_until" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN locked_until DATETIME"
-        )
-    if "last_login_at" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN last_login_at DATETIME"
-        )
-    if "refresh_token_hash" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN refresh_token_hash VARCHAR(255) NOT NULL DEFAULT ''"
-        )
-    if "refresh_token_expires_at" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN refresh_token_expires_at DATETIME"
-        )
-    if "membership_type" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN membership_type VARCHAR(20) NOT NULL DEFAULT ''"
-        )
-    if "interest_area" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN interest_area VARCHAR(180) NOT NULL DEFAULT ''"
-        )
-    if "image" not in existing_columns:
-        add_column_statements.append(
-            "ALTER TABLE members ADD COLUMN image VARCHAR(255) NOT NULL DEFAULT ''"
-        )
-
-    with engine.begin() as connection:
-        for statement in add_column_statements:
-            connection.execute(text(statement))
-
-        if "designation" in existing_columns:
-            connection.execute(
-                text(
-                    """
-                    UPDATE members
-                    SET position = CASE
-                        WHEN TRIM(COALESCE(position, '')) = '' THEN COALESCE(NULLIF(TRIM(designation), ''), 'Member')
-                        ELSE position
-                    END
-                    """
-                )
-            )
-
-        if "organization" in existing_columns:
-            connection.execute(
-                text(
-                    """
-                    UPDATE members
-                    SET address = CASE
-                        WHEN TRIM(COALESCE(address, '')) = '' THEN COALESCE(NULLIF(TRIM(organization), ''), '')
-                        ELSE address
-                    END
-                    """
-                )
-            )
-
-        if "image_url" in existing_columns:
-            connection.execute(
-                text(
-                    """
-                    UPDATE members
-                    SET image = CASE
-                        WHEN TRIM(COALESCE(image, '')) = '' THEN COALESCE(NULLIF(TRIM(image_url), ''), '')
-                        ELSE image
-                    END
-                    """
-                )
-            )
-
-        connection.execute(text("UPDATE members SET position = 'Member' WHERE TRIM(COALESCE(position, '')) = ''"))
-        connection.execute(text("UPDATE members SET address = '' WHERE address IS NULL"))
-        connection.execute(text("UPDATE members SET email = '' WHERE email IS NULL"))
-        connection.execute(text("UPDATE members SET mobile = '' WHERE mobile IS NULL"))
-        connection.execute(text("UPDATE members SET password_hash = '' WHERE password_hash IS NULL"))
-        connection.execute(text("UPDATE members SET failed_login_attempts = 0 WHERE failed_login_attempts IS NULL"))
-        connection.execute(text("UPDATE members SET refresh_token_hash = '' WHERE refresh_token_hash IS NULL"))
-        connection.execute(text("UPDATE members SET membership_type = '' WHERE membership_type IS NULL"))
-        connection.execute(text("UPDATE members SET interest_area = '' WHERE interest_area IS NULL"))
-        connection.execute(text("UPDATE members SET membership_id = '' WHERE membership_id IS NULL"))
-        connection.execute(text("UPDATE members SET image = '' WHERE image IS NULL"))
-
-
-migrate_members_table()
-
-
 def seed_admin_user() -> None:
-    db = SessionLocal()
-    try:
-        admin_username = (os.getenv("ADMIN_USERNAME") or "").strip()
-        admin_password = (os.getenv("ADMIN_PASSWORD") or "").strip()
-
-        # Do not auto-create a default weak admin in production-like environments.
-        if not admin_username or not admin_password:
-            return
-
-        admin_user = db.query(User).filter(User.username == admin_username).first()
-        if not admin_user:
-            db.add(
-                User(
-                    username=admin_username,
-                    hashed_password=hash_password(admin_password),
-                    is_active=True,
-                )
-            )
-            db.commit()
-            return
-
-        password_matches = False
-        try:
-            password_matches = verify_password(admin_password, admin_user.hashed_password)
-        except Exception:
-            password_matches = False
-
-        if not password_matches:
-            admin_user.hashed_password = hash_password(admin_password)
-            admin_user.is_active = True
-            db.commit()
-    finally:
-        db.close()
+    pass  # Seeding is now handled in Supabase
 
 
 def _env_flag(name: str, default: str = "true") -> bool:
@@ -282,113 +119,15 @@ def _env_flag(name: str, default: str = "true") -> bool:
 
 
 def seed_members_from_program_data() -> None:
-    if not _env_flag("AUTO_SEED_MEMBERS", "true"):
-        return
-
-    ordered_records: list[dict[str, str]] = []
-    seen_names: set[str] = set()
-
-    for office in PROGRAM_OFFICE_BEARERS:
-        member_name = office["name"]
-        if member_name in seen_names:
-            continue
-        seen_names.add(member_name)
-        ordered_records.append(
-            {
-                "name": member_name,
-                "position": office["role"],
-            }
-        )
-
-    for division in PROGRAM_DIVISIONS:
-        division_label = division["division"]
-        for member_name in division["members"]:
-            if member_name in seen_names:
-                continue
-            seen_names.add(member_name)
-            ordered_records.append(
-                {
-                    "name": member_name,
-                    "position": f"{division_label} Committee Member",
-                }
-            )
-
-    db = SessionLocal()
-    try:
-        existing_names = {name for (name,) in db.query(Member.name).all()}
-        if len(existing_names) >= len(ordered_records):
-            return
-
-        seed_address = "IEI Kanyakumari Local Centre"
-        members_to_insert: list[Member] = []
-
-        for index, record in enumerate(ordered_records, start=1):
-            member_name = record["name"]
-            if member_name in existing_names:
-                continue
-
-            membership_code = f"IEI-KKLC-{index:03d}"
-            position = record["position"]
-
-            members_to_insert.append(
-                Member(
-                    name=member_name,
-                    designation=position,
-                    organization=seed_address,
-                    bio=membership_code,
-                    position=position,
-                    membership_id=membership_code,
-                    address=seed_address,
-                    email="",
-                    mobile="",
-                    password_hash="",
-                    membership_type="",
-                    interest_area="",
-                    legacy_image_url="",
-                    image="",
-                )
-            )
-
-        if members_to_insert:
-            db.add_all(members_to_insert)
-            db.commit()
-    finally:
-        db.close()
+    pass  # Seeding is now handled in Supabase
 
 
 def seed_conference_data() -> None:
-    from models import Conference
-    db = SessionLocal()
-    try:
-        if db.query(Conference).count() == 0:
-            db.add(
-                Conference(
-                    title="Advancing Science & Technology for SDGs",
-                    short_title="SUSTAIN-TECH 2026",
-                    description="Engineering Sustainable Futures Through Innovation and Collaboration.",
-                    start_date="2026-10-30",
-                    end_date="2026-10-31",
-                    registration_deadline="2026-09-30",
-                    venue="IEI KKLC Region",
-                    button_text="More Details",
-                    link="/conference",
-                    status="active",
-                    is_new=True,
-                )
-            )
-            db.commit()
-    finally:
-        db.close()
+    pass  # Seeding is now handled in Supabase
 
-
-seed_admin_user()
-seed_members_from_program_data()
-seed_conference_data()
 
 upload_dir = Path(__file__).resolve().parent / "uploads"
 upload_dir.mkdir(parents=True, exist_ok=True)
-
-app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(members.router, prefix="/api")
