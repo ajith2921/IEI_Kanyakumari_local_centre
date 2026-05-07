@@ -39,7 +39,7 @@ function ImageMedia({
   position = "50% 50%",
   aspectClass = "",
   className = "",
-  loading = "lazy",
+  loading = "eager",
   fallback = null,
   showSkeleton = true,
 }) {

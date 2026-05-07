@@ -54,7 +54,7 @@ function ProfileImage({ src, name }) {
     <img
       src={src}
       alt={name}
-      loading="lazy"
+      loading="eager"
       decoding="async"
       onError={() => setError(true)}
       className="block h-full w-full object-cover object-center"

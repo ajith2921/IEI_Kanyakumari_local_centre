@@ -40,12 +40,82 @@ api.interceptors.request.use((config) => {
 });
 
 export const parseApiError = (error) => {
-  if (error.response?.data?.detail) {
-    if (typeof error.response.data.detail === "string") {
-      return error.response.data.detail;
+  const status = error.response?.status;
+  const data = error.response?.data;
+
+  const formatDetail = (detail) => {
+    if (!detail) return "";
+
+    if (typeof detail === "string") {
+      return detail;
     }
-    return JSON.stringify(error.response.data.detail);
+
+    if (Array.isArray(detail)) {
+      return detail
+        .map((item) => {
+          if (typeof item === "string") {
+            return item;
+          }
+
+          if (item && typeof item === "object") {
+            const location = Array.isArray(item.loc)
+              ? item.loc.filter((part) => typeof part === "string" || typeof part === "number").join(".")
+              : "";
+            const message = item.msg || item.message || item.detail || "Invalid value.";
+            return location ? `${location}: ${message}` : message;
+          }
+
+          return String(item);
+        })
+        .filter(Boolean)
+        .join("; ");
+    }
+
+    if (typeof detail === "object") {
+      if (detail.msg || detail.loc || detail.message) {
+        return formatDetail([detail]);
+      }
+
+      if (detail.detail) {
+        return formatDetail(detail.detail);
+      }
+
+      if (detail.message) {
+        return formatDetail(detail.message);
+      }
+
+      return JSON.stringify(detail);
+    }
+
+    return String(detail);
+  };
+
+  const detailMessage = formatDetail(data?.detail || data?.message || data?.error || data?.errors);
+
+  if (status === 401) {
+    return detailMessage || "You are not authorized. Please log in again.";
   }
+
+  if (status === 403) {
+    return detailMessage || "You do not have permission to perform this action.";
+  }
+
+  if (status === 404) {
+    return detailMessage || "The requested item was not found.";
+  }
+
+  if (status === 422) {
+    return detailMessage ? `Validation failed: ${detailMessage}` : "Validation failed.";
+  }
+
+  if (status && status >= 500) {
+    return detailMessage || "Server error. Please try again later.";
+  }
+
+  if (detailMessage) {
+    return detailMessage;
+  }
+
   return error.message || "Unexpected error";
 };
 

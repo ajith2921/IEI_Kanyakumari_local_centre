@@ -71,12 +71,19 @@ export default function ResourceManager({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [extraFiles, setExtraFiles] = useState({});
   const imageFieldValue = String(form[imageFieldName] || "");
+  const entityLabel = title.replace(/^Manage\s+/i, "").toLowerCase();
   const visibleFields = useMemo(
     () => fields.filter((field) => isFieldVisible(field, form)),
     [fields, form]
   );
+
+  const getActionErrorMessage = (action, err) => {
+    const details = parseApiError(err);
+    return `Unable to ${action} ${entityLabel}. ${details}`;
+  };
 
   useEffect(() => {
     if (!imageUploadEnabled) {
@@ -101,7 +108,7 @@ export default function ResourceManager({
       const response = await fetchList();
       setItems(response.data || []);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(`Unable to load ${entityLabel}. ${parseApiError(err)}`);
     } finally {
       setLoading(false);
     }
@@ -117,6 +124,7 @@ export default function ResourceManager({
     setExtraFiles({});
     setFileInputKey((value) => value + 1);
     setEditingId(null);
+    setSuccess("");
   };
 
   const onChange = (event) => {
@@ -142,6 +150,8 @@ export default function ResourceManager({
         { ...emptyForm }
       )
     );
+    // Scroll to the top of the form for better UX
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onDelete = async (id) => {
@@ -153,7 +163,7 @@ export default function ResourceManager({
       await deleteItem(id);
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(getActionErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
     }
@@ -219,6 +229,17 @@ export default function ResourceManager({
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    const formElement = event.currentTarget;
+    if (formElement && typeof formElement.checkValidity === "function") {
+      if (!formElement.checkValidity()) {
+        if (typeof formElement.reportValidity === "function") {
+          formElement.reportValidity();
+        }
+        setError("Please correct the highlighted fields and try again.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
     const trimmedForm = fields.reduce((acc, field) => {
       const value = form[field.name];
       acc[field.name] = typeof value === "string" ? value.trim() : value;
@@ -236,17 +257,19 @@ export default function ResourceManager({
     }, {});
 
     for (const field of fields) {
-      if (!isFieldVisible(field, normalizedForm)) {
+      // Use trimmedForm for visibility/requirement checks as they depend on UI state
+      if (!isFieldVisible(field, trimmedForm)) {
         continue;
       }
 
-      if (!isFieldRequired(field, normalizedForm)) {
+      if (!isFieldRequired(field, trimmedForm)) {
         continue;
       }
 
-      const value = normalizedForm[field.name];
+      const value = trimmedForm[field.name];
       if (value == null || String(value).trim() === "") {
         setError(`${field.label} is required.`);
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
     }
@@ -276,6 +299,7 @@ export default function ResourceManager({
 
     setSaving(true);
     setError("");
+    setSuccess("");
     try {
       const payload = (imageUploadEnabled || hasExtraFiles)
         ? (() => {
@@ -293,15 +317,30 @@ export default function ResourceManager({
           })()
         : Object.fromEntries(payloadEntries);
 
-      if (editingId) {
-        await updateItem(editingId, payload);
-      } else {
-        await createItem(payload);
+      const response = editingId
+        ? await updateItem(editingId, payload)
+        : await createItem(payload);
+      const savedItem = response?.data;
+
+      if (savedItem && savedItem.id != null) {
+        setItems((prev) =>
+          editingId
+            ? prev.map((item) => (item.id === savedItem.id ? savedItem : item))
+            : [savedItem, ...prev]
+        );
       }
+
+      setSuccess(editingId ? "Item updated successfully!" : "Item created successfully!");
+      
+      const currentEditingId = editingId;
       resetForm();
       await loadItems();
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(getActionErrorMessage(editingId ? "update" : "create", err));
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setSaving(false);
     }
@@ -315,6 +354,18 @@ export default function ResourceManager({
           Add new entries with the form, then edit or delete records from the table.
         </p>
       </div>
+
+      {success && (
+        <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
+          {success}
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
 
       <form
         onSubmit={onSubmit}
@@ -482,7 +533,6 @@ export default function ResourceManager({
         </div>
       </form>
 
-      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
       {loading && <p className="text-sm text-gray-600">Loading...</p>}
 
       {!loading && (

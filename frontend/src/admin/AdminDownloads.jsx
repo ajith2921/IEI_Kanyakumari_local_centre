@@ -21,6 +21,9 @@ export default function AdminDownloads() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
+  const entityLabel = "download";
+
+  const buildErrorMessage = (action, err) => `Unable to ${action} ${entityLabel}. ${parseApiError(err)}`;
 
   const loadItems = async () => {
     setLoading(true);
@@ -29,7 +32,7 @@ export default function AdminDownloads() {
       const response = await adminApi.downloads.list();
       setItems(response.data || []);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("load", err));
     } finally {
       setLoading(false);
     }
@@ -114,7 +117,7 @@ export default function AdminDownloads() {
       resetForm();
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage(editingId ? "update" : "create", err));
     } finally {
       setSaving(false);
     }
@@ -135,7 +138,7 @@ export default function AdminDownloads() {
       await adminApi.downloads.remove(id);
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
     }

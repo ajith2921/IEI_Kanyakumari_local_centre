@@ -21,7 +21,7 @@ export default function AdminLayout() {
 
   return (
     <section className="min-h-screen bg-slate-100/80">
-      <div className="mx-auto max-w-7xl p-4 md:p-6">
+      <div className="mx-auto w-full max-w-screen-2xl p-4 md:p-6 lg:p-8">
         <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 shadow-sm md:hidden">
           <p className="text-sm font-semibold text-gray-900">Admin Dashboard</p>
           <Button
@@ -33,9 +33,9 @@ export default function AdminLayout() {
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[250px_1fr]">
+        <div className="flex flex-col gap-6 md:flex-row">
           <aside
-            className={`rounded-2xl border border-brand-800 bg-gradient-to-b from-brand-900 to-brand-800 p-4 text-white shadow-lg ${
+            className={`w-full shrink-0 rounded-2xl border border-brand-800 bg-gradient-to-b from-brand-900 to-brand-800 p-4 text-white shadow-lg md:w-[260px] ${
               open ? "block" : "hidden"
             } md:block`}
           >
@@ -64,7 +64,7 @@ export default function AdminLayout() {
             </Button>
           </aside>
 
-          <main className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+          <main className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
             <Outlet />
           </main>
         </div>

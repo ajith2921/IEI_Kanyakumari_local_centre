@@ -40,23 +40,28 @@ function splitMemberEmails(emailValue) {
     secondary: emails[1] || "",
   };
 }
-
 const fields = [
   {
     name: "position",
     label: "Position",
     type: "select",
     required: true,
-    mapFromItem: (item) => (isDivisionMemberPosition(item.position) ? "Member" : item.position || ""),
+    mapFromItem: (item) => {
+      const pos = String(item.position || "").trim();
+      if (pos.toLowerCase().includes("committee member") || pos.toLowerCase().includes("division")) {
+        return "Executive Member";
+      }
+      return pos;
+    },
     normalizeValue: (value, form) => {
-      const selectedPosition = String(value || "").trim();
-      if (selectedPosition !== "Member") {
-        return selectedPosition;
+      const selected = String(value || "").trim();
+      if (selected !== "Executive Member") {
+        return selected;
       }
 
       const selectedDivision = String(form.engineering_division || "").trim();
       if (!selectedDivision) {
-        return selectedPosition;
+        return selected;
       }
 
       return `${selectedDivision} ${DIVISION_MEMBER_SUFFIX}`;
@@ -77,8 +82,8 @@ const fields = [
     placeholder: "Select Engineering Division",
     formOnly: true,
     excludeFromPayload: true,
-    visibleWhen: (form) => String(form.position || "") === "Member",
-    requiredWhen: (form) => String(form.position || "") === "Member",
+    visibleWhen: (form) => String(form.position || "") === "Executive Member",
+    requiredWhen: (form) => String(form.position || "") === "Executive Member",
     mapFromItem: (item) => extractDivisionFromPosition(item.position),
     options: ENGINEERING_DIVISIONS.map((division) => ({
       label: division,
@@ -86,7 +91,7 @@ const fields = [
     })),
   },
   { name: "name", label: "Name", required: true },
-  { name: "membership_id", label: "Membership ID" },
+  { name: "membership_id", label: "Membership ID", maxLength: 80 },
   { name: "address", label: "Address", type: "textarea", required: true, rows: 3, fullWidth: true },
   {
     name: "email",
@@ -130,7 +135,7 @@ const fields = [
     type: "tel",
     required: true,
     inputMode: "tel",
-    pattern: "[+0-9\\s()\\-]{7,18}",
+    pattern: "[+0-9\\s\\(\\)\\-]{7,18}",
   },
   { name: "image_url", label: "Image URL (optional)" },
 ];

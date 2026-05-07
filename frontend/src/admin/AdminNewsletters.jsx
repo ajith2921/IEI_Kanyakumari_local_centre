@@ -21,6 +21,9 @@ export default function AdminNewsletters() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
+  const entityLabel = "newsletter";
+
+  const buildErrorMessage = (action, err) => `Unable to ${action} ${entityLabel}. ${parseApiError(err)}`;
 
   const loadItems = async () => {
     setLoading(true);
@@ -29,7 +32,7 @@ export default function AdminNewsletters() {
       const response = await adminApi.newsletters.list();
       setItems(response.data || []);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("load", err));
     } finally {
       setLoading(false);
     }
@@ -109,7 +112,7 @@ export default function AdminNewsletters() {
       resetForm();
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage(editingId ? "update" : "create", err));
     } finally {
       setSaving(false);
     }
@@ -124,7 +127,7 @@ export default function AdminNewsletters() {
       await adminApi.newsletters.remove(id);
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
     }

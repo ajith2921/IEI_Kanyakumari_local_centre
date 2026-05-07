@@ -124,6 +124,9 @@ def normalize_remote_image_url(url: str) -> str:
     if not candidate:
         return ""
 
+    if candidate.startswith(LOCAL_UPLOAD_PREFIX):
+        return candidate
+
     parsed = urlparse(candidate)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError("Image URL must be a valid http or https URL.")

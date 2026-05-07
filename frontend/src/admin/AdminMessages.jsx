@@ -8,6 +8,9 @@ export default function AdminMessages() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
+  const entityLabel = "contact message";
+
+  const buildErrorMessage = (action, err) => `Unable to ${action} ${entityLabel}. ${parseApiError(err)}`;
 
   const loadMessages = async () => {
     setLoading(true);
@@ -16,7 +19,7 @@ export default function AdminMessages() {
       const response = await adminApi.contacts.list();
       setMessages(response.data || []);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("load", err));
     } finally {
       setLoading(false);
     }
@@ -35,7 +38,7 @@ export default function AdminMessages() {
       await adminApi.contacts.remove(id);
       await loadMessages();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
     }

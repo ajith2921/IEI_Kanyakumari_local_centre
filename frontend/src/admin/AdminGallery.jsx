@@ -18,6 +18,9 @@ export default function AdminGallery() {
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
   const [previewSource, setPreviewSource] = useState("");
+  const entityLabel = "gallery";
+
+  const buildErrorMessage = (action, err) => `Unable to ${action} ${entityLabel}. ${parseApiError(err)}`;
 
   useEffect(() => {
     if (form.imageFile) {
@@ -56,7 +59,7 @@ export default function AdminGallery() {
       const response = await adminApi.gallery.list();
       setItems(response.data || []);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("load", err));
     } finally {
       setLoading(false);
     }
@@ -100,7 +103,7 @@ export default function AdminGallery() {
       resetForm();
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("save", err));
     } finally {
       setSaving(false);
     }
@@ -115,7 +118,7 @@ export default function AdminGallery() {
       await adminApi.gallery.remove(id);
       await loadItems();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(buildErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
     }
