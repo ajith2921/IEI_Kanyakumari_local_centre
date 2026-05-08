@@ -1,83 +1,104 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from typing import List
 
 from auth import get_current_active_user
-from database import get_db
-from models import Conference, User
+from supabase_db import admin_db
 from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
 
 router = APIRouter(prefix="/conferences", tags=["Conferences"])
 
 @router.get("/active", response_model=ConferenceOut)
-def get_active_conference(db: Session = Depends(get_db)):
-    conference = db.query(Conference).filter(Conference.status == "active").first()
-    if not conference:
-        # If no active conference, return the most recent one
-        conference = db.query(Conference).order_by(Conference.created_at.desc()).first()
-    
-    if not conference:
+def get_active_conference():
+    """Get active conference or most recent one"""
+    try:
+        # Try to get active conference
+        conferences = admin_db.select("conferences", filters={"status": "active"})
+        if conferences:
+            return conferences[0]
+        
+        # If no active, get most recent
+        conferences = admin_db.order_by("conferences", "created_at", ascending=False, limit=1)
+        if conferences:
+            return conferences[0]
+        
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No conferences found"
         )
-    return conference
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=List[ConferenceOut])
 def get_all_conferences(
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    _current_user = Depends(get_current_active_user),
 ):
-    return db.query(Conference).order_by(Conference.created_at.desc()).all()
+    """Get all conferences"""
+    try:
+        conferences = admin_db.order_by("conferences", "created_at", ascending=False)
+        return conferences
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=ConferenceOut)
 def create_conference(
     payload: ConferenceCreate,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    _current_user = Depends(get_current_active_user),
 ):
-    # If this one is active, deactivate others
-    if payload.status == "active":
-        db.query(Conference).update({"status": "inactive"})
-    
-    new_conf = Conference(**payload.model_dump())
-    db.add(new_conf)
-    db.commit()
-    db.refresh(new_conf)
-    return new_conf
+    """Create new conference"""
+    try:
+        # If this one is active, deactivate others
+        if payload.status == "active":
+            all_confs = admin_db.select("conferences")
+            for conf in all_confs:
+                admin_db.update("conferences", {"status": "inactive"}, {"id": conf["id"]})
+        
+        new_conf = admin_db.insert("conferences", payload.model_dump())
+        return new_conf
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating conference: {str(e)}")
 
-@router.put("/{id}", response_model=ConferenceOut)
+@router.put("/{conf_id}", response_model=ConferenceOut)
 def update_conference(
-    id: int,
+    conf_id: int,
     payload: ConferenceUpdate,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    _current_user = Depends(get_current_active_user),
 ):
-    conf = db.query(Conference).filter(Conference.id == id).first()
-    if not conf:
-        raise HTTPException(status_code=404, detail="Conference not found")
-    
-    # If setting to active, deactivate others
-    if payload.status == "active" and conf.status != "active":
-        db.query(Conference).filter(Conference.id != id).update({"status": "inactive"})
+    """Update conference"""
+    try:
+        conf = admin_db.select_one("conferences", {"id": conf_id})
+        if not conf:
+            raise HTTPException(status_code=404, detail="Conference not found")
+        
+        # If setting to active, deactivate others
+        if payload.status == "active" and conf.get("status") != "active":
+            all_confs = admin_db.select("conferences")
+            for other_conf in all_confs:
+                if other_conf["id"] != conf_id:
+                    admin_db.update("conferences", {"status": "inactive"}, {"id": other_conf["id"]})
+        
+        updated_conf = admin_db.update("conferences", payload.model_dump(), {"id": conf_id})
+        return updated_conf
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating conference: {str(e)}")
 
-    for key, value in payload.model_dump().items():
-        setattr(conf, key, value)
-    
-    db.commit()
-    db.refresh(conf)
-    return conf
-
-@router.delete("/{id}")
+@router.delete("/{conf_id}")
 def delete_conference(
-    id: int,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    conf_id: int,
+    _current_user = Depends(get_current_active_user),
 ):
-    conf = db.query(Conference).filter(Conference.id == id).first()
-    if not conf:
-        raise HTTPException(status_code=404, detail="Conference not found")
-    
-    db.delete(conf)
-    db.commit()
-    return {"message": "Conference deleted"}
+    """Delete conference"""
+    try:
+        conf = admin_db.select_one("conferences", {"id": conf_id})
+        if not conf:
+            raise HTTPException(status_code=404, detail="Conference not found")
+        
+        admin_db.delete("conferences", {"id": conf_id})
+        return {"message": "Conference deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting conference: {str(e)}")

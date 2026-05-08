@@ -1,23 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, status
 
 from auth import create_access_token, verify_password
-from database import get_db
-from models import User
+from supabase_db import admin_db
 from schemas import LoginRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
-    user = db.query(User).filter(User.username == payload.username).first()
+def login(payload: LoginRequest) -> TokenResponse:
+    user = admin_db.select_one("users", {"username": payload.username})
 
-    if not user or not verify_password(payload.password, user.hashed_password):
+    if not user or not verify_password(payload.password, user.get("hashed_password", "")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
         )
 
-    token = create_access_token(data={"sub": user.username})
+    token = create_access_token(data={"sub": user["username"]})
     return TokenResponse(access_token=token)

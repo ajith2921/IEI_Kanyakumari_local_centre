@@ -1,0 +1,6 @@
+id,name,description,image_url,created_at
+1,Conference Hall,"Well-equipped auditorium with AV facilities, seating capacity 200+",/uploads/facilities/conference_hall.jpg,2026-05-05 13:49:35.925713
+2,Library & Resource Center,"Comprehensive collection of engineering journals, books, and technical publications",/uploads/facilities/library.jpg,2026-05-05 13:49:35.925718
+3,Meeting Rooms,Multiple air-conditioned meeting rooms for committee and group discussions,/uploads/facilities/meeting_rooms.jpg,2026-05-05 13:49:35.925720
+4,Computing Lab,Equipped with modern computers and software for technical training,/uploads/facilities/computing_lab.jpg,2026-05-05 13:49:35.925721
+5,Cafeteria,In-house cafeteria serving refreshments and meals,/uploads/facilities/cafeteria.jpg,2026-05-05 13:49:35.925723

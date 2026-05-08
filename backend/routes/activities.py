@@ -1,24 +1,21 @@
 from pathlib import Path
 from typing import Optional
+import os
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
+from supabase import create_client
 
 from auth import get_current_active_user
-from database import get_db
-from models import Activity, User
-from routes.file_utils import (
-    delete_local_upload_if_exists,
-    normalize_remote_image_url,
-    save_optimized_image_file,
-    save_upload_file,
-)
+from supabase_db import admin_db
 from schemas import ActivityOut
 
+# Supabase client
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
 router = APIRouter(prefix="/activities", tags=["Activities"])
-BASE_UPLOAD_DIR = Path(__file__).resolve().parents[1] / "uploads"
-IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp"}
-CARD_IMAGE_SIZE = (400, 300)
 
 
 def _require_value(value: str, field_label: str) -> str:
@@ -29,8 +26,27 @@ def _require_value(value: str, field_label: str) -> str:
 
 
 @router.get("", response_model=list[ActivityOut])
-def list_activities(db: Session = Depends(get_db)) -> list[Activity]:
-    return db.query(Activity).order_by(Activity.created_at.desc()).all()
+def list_activities() -> list[dict]:
+    """Get all activities"""
+    try:
+        activities = admin_db.order_by("activities", "created_at", ascending=False)
+        return activities
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{activity_id}", response_model=ActivityOut)
+def get_activity(activity_id: int) -> dict:
+    """Get single activity"""
+    try:
+        activity = admin_db.select_one("activities", {"id": activity_id})
+        if not activity:
+            raise HTTPException(status_code=404, detail="Activity not found")
+        return activity
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("", response_model=ActivityOut, status_code=status.HTTP_201_CREATED)
@@ -42,60 +58,91 @@ def create_activity(
     image: Optional[UploadFile] = File(default=None),
     pdf: Optional[UploadFile] = File(default=None),
     colab: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Activity:
-    normalized_title = _require_value(title, "Title")
-    normalized_description = description.strip()
-    normalized_event_date = event_date.strip()
-
-    selected_file = image if image and image.filename else None
-
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Create activity with file uploads to Supabase Storage"""
     try:
-        normalized_url = normalize_remote_image_url(image_url)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        normalized_title = _require_value(title, "Title")
+        normalized_description = description.strip()
+        normalized_event_date = event_date.strip()
 
-    if selected_file:
-        try:
-            image_url_value = save_optimized_image_file(
-                selected_file,
-                BASE_UPLOAD_DIR,
-                "activities",
-                IMAGE_TYPES,
-                CARD_IMAGE_SIZE,
+        image_url_value = ""
+        pdf_url_value = ""
+        colab_url_value = ""
+
+        # Upload image to Supabase Storage
+        if image and image.filename:
+            content = image.file.read()
+            
+            if len(content) > 10 * 1024 * 1024:  # 10MB max
+                raise HTTPException(status_code=413, detail="Image file too large. Max 10MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            img_path = f"activity_img_{timestamp}{Path(image.filename).suffix}"
+            
+            supabase.storage.from_("activities").upload(
+                path=img_path,
+                file=content,
+                file_options={"content-type": image.content_type or "image/jpeg"}
             )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-    else:
-        image_url_value = normalized_url
+            
+            image_url_value = supabase.storage.from_("activities").get_public_url(img_path)
+        elif image_url.strip():
+            image_url_value = image_url.strip()
 
-    pdf_url_value = ""
-    if pdf and pdf.filename:
-        try:
-            pdf_url_value = save_upload_file(pdf, BASE_UPLOAD_DIR, "activities_docs", {".pdf"})
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Upload PDF to Supabase Storage
+        if pdf and pdf.filename:
+            content = pdf.file.read()
+            
+            if len(content) > 50 * 1024 * 1024:  # 50MB max
+                raise HTTPException(status_code=413, detail="PDF file too large. Max 50MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path = f"activity_pdf_{timestamp}{Path(pdf.filename).suffix}"
+            
+            supabase.storage.from_("activities").upload(
+                path=pdf_path,
+                file=content,
+                file_options={"content-type": "application/pdf"}
+            )
+            
+            pdf_url_value = supabase.storage.from_("activities").get_public_url(pdf_path)
 
-    colab_url_value = ""
-    if colab and colab.filename:
-        try:
-            colab_url_value = save_upload_file(colab, BASE_UPLOAD_DIR, "activities_docs", {".ipynb", ".zip", ".txt", ".pdf"})
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Upload Colab file to Supabase Storage
+        if colab and colab.filename:
+            content = colab.file.read()
+            
+            if len(content) > 100 * 1024 * 1024:  # 100MB max
+                raise HTTPException(status_code=413, detail="Colab file too large. Max 100MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            colab_path = f"activity_colab_{timestamp}{Path(colab.filename).suffix}"
+            
+            supabase.storage.from_("activities").upload(
+                path=colab_path,
+                file=content,
+                file_options={"content-type": colab.content_type or "application/octet-stream"}
+            )
+            
+            colab_url_value = supabase.storage.from_("activities").get_public_url(colab_path)
 
-    activity = Activity(
-        title=normalized_title,
-        description=normalized_description,
-        event_date=normalized_event_date,
-        image_url=image_url_value,
-        pdf_url=pdf_url_value,
-        colab_url=colab_url_value,
-    )
-    db.add(activity)
-    db.commit()
-    db.refresh(activity)
-    return activity
+        # Create activity in Supabase
+        activity_data = {
+            "title": normalized_title,
+            "description": normalized_description,
+            "event_date": normalized_event_date,
+            "image_url": image_url_value,
+            "pdf_url": pdf_url_value,
+            "colab_url": colab_url_value,
+        }
+        
+        created_activity = admin_db.insert("activities", activity_data)
+        return created_activity
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating activity: {str(e)}")
 
 
 @router.put("/{activity_id}", response_model=ActivityOut)
@@ -108,64 +155,83 @@ def update_activity(
     image: Optional[UploadFile] = File(default=None),
     pdf: Optional[UploadFile] = File(default=None),
     colab: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
-) -> Activity:
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
-    if not activity:
-        raise HTTPException(status_code=404, detail="Activity not found")
-
-    normalized_title = _require_value(title, "Title")
-    normalized_description = description.strip()
-    normalized_event_date = event_date.strip()
-
-    selected_file = image if image and image.filename else None
-
+    _current_user = Depends(get_current_active_user),
+) -> dict:
+    """Update activity with optional file uploads to Supabase Storage"""
     try:
-        normalized_url = normalize_remote_image_url(image_url)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Check activity exists
+        activity = admin_db.select_one("activities", {"id": activity_id})
+        if not activity:
+            raise HTTPException(status_code=404, detail="Activity not found")
 
-    activity.title = normalized_title
-    activity.description = normalized_description
-    activity.event_date = normalized_event_date
+        normalized_title = _require_value(title, "Title")
+        normalized_description = description.strip()
+        normalized_event_date = event_date.strip()
 
-    if selected_file:
-        try:
-            next_image_url = save_optimized_image_file(
-                selected_file,
-                BASE_UPLOAD_DIR,
-                "activities",
-                IMAGE_TYPES,
-                CARD_IMAGE_SIZE,
+        update_data = {
+            "title": normalized_title,
+            "description": normalized_description,
+            "event_date": normalized_event_date,
+        }
+
+        # Handle image upload
+        if image and image.filename:
+            content = image.file.read()
+            if len(content) > 10 * 1024 * 1024:
+                raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            img_path = f"activity_{activity_id}_img_{timestamp}{Path(image.filename).suffix}"
+            
+            supabase.storage.from_("activities").upload(
+                path=img_path,
+                file=content,
+                file_options={"content-type": image.content_type}
             )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+            update_data["image_url"] = supabase.storage.from_("activities").get_public_url(img_path)
+        elif image_url.strip():
+            update_data["image_url"] = image_url.strip()
 
-        delete_local_upload_if_exists(activity.image_url, BASE_UPLOAD_DIR)
-        activity.image_url = next_image_url
-    else:
-        activity.image_url = normalized_url
+        # Handle PDF upload
+        if pdf and pdf.filename:
+            content = pdf.file.read()
+            if len(content) > 50 * 1024 * 1024:
+                raise HTTPException(status_code=413, detail="PDF too large. Max 50MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path = f"activity_{activity_id}_pdf_{timestamp}{Path(pdf.filename).suffix}"
+            
+            supabase.storage.from_("activities").upload(
+                path=pdf_path,
+                file=content,
+                file_options={"content-type": "application/pdf"}
+            )
+            update_data["pdf_url"] = supabase.storage.from_("activities").get_public_url(pdf_path)
 
-    if pdf and pdf.filename:
-        try:
-            next_pdf_url = save_upload_file(pdf, BASE_UPLOAD_DIR, "activities_docs", {".pdf"})
-            delete_local_upload_if_exists(activity.pdf_url, BASE_UPLOAD_DIR)
-            activity.pdf_url = next_pdf_url
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # Handle Colab upload
+        if colab and colab.filename:
+            content = colab.file.read()
+            if len(content) > 100 * 1024 * 1024:
+                raise HTTPException(status_code=413, detail="Colab too large. Max 100MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            colab_path = f"activity_{activity_id}_colab_{timestamp}{Path(colab.filename).suffix}"
+            
+            supabase.storage.from_("activities").upload(
+                path=colab_path,
+                file=content,
+                file_options={"content-type": colab.content_type}
+            )
+            update_data["colab_url"] = supabase.storage.from_("activities").get_public_url(colab_path)
 
-    if colab and colab.filename:
-        try:
-            next_colab_url = save_upload_file(colab, BASE_UPLOAD_DIR, "activities_docs", {".ipynb", ".zip", ".txt", ".pdf"})
-            delete_local_upload_if_exists(activity.colab_url, BASE_UPLOAD_DIR)
-            activity.colab_url = next_colab_url
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    db.commit()
-    db.refresh(activity)
-    return activity
+        # Update in Supabase
+        updated_activity = admin_db.update("activities", update_data, {"id": activity_id})
+        return updated_activity
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating activity: {str(e)}")
 
 
 @router.delete(
@@ -175,15 +241,15 @@ def update_activity(
 )
 def delete_activity(
     activity_id: int,
-    db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_user),
+    _current_user = Depends(get_current_active_user),
 ) -> None:
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
-    if not activity:
-        raise HTTPException(status_code=404, detail="Activity not found")
-
-    delete_local_upload_if_exists(activity.image_url, BASE_UPLOAD_DIR)
-    delete_local_upload_if_exists(activity.pdf_url, BASE_UPLOAD_DIR)
-    delete_local_upload_if_exists(activity.colab_url, BASE_UPLOAD_DIR)
-    db.delete(activity)
-    db.commit()
+    """Delete activity"""
+    try:
+        count = admin_db.delete("activities", {"id": activity_id})
+        if count == 0:
+            raise HTTPException(status_code=404, detail="Activity not found")
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting activity: {str(e)}")
