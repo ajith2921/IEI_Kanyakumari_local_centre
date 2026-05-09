@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 PHONE_PATTERN = re.compile(r"^[+]?[0-9\s()\-]{7,18}$")
@@ -18,11 +19,11 @@ class TokenResponse(BaseModel):
 class MemberBase(BaseModel):
     name: str
     position: str
-    membership_id: str = ""
+    membership_id: Optional[str] = ""
     address: str
     email: str
     mobile: str
-    image_url: str = ""
+    image_url: Optional[str] = ""
 
 
 class MemberCreate(MemberBase):
@@ -43,7 +44,7 @@ class MemberOut(MemberBase):
 class GalleryOut(BaseModel):
     id: int
     title: str
-    description: str
+    description: Optional[str] = ""
     image_url: str
     created_at: datetime
 
@@ -52,7 +53,7 @@ class GalleryOut(BaseModel):
 
 class NewsletterBase(BaseModel):
     title: str
-    summary: str = ""
+    summary: Optional[str] = ""
 
 
 class NewsletterCreate(NewsletterBase):
@@ -66,8 +67,8 @@ class NewsletterUpdate(NewsletterBase):
 class NewsletterOut(BaseModel):
     id: int
     title: str
-    summary: str
-    pdf_url: str
+    summary: Optional[str] = ""
+    pdf_url: Optional[str] = ""
     published_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -75,11 +76,11 @@ class NewsletterOut(BaseModel):
 
 class ActivityBase(BaseModel):
     title: str
-    description: str = ""
-    event_date: str = ""
-    image_url: str = ""
-    pdf_url: str = ""
-    colab_url: str = ""
+    description: Optional[str] = ""
+    event_date: Optional[str] = ""
+    image_url: Optional[str] = ""
+    pdf_url: Optional[str] = ""
+    colab_url: Optional[str] = ""
 
 
 class ActivityCreate(ActivityBase):
@@ -99,8 +100,8 @@ class ActivityOut(ActivityBase):
 
 class FacilityBase(BaseModel):
     name: str
-    description: str = ""
-    image_url: str = ""
+    description: Optional[str] = ""
+    image_url: Optional[str] = ""
 
 
 class FacilityCreate(FacilityBase):
@@ -121,7 +122,7 @@ class FacilityOut(FacilityBase):
 class DownloadOut(BaseModel):
     id: int
     title: str
-    description: str
+    description: Optional[str] = ""
     pdf_url: str
     created_at: datetime
 
@@ -131,7 +132,7 @@ class DownloadOut(BaseModel):
 class ContactCreate(BaseModel):
     name: str
     email: EmailStr
-    phone: str = ""
+    phone: Optional[str] = ""
     message: str
 
     @field_validator("name")
@@ -163,7 +164,7 @@ class ContactOut(BaseModel):
     id: int
     name: str
     email: EmailStr
-    phone: str
+    phone: Optional[str] = ""
     message: str
     created_at: datetime
 
@@ -173,13 +174,13 @@ class ContactOut(BaseModel):
 class ConferenceBase(BaseModel):
     title: str
     short_title: str
-    description: str = ""
+    description: Optional[str] = ""
     start_date: str
     end_date: str
     registration_deadline: str
-    venue: str = ""
-    button_text: str = "More Details"
-    link: str = "/conference"
+    venue: Optional[str] = ""
+    button_text: Optional[str] = "More Details"
+    link: Optional[str] = "/conference"
     status: str = "active"
     is_new: bool = True
 
