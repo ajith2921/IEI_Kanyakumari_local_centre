@@ -68,6 +68,7 @@ function MemberRow({ member, rowIndex }) {
   const position     = member.position?.trim()                 || "Member";
   const address      = member.address?.trim()                  || "";
   const email        = member.email?.trim()                    || "";
+  const emailSecondary = member.email_secondary?.trim()        || "";
   const phone        = member.mobile?.trim() || member.phone?.trim() || "";
   const membershipId = member.membership_id?.toString().trim() || "";
   const imgSrc       = toAbsoluteUploadUrl(member.image_url);
@@ -104,7 +105,7 @@ function MemberRow({ member, rowIndex }) {
             </p>
           )}
 
-          {(email || phone) && (
+          {(email || emailSecondary || phone) && (
             <div className="mt-4 flex flex-wrap gap-2.5">
               {email && (
                 <a
@@ -113,6 +114,16 @@ function MemberRow({ member, rowIndex }) {
                 >
                   <span className="mr-2 text-slate-400">Email</span>
                   <span className="truncate">{email}</span>
+                </a>
+              )}
+
+              {emailSecondary && (
+                <a
+                  href={`mailto:${emailSecondary}`}
+                  className="inline-flex max-w-full items-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors duration-200 hover:border-cyan-200 hover:text-cyan-700"
+                >
+                  <span className="mr-2 text-slate-400">Alt</span>
+                  <span className="truncate">{emailSecondary}</span>
                 </a>
               )}
 

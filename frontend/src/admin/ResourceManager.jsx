@@ -525,6 +525,14 @@ export default function ResourceManager({
                       );
                     }
 
+                    if (typeof field.renderValue === "function") {
+                      return (
+                        <td key={field.name} className="px-3 py-2 text-gray-700">
+                          {field.renderValue(value, item)}
+                        </td>
+                      );
+                    }
+
                     return (
                       <td key={field.name} className="px-3 py-2 text-gray-700">
                         <span

@@ -8,6 +8,7 @@ export default function MemberCard({ member }) {
   const position = member.position?.trim() || "Member";
   const membershipId = member.membership_id ? String(member.membership_id).trim() : "";
   const email = member.email?.trim() || "";
+  const emailSecondary = member.email_secondary?.trim() || "";
   const phone = member.mobile?.trim() || member.phone?.trim() || "";
 
   return (
@@ -64,8 +65,15 @@ export default function MemberCard({ member }) {
             )}
           </div>
 
-          {email && (
-            <p className="mt-3 truncate text-xs text-gray-400">{email}</p>
+          {(email || emailSecondary) && (
+            <div className="mt-3 space-y-1">
+              {email && (
+                <p className="truncate text-xs text-gray-400">{email}</p>
+              )}
+              {emailSecondary && (
+                <p className="truncate text-xs text-gray-400">{emailSecondary}</p>
+              )}
+            </div>
           )}
 
           <p className="mt-auto pt-4 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 group-hover:text-gray-900">

@@ -22,6 +22,7 @@ class MemberBase(BaseModel):
     membership_id: Optional[str] = ""
     address: str
     email: str
+    email_secondary: Optional[str] = ""
     mobile: str
     image_url: Optional[str] = ""
 
