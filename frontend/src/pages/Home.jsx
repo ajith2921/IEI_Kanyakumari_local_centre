@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import ConferenceNotification from "../components/conference/ConferenceNotification";
+import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 
 const focusAreas = [
   "Technical Seminars & Conferences",
@@ -15,7 +17,37 @@ const chairmanMessage =
   '"Engineering is not just a profession — it is the foundation of progress. Our centre is dedicated to empowering engineers, motivating students, strengthening institutions, and serving society through innovative ideas and technical excellence. We invite all engineers, professionals, industries, and students to actively engage with KKLC and become part of a meaningful professional network."';
 
 export default function Home() {
+  const [chairmanImage, setChairmanImage] = useState("");
+  const [imageError, setImageError] = useState(false);
   const cleanChairmanMessage = chairmanMessage.replace(/\s+/g, " ").trim();
+
+  useEffect(() => {
+    const fetchChairmanImage = async () => {
+      try {
+        const response = await publicApi.getMembers();
+        const members = response.data || [];
+        console.log("✓ Members fetched:", members.length);
+        
+        const chairman = members.find(m => m.position?.includes("Chairman"));
+        console.log("✓ Chairman found:", chairman?.name);
+        console.log("✓ Chairman image_url:", chairman?.image_url);
+        
+        if (chairman && chairman.image_url) {
+          const processedUrl = toAbsoluteUploadUrl(chairman.image_url);
+          console.log("✓ Processed URL:", processedUrl);
+          setChairmanImage(processedUrl);
+        } else {
+          console.warn("✗ Chairman or image_url not found");
+          setImageError(true);
+        }
+      } catch (error) {
+        console.error("✗ Error fetching chairman image:", error);
+        setImageError(true);
+      }
+    };
+
+    fetchChairmanImage();
+  }, []);
 
   return (
     <>
@@ -141,14 +173,69 @@ export default function Home() {
 
       <section className="bg-white">
         <div className="page-shell home-rhythm-shell">
-          <h2 className="home-premium-section-title mb-5">Chairman&apos;s Message</h2>
-          <div className="home-premium-card animate-fade-up stagger-2 rounded-2xl border border-gray-200 bg-gray-50/60 p-6 sm:p-8">
-            <blockquote className="home-premium-quote mb-4 mr-auto max-w-none text-left italic sm:mb-5">
-              {cleanChairmanMessage}
-            </blockquote>
-            <div className="mt-5 text-left">
-              <p className="text-sm font-semibold text-gray-900">Dr. M. Marsaline Beno</p>
-              <p className="mt-0.5 text-xs text-gray-400">Chairman, IEI Kanyakumari Local Centre</p>
+          <h2 className="home-premium-section-title mb-8">Chairman&apos;s Message</h2>
+          <div className="home-premium-card animate-fade-up stagger-2 rounded-3xl border border-gray-200 bg-gradient-to-br from-white via-slate-50 to-gray-50 p-8 sm:p-10 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center md:gap-0">
+              {/* Message */}
+              <div className="order-2 md:order-1 pr-0">
+                {/* Decorative quote mark */}
+                <div className="mb-4 flex items-start gap-3">
+                  <div className="h-1 w-12 bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full" />
+                </div>
+                
+                <blockquote className="home-premium-quote mb-6 mr-auto max-w-none text-justify sm:mb-7 leading-relaxed">
+                  <span className="text-4xl font-light text-cyan-500 mr-2">&ldquo;</span>
+                  {cleanChairmanMessage}
+                  <span className="text-4xl font-light text-cyan-500 ml-1">&rdquo;</span>
+                </blockquote>
+                
+                <div className="mt-7 text-left border-l-4 border-cyan-400 pl-5">
+                  <p className="text-base font-bold text-gray-900">Dr. M. Marsaline Beno</p>
+                  <p className="mt-1 text-sm text-gray-500 font-medium">Chairman, IEI Kanyakumari Local Centre</p>
+                  <p className="mt-2 text-xs text-gray-400">2025–2027</p>
+                </div>
+              </div>
+
+              {/* Chairman Image */}
+              <div className="order-1 md:order-2 flex justify-center">
+                {chairmanImage && !imageError ? (
+                  <div className="relative w-56 flex-shrink-0 group">
+                    {/* Decorative background accent */}
+                    <div className="absolute -inset-4 bg-gradient-to-br from-cyan-400/10 to-emerald-400/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    {/* Image container */}
+                    <div className="relative overflow-hidden rounded-3xl border-2 border-white shadow-xl ring-1 ring-gray-200">
+                      <div className="aspect-square bg-gray-100 overflow-hidden">
+                        <img
+                          src={chairmanImage}
+                          alt="Dr. M. Marsaline Beno - Chairman"
+                          className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={() => {
+                            console.error("✗ Image failed to load:", chairmanImage);
+                            setImageError(true);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Floating nameplate */}
+                    <div className="absolute -bottom-3 left-4 right-4 bg-white rounded-xl shadow-lg border border-gray-100 px-4 py-3">
+                      <p className="text-xs font-bold text-gray-900 truncate">Dr. M. Marsaline Beno</p>
+                      <p className="text-[10px] text-cyan-600 font-semibold">Chairman</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-56 flex-shrink-0 aspect-square overflow-hidden rounded-3xl border-2 border-white shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <div className="text-center">
+                      <svg className="w-16 h-16 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-sm font-medium text-gray-500">Loading image...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

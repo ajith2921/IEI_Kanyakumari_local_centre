@@ -28,6 +28,19 @@ function isDivisionMemberPosition(position) {
   return Boolean(extractDivisionFromPosition(position));
 }
 
+function splitMemberEmails(emailValue) {
+  const raw = String(emailValue || "");
+  const emails = raw
+    .split(/[;,\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    primary: emails[0] || "",
+    secondary: emails[1] || "",
+  };
+}
+
 const fields = [
   {
     name: "position",
@@ -75,7 +88,42 @@ const fields = [
   { name: "name", label: "Name", required: true },
   { name: "membership_id", label: "Membership ID" },
   { name: "address", label: "Address", type: "textarea", required: true, rows: 3, fullWidth: true },
-  { name: "email", label: "Email", type: "email", required: true, autoComplete: "email" },
+  {
+    name: "email",
+    label: "Primary Email",
+    type: "email",
+    required: true,
+    autoComplete: "email",
+    mapFromItem: (item) => {
+      return splitMemberEmails(item.email).primary;
+    },
+    renderValue: (_value, item) => {
+      const primary = splitMemberEmails(item.email).primary;
+      const secondary = String(item.email_secondary || "").trim() || splitMemberEmails(item.email).secondary;
+
+      return (
+        <div className="space-y-1">
+          <div className="font-medium text-gray-800">{primary || "-"}</div>
+          {secondary && <div className="text-xs text-gray-500">Secondary: {secondary}</div>}
+        </div>
+      );
+    },
+  },
+  {
+    name: "email_secondary",
+    label: "Secondary Email (optional)",
+    type: "email",
+    formOnly: true,
+    mapFromItem: (item) => {
+      const secondary = String(item.email_secondary || "").trim();
+      if (secondary) {
+        return secondary;
+      }
+
+      return splitMemberEmails(item.email).secondary;
+    },
+    autoComplete: "email",
+  },
   {
     name: "mobile",
     label: "Mobile Number",

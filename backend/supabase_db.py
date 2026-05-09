@@ -138,7 +138,7 @@ class SupabaseDB:
     
     def order_by(self, table: str, column: str, ascending: bool = True, limit: Optional[int] = None) -> List[Dict]:
         """SELECT with ordering"""
-        query = self.client.table(table).select()
+        query = self.client.table(table).select("*")
         query = query.order(column, desc=not ascending)
         
         if limit:

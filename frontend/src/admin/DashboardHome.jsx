@@ -12,7 +12,6 @@ const cards = [
   { label: "Facilities", key: "facilities" },
   { label: "Downloads", key: "downloads" },
   { label: "Contact Messages", key: "contacts" },
-  { label: "Membership Requests", key: "membership" },
 ];
 
 export default function DashboardHome() {
@@ -24,48 +23,40 @@ export default function DashboardHome() {
   const [auditReport, setAuditReport] = useState({ scanned: 0, flagged_count: 0, items: [] });
   const [autoFixingKey, setAutoFixingKey] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const [
-          members,
-          gallery,
-          newsletters,
-          activities,
-          facilities,
-          downloads,
-          contacts,
-          membership,
-        ] = await Promise.all([
-          adminApi.members.list(),
-          adminApi.gallery.list(),
-          adminApi.newsletters.list(),
-          adminApi.activities.list(),
-          adminApi.facilities.list(),
-          adminApi.downloads.list(),
-          adminApi.contacts.list(),
-          adminApi.membership.list(),
-        ]);
+  const loadCounts = async () => {
+    setLoading(true);
+    setError("");
 
-        setCounts({
-          members: members.data.length,
-          gallery: gallery.data.length,
-          newsletters: newsletters.data.length,
-          activities: activities.data.length,
-          facilities: facilities.data.length,
-          downloads: downloads.data.length,
-          contacts: contacts.data.length,
-          membership: membership.data.length,
-        });
-      } catch (err) {
-        setError(parseApiError(err));
-      } finally {
-        setLoading(false);
+    const requests = [
+      ["members", adminApi.members.list()],
+      ["gallery", adminApi.gallery.list()],
+      ["newsletters", adminApi.newsletters.list()],
+      ["activities", adminApi.activities.list()],
+      ["facilities", adminApi.facilities.list()],
+      ["downloads", adminApi.downloads.list()],
+      ["contacts", adminApi.contacts.list()],
+    ];
+
+    const settled = await Promise.allSettled(requests.map(([, request]) => request));
+    const nextCounts = {};
+    const failures = [];
+
+    settled.forEach((result, index) => {
+      const [key] = requests[index];
+      if (result.status === "fulfilled") {
+        nextCounts[key] = result.value.data.length;
+      } else {
+        nextCounts[key] = 0;
+        failures.push(parseApiError(result.reason));
       }
-    };
+    });
 
+    setCounts(nextCounts);
+    setError(failures[0] || "");
+    setLoading(false);
+  };
+
+  useEffect(() => {
     const loadAudit = async () => {
       setAuditLoading(true);
       setAuditError("");
@@ -79,7 +70,7 @@ export default function DashboardHome() {
       }
     };
 
-    load();
+    loadCounts();
     loadAudit();
   }, []);
 
@@ -88,34 +79,9 @@ export default function DashboardHome() {
     setAutoFixingKey(key);
     try {
       await adminApi.imageAudit.autoFix(entity, id);
-      const [countsResponse, auditResponse] = await Promise.all([
-        Promise.all([
-          adminApi.members.list(),
-          adminApi.gallery.list(),
-          adminApi.newsletters.list(),
-          adminApi.activities.list(),
-          adminApi.facilities.list(),
-          adminApi.downloads.list(),
-          adminApi.contacts.list(),
-          adminApi.membership.list(),
-        ]),
-        adminApi.imageAudit.list(),
-      ]);
-
-      const [members, gallery, newsletters, activities, facilities, downloads, contacts, membership] =
-        countsResponse;
-
-      setCounts({
-        members: members.data.length,
-        gallery: gallery.data.length,
-        newsletters: newsletters.data.length,
-        activities: activities.data.length,
-        facilities: facilities.data.length,
-        downloads: downloads.data.length,
-        contacts: contacts.data.length,
-        membership: membership.data.length,
-      });
-      setAuditReport(auditResponse.data || { scanned: 0, flagged_count: 0, items: [] });
+      await Promise.all([loadCounts(), adminApi.imageAudit.list().then((response) => {
+        setAuditReport(response.data || { scanned: 0, flagged_count: 0, items: [] });
+      })]);
     } catch (err) {
       setAuditError(parseApiError(err));
     } finally {
@@ -140,7 +106,7 @@ export default function DashboardHome() {
       )}
       {error && <ErrorState message={error} />}
 
-      {!loading && !error && (
+      {!loading && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {cards.map((card) => (
             <Card

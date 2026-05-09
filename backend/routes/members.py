@@ -35,6 +35,57 @@ def _require_email(value: str) -> str:
     return cleaned
 
 
+def _optional_email(value: str) -> str:
+    cleaned = value.strip()
+    if not cleaned:
+        return ""
+    if not EMAIL_PATTERN.fullmatch(cleaned):
+        raise HTTPException(status_code=400, detail="Please provide a valid secondary email address.")
+    return cleaned
+
+
+def _combine_member_emails(primary_email: str, secondary_email: str) -> str:
+    return f"{primary_email}, {secondary_email}" if secondary_email else primary_email
+
+
+def _is_missing_secondary_email_column_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return (
+        "email_secondary" in message
+        and (
+            "does not exist" in message
+            or "schema cache" in message
+            or "column" in message
+        )
+    )
+
+
+def _insert_member_with_secondary_fallback(member_data: dict, primary_email: str, secondary_email: str) -> dict:
+    try:
+        return admin_db.insert("members", member_data)
+    except Exception as exc:
+        if not _is_missing_secondary_email_column_error(exc):
+            raise
+
+        fallback_data = dict(member_data)
+        fallback_data.pop("email_secondary", None)
+        fallback_data["email"] = _combine_member_emails(primary_email, secondary_email)
+        return admin_db.insert("members", fallback_data)
+
+
+def _update_member_with_secondary_fallback(member_id: int, update_data: dict, primary_email: str, secondary_email: str) -> dict:
+    try:
+        return admin_db.update("members", update_data, {"id": member_id})
+    except Exception as exc:
+        if not _is_missing_secondary_email_column_error(exc):
+            raise
+
+        fallback_data = dict(update_data)
+        fallback_data.pop("email_secondary", None)
+        fallback_data["email"] = _combine_member_emails(primary_email, secondary_email)
+        return admin_db.update("members", fallback_data, {"id": member_id})
+
+
 def _require_mobile(value: str) -> str:
     cleaned = _require_value(value, "Mobile")
     if not PHONE_PATTERN.fullmatch(cleaned):
@@ -73,6 +124,7 @@ def create_member(
     membership_id: str = Form(default=""),
     address: str = Form(...),
     email: str = Form(...),
+    email_secondary: str = Form(default=""),
     mobile: str = Form(...),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
@@ -85,6 +137,7 @@ def create_member(
         normalized_membership_id = membership_id.strip()
         normalized_address = _require_value(address, "Address")
         normalized_email = _require_email(email)
+        normalized_secondary_email = _optional_email(email_secondary)
         normalized_mobile = _require_mobile(mobile)
 
         if len(normalized_membership_id) > 80:
@@ -129,12 +182,15 @@ def create_member(
             "membership_id": normalized_membership_id,
             "address": normalized_address,
             "email": normalized_email,
+            "email_secondary": normalized_secondary_email,
             "mobile": normalized_mobile,
             "image_url": final_image_url,
             "password_hash": "",
         }
-        
-        created_member = admin_db.insert("members", member_data)
+
+        created_member = _insert_member_with_secondary_fallback(
+            member_data, normalized_email, normalized_secondary_email
+        )
         return created_member
         
     except HTTPException:
@@ -151,6 +207,7 @@ def update_member(
     membership_id: str = Form(default=""),
     address: str = Form(...),
     email: str = Form(...),
+    email_secondary: str = Form(default=""),
     mobile: str = Form(...),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
@@ -168,6 +225,7 @@ def update_member(
         normalized_membership_id = membership_id.strip()
         normalized_address = _require_value(address, "Address")
         normalized_email = _require_email(email)
+        normalized_secondary_email = _optional_email(email_secondary)
         normalized_mobile = _require_mobile(mobile)
 
         if len(normalized_membership_id) > 80:
@@ -180,6 +238,7 @@ def update_member(
             "membership_id": normalized_membership_id,
             "address": normalized_address,
             "email": normalized_email,
+            "email_secondary": normalized_secondary_email,
             "mobile": normalized_mobile,
         }
 
@@ -218,7 +277,9 @@ def update_member(
             update_data["image_url"] = image_url.strip()
 
         # Update in Supabase
-        updated_member = admin_db.update("members", update_data, {"id": member_id})
+        updated_member = _update_member_with_secondary_fallback(
+            member_id, update_data, normalized_email, normalized_secondary_email
+        )
         return updated_member
         
     except HTTPException:
