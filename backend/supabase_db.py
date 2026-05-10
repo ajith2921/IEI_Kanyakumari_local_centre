@@ -95,8 +95,29 @@ class SupabaseDB:
     
     def insert(self, table: str, data: Dict[str, Any]) -> Dict:
         """INSERT single record"""
-        result = self.client.table(table).insert(data).execute()
-        return result.data[0] if result.data else {}
+        try:
+            result = self.client.table(table).insert(data).execute()
+            return result.data[0] if result.data else {}
+        except Exception as exc:
+            message = str(exc).lower()
+            if "duplicate key value violates unique constraint" not in message or "pkey" not in message:
+                raise
+
+            if "id" in data:
+                raise
+
+            latest = self.client.table(table).select("id").order("id", desc=True).limit(1).execute().data or []
+            next_id = 1
+            if latest and latest[0].get("id") is not None:
+                try:
+                    next_id = int(latest[0]["id"]) + 1
+                except (TypeError, ValueError):
+                    raise
+
+            retry_data = dict(data)
+            retry_data["id"] = next_id
+            result = self.client.table(table).insert(retry_data).execute()
+            return result.data[0] if result.data else {}
     
     def insert_batch(self, table: str, rows: List[Dict[str, Any]]) -> List[Dict]:
         """INSERT multiple records"""

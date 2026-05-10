@@ -47,6 +47,36 @@ function isConferenceVisible(conference) {
   return today <= deadline;
 }
 
+function parseConferenceDate(value) {
+  const text = String(value || "").trim();
+  if (!text) return Number.NaN;
+
+  const parsed = Date.parse(text);
+  if (Number.isFinite(parsed)) {
+    return parsed;
+  }
+
+  const parts = text.split(/[-/]/);
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+
+    if (year > 1900 && month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+      return new Date(year, month, day).getTime();
+    }
+  }
+
+  return Number.NaN;
+}
+
+function pickNearestUpcomingConference(conferences, todayStartMs) {
+  return conferences
+    .map((conference) => ({ conference, time: parseConferenceDate(conference?.start_date || conference?.startDate) }))
+    .filter(({ time }) => Number.isFinite(time) && time >= todayStartMs)
+    .sort((left, right) => left.time - right.time)[0]?.conference || null;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
@@ -56,9 +86,13 @@ export default function ConferenceNotification() {
   const [visible, setVisible] = useState(false); // drives CSS entry animation
 
   useEffect(() => {
-    publicApi.getActiveConference()
+    const todayStartMs = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+
+    publicApi.getConferences()
       .then((res) => {
-        const data = res.data;
+        const conferences = Array.isArray(res?.data) ? res.data : [];
+        const selected = pickNearestUpcomingConference(conferences, todayStartMs) || conferences.find((item) => item?.status === "active") || null;
+        const data = selected || FALLBACK_CONFERENCE;
         const conf = {
           id: data.id,
           title: data.title,
@@ -74,7 +108,6 @@ export default function ConferenceNotification() {
           isNew: data.is_new,
         };
         setConference(conf);
-        // Restore persisted dismiss state for this specific conference
         setDismissed(localStorage.getItem(STORAGE_KEY(conf.id)) === "true");
       })
       .catch(() => {
@@ -98,7 +131,7 @@ export default function ConferenceNotification() {
   }, [conference]);
 
   /* Visibility gate */
-  if (!isConferenceVisible(conference) || dismissed) return null;
+  if (!conference || dismissed) return null;
 
   const isExternal = conference.link?.startsWith("http");
 

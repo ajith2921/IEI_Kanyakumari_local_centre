@@ -4,11 +4,23 @@ import ErrorState from "../components/ErrorState";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 
-const OFFICE_BEARERS_LABEL = "Office Bearers";
+const OFFICE_BEARERS_LABEL = "Executive Leadership";
+const OFFICE_BEARER_ORDER = [
+  "Chairman",
+  "Honorary Secretary",
+  "Honorary Joint Secretary",
+  "Immediate Past Chairman",
+];
 const DIVISION_COLLATOR = new Intl.Collator(undefined, {
   sensitivity: "base",
   numeric: true,
 });
+
+function getOfficeBearerRank(position) {
+  const normalizedPosition = String(position || "").trim();
+  const rank = OFFICE_BEARER_ORDER.findIndex((role) => role === normalizedPosition);
+  return rank === -1 ? OFFICE_BEARER_ORDER.length : rank;
+}
 
 function getDivisionLabel(position) {
   const normalizedPosition = String(position || "").trim();
@@ -234,7 +246,21 @@ export default function MembersList() {
     let runningRowIndex = 0;
 
     return sortedEntries.map(([divisionName, divisionMembers]) => {
-      const rows = divisionMembers.map((member, localIndex) => ({
+      const orderedMembers =
+        divisionName === OFFICE_BEARERS_LABEL
+          ? [...divisionMembers].sort((left, right) => {
+              const leftRank = getOfficeBearerRank(left.position);
+              const rightRank = getOfficeBearerRank(right.position);
+
+              if (leftRank !== rightRank) {
+                return leftRank - rightRank;
+              }
+
+              return DIVISION_COLLATOR.compare(String(left.name || ""), String(right.name || ""));
+            })
+          : divisionMembers;
+
+      const rows = orderedMembers.map((member, localIndex) => ({
         key: member.id ?? `${divisionName}-${member.name}-${localIndex}`,
         member,
         rowIndex: runningRowIndex++,

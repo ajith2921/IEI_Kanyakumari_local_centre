@@ -26,7 +26,8 @@ export default function Home() {
       try {
         const response = await publicApi.getMembers();
         const members = response.data || [];
-        const chairman = members.find(m => m.position?.includes("Chairman"));
+        // Match exact "Chairman" to avoid matching "Immediate Past Chairman"
+        const chairman = members.find(m => m.position?.trim().toLowerCase() === "chairman");
         if (chairman && chairman.image_url) {
           const processedUrl = toAbsoluteUploadUrl(chairman.image_url);
           setChairmanImage(processedUrl);
