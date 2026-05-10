@@ -68,11 +68,10 @@ const fields = [
     },
     options: [
       { label: "Chairman", value: "Chairman" },
-      { label: "Secretary", value: "Secretary" },
-      { label: "Treasurer", value: "Treasurer" },
-      { label: "Joint Secretary", value: "Joint Secretary" },
+      { label: "Honorary Secretary", value: "Honorary Secretary" },
+      { label: "Immediate Past Chairman", value: "Immediate Past Chairman" },
+      { label: "Honorary Joint Secretary", value: "Honorary Joint Secretary" },
       { label: "Executive Member", value: "Executive Member" },
-      { label: "Member", value: "Member" },
     ],
   },
   {

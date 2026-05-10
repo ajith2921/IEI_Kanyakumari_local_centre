@@ -167,7 +167,7 @@ export default function Home() {
         <div className="page-shell home-rhythm-shell">
           <h2 className="home-premium-section-title mb-8">Chairman&apos;s Message</h2>
           <div className="home-premium-card animate-fade-up stagger-2 rounded-3xl border border-gray-200 bg-gradient-to-br from-white via-slate-50 to-gray-50 p-8 sm:p-10 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center md:gap-0">
+            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center md:gap-8 lg:gap-10">
               {/* Message */}
               <div className="order-2 md:order-1 pr-0">
                 {/* Decorative quote mark */}

@@ -38,6 +38,36 @@ function isUpcomingActivity(activity, todayStartMs) {
   return Number.isFinite(activityTime) && activityTime >= todayStartMs;
 }
 
+function getConferenceTime(conference) {
+  const eventDateText = String(conference?.start_date || "").trim();
+  if (!eventDateText) return Number.NaN;
+
+  const parsed = Date.parse(eventDateText);
+  if (Number.isFinite(parsed)) return parsed;
+
+  const parts = eventDateText.split(/[-/]/);
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+
+    if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year > 1900) {
+      return new Date(year, month, day).getTime();
+    }
+  }
+
+  return Number.NaN;
+}
+
+function pickNearestUpcomingConference(conferences, todayStartMs) {
+  return conferences
+    .filter((conference) => {
+      const conferenceTime = getConferenceTime(conference);
+      return Number.isFinite(conferenceTime) && conferenceTime >= todayStartMs;
+    })
+    .sort((a, b) => getConferenceTime(a) - getConferenceTime(b))[0] || null;
+}
+
 function formatDateRange(start, end) {
   if (!start || !end) return "";
   const s = new Date(start);
@@ -53,19 +83,24 @@ function formatDateRange(start, end) {
 
 export default function TechnicalActivities() {
   const { data, loading, error, reload } = useFetchList(publicApi.getActivities);
-  const [activeConference, setActiveConference] = useState(null);
-
-  useEffect(() => {
-    publicApi.getActiveConference()
-      .then(res => setActiveConference(res.data))
-      .catch(() => { /* conference banner is non-critical */ });
-  }, []);
+  const [upcomingConference, setUpcomingConference] = useState(null);
 
   const todayStartMs = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return today.getTime();
   }, []);
+
+  useEffect(() => {
+    publicApi.getConferences()
+      .then((res) => {
+        const conferences = Array.isArray(res?.data) ? res.data : [];
+        setUpcomingConference(pickNearestUpcomingConference(conferences, todayStartMs));
+      })
+      .catch(() => {
+        setUpcomingConference(null);
+      });
+  }, [todayStartMs]);
 
   // Separate upcoming and past events for perfectly synced counts and robust sorting
   const sortedUpcoming = useMemo(() => {
@@ -120,16 +155,16 @@ export default function TechnicalActivities() {
           </div>
 
           <div className="relative">
-            {activeConference && (
+            {upcomingConference && (
               <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
                 <div>
-                  <p className="text-sm font-semibold text-emerald-900">{activeConference.short_title}</p>
+                  <p className="text-sm font-semibold text-emerald-900">{upcomingConference.short_title}</p>
                   <p className="text-xs text-emerald-700">
-                    {activeConference.title} — {formatDateRange(activeConference.start_date, activeConference.end_date)}
+                    {upcomingConference.title} — {formatDateRange(upcomingConference.start_date, upcomingConference.end_date)}
                   </p>
                 </div>
-                <Button as={Link} to={activeConference.link} className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
-                  {activeConference.button_text}
+                <Button as={Link} to={upcomingConference.link || "/conference"} className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
+                  {upcomingConference.button_text || "More Details"}
                 </Button>
               </div>
             )}
