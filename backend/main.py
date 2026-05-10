@@ -11,6 +11,9 @@ load_dotenv(dotenv_path=env_path)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from auth import hash_password
+from supabase_db import admin_db
+
 from routes import (
     activities,
     auth,
@@ -110,7 +113,26 @@ PROGRAM_DIVISIONS = [
 
 
 def seed_admin_user() -> None:
-    pass  # Seeding is now handled in Supabase
+    username = (os.getenv("ADMIN_USERNAME", "") or "").strip()
+    password = (os.getenv("ADMIN_PASSWORD", "") or "").strip()
+
+    if not username or not password:
+        return
+
+    try:
+        user_data = {
+            "username": username,
+            "hashed_password": hash_password(password),
+            "is_active": True,
+        }
+        existing_user = admin_db.select_one("users", {"username": username})
+
+        if existing_user:
+            admin_db.update("users", user_data, {"username": username})
+        else:
+            admin_db.insert("users", user_data)
+    except Exception as exc:
+        print(f"Warning: could not seed admin user: {exc}")
 
 
 def _env_flag(name: str, default: str = "true") -> bool:
@@ -124,6 +146,11 @@ def seed_members_from_program_data() -> None:
 
 def seed_conference_data() -> None:
     pass  # Seeding is now handled in Supabase
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    seed_admin_user()
 
 
 upload_dir = Path(__file__).resolve().parent / "uploads"

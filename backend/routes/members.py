@@ -179,7 +179,6 @@ def create_member(
             "email_secondary": normalized_secondary_email,
             "mobile": normalized_mobile,
             "image_url": final_image_url,
-            "password_hash": "",
         }
 
         created_member = _insert_member_with_secondary_fallback(
