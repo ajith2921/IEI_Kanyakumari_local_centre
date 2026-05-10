@@ -7,6 +7,14 @@ from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
 
 router = APIRouter(prefix="/conferences", tags=["Conferences"])
 
+
+def _normalize_conference_status(conference: dict) -> dict:
+    status_value = conference.get("status")
+    if status_value is None or str(status_value).strip() == "":
+        conference = dict(conference)
+        conference["status"] = "inactive"
+    return conference
+
 @router.get("/active", response_model=ConferenceOut)
 def get_active_conference():
     """Get active conference or most recent one"""
@@ -14,12 +22,12 @@ def get_active_conference():
         # Try to get active conference
         conferences = admin_db.select("conferences", filters={"status": "active"})
         if conferences:
-            return conferences[0]
+            return _normalize_conference_status(conferences[0])
         
         # If no active, get most recent
         conferences = admin_db.order_by("conferences", "created_at", ascending=False, limit=1)
         if conferences:
-            return conferences[0]
+            return _normalize_conference_status(conferences[0])
         
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -37,7 +45,7 @@ def get_all_conferences(
     """Get all conferences"""
     try:
         conferences = admin_db.order_by("conferences", "created_at", ascending=False)
-        return conferences
+        return [_normalize_conference_status(conf) for conf in conferences]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

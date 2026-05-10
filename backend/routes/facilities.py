@@ -1,28 +1,15 @@
 from pathlib import Path
 from typing import Optional
-import os
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from supabase import create_client
 
 from auth import get_current_active_user
-from supabase_db import admin_db
+from supabase_db import admin_db, get_supabase_admin_client
 from schemas import FacilityOut
-
-# Supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+from routes.utils import require_value
 
 router = APIRouter(prefix="/facilities", tags=["Facilities"])
-
-
-def _require_value(value: str, field_label: str) -> str:
-    cleaned = value.strip()
-    if not cleaned:
-        raise HTTPException(status_code=400, detail=f"{field_label} is required.")
-    return cleaned
 
 
 @router.get("", response_model=list[FacilityOut])
@@ -45,11 +32,11 @@ def create_facility(
 ) -> dict:
     """Create facility with image upload to Supabase Storage"""
     try:
-        normalized_name = _require_value(name, "Name")
+        normalized_name = require_value(name, "Name")
         normalized_description = description.strip()
 
         image_url_value = ""
-
+        supabase = get_supabase_admin_client()
         # Upload image to Supabase Storage
         if image and image.filename:
             content = image.file.read()
@@ -102,14 +89,14 @@ def update_facility(
         if not facility:
             raise HTTPException(status_code=404, detail="Facility not found")
 
-        normalized_name = _require_value(name, "Name")
+        normalized_name = require_value(name, "Name")
         normalized_description = description.strip()
 
         update_data = {
             "name": normalized_name,
             "description": normalized_description,
         }
-
+        supabase = get_supabase_admin_client()
         # Handle image upload
         if image and image.filename:
             content = image.file.read()

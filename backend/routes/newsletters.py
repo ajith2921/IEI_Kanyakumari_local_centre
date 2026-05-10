@@ -2,20 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
-import os
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from supabase import create_client
 
 from auth import get_current_active_user
-from supabase_db import admin_db
+from supabase_db import admin_db, get_supabase_admin_client
 from schemas import NewsletterOut
-
-# Supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 router = APIRouter(prefix="/newsletters", tags=["Newsletters"])
 
@@ -40,7 +33,7 @@ def create_newsletter(
     """Create newsletter with PDF upload to Supabase Storage"""
     try:
         pdf_url = ""
-        
+        supabase = get_supabase_admin_client()
         # Upload PDF to Supabase Storage
         if pdf and pdf.filename:
             content = pdf.file.read()
@@ -94,7 +87,7 @@ def update_newsletter(
             "title": title,
             "summary": summary,
         }
-
+        supabase = get_supabase_admin_client()
         # Handle PDF upload
         if pdf and pdf.filename:
             content = pdf.file.read()

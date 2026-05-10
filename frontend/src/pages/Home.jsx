@@ -26,22 +26,14 @@ export default function Home() {
       try {
         const response = await publicApi.getMembers();
         const members = response.data || [];
-        console.log("✓ Members fetched:", members.length);
-        
         const chairman = members.find(m => m.position?.includes("Chairman"));
-        console.log("✓ Chairman found:", chairman?.name);
-        console.log("✓ Chairman image_url:", chairman?.image_url);
-        
         if (chairman && chairman.image_url) {
           const processedUrl = toAbsoluteUploadUrl(chairman.image_url);
-          console.log("✓ Processed URL:", processedUrl);
           setChairmanImage(processedUrl);
         } else {
-          console.warn("✗ Chairman or image_url not found");
           setImageError(true);
         }
-      } catch (error) {
-        console.error("✗ Error fetching chairman image:", error);
+      } catch {
         setImageError(true);
       }
     };
@@ -77,7 +69,7 @@ export default function Home() {
 
       <section className="bg-white">
         <div className="page-shell home-rhythm-shell">
-          <h2 className="home-premium-section-title mb-5">About IEI Kolkata</h2>
+          <h2 className="home-premium-section-title mb-5">About IE(I) Kolkata</h2>
           <p className="home-premium-lead mb-4 max-w-none">
             The Institution of Engineers (India) [IEI] is a statutory body to promote and advance
             engineering and technology, established in 1920 and incorporated by Royal Charter in 1935.
@@ -211,10 +203,7 @@ export default function Home() {
                           alt="Dr. M. Marsaline Beno - Chairman"
                           className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
-                          onError={() => {
-                            console.error("✗ Image failed to load:", chairmanImage);
-                            setImageError(true);
-                          }}
+                          onError={() => setImageError(true)}
                         />
                       </div>
                     </div>
@@ -231,7 +220,7 @@ export default function Home() {
                       <svg className="w-16 h-16 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <p className="text-sm font-medium text-gray-500">Loading image...</p>
+                      <p className="text-sm font-medium text-gray-500">Photo not available</p>
                     </div>
                   </div>
                 )}

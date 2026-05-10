@@ -154,12 +154,11 @@ Skip to main content
       <div className="page-shell flex items-center justify-between py-2.5 sm:py-3">
         <Link to="/" className="flex items-center gap-3 leading-tight">
           <img
-            src="https://alchetron.com/cdn/institution-of-engineers-india-9cb687ed-c30b-4f38-81f5-344346463d2-resize-750.png"
+            src="https://www.liblogo.com/img-logo/ie3298ie54-iei-logo-iei-salem.png"
             alt="Institution of Engineers (India) logo"
             className="h-12 w-12 flex-shrink-0 rounded-full border border-gray-100 bg-white object-contain p-1 sm:h-14 sm:w-14"
             loading="eager"
-            decoding="async"
-            referrerPolicy="no-referrer"
+            decoding="sync"
           />
           <span className="flex flex-col">
             <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-gray-900">

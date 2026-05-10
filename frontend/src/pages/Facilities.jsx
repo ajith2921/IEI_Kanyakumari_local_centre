@@ -14,6 +14,7 @@ export default function Facilities() {
       <SectionHeader
         eyebrow="Infrastructure"
         title="Facilities"
+        titleAs="h1"
         description="Resources and institutional facilities that support learning and events."
       />
 

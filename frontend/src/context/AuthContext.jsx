@@ -3,8 +3,23 @@ import { authApi, parseApiError } from "../services/api";
 
 const AuthContext = createContext(null);
 
+function readValidToken() {
+  const stored = localStorage.getItem("admin_token") || "";
+  if (!stored) return "";
+  try {
+    const payload = JSON.parse(atob(stored.split(".")[1]));
+    return payload.exp * 1000 > Date.now() ? stored : "";
+  } catch {
+    return "";
+  }
+}
+
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem("admin_token") || "");
+  const [token, setToken] = useState(() => {
+    const valid = readValidToken();
+    if (!valid) localStorage.removeItem("admin_token");
+    return valid;
+  });
   const [loading, setLoading] = useState(false);
   const isAuthenticated = Boolean(token);
 

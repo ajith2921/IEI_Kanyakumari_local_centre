@@ -2,20 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
-import os
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from supabase import create_client
 
 from auth import get_current_active_user
-from supabase_db import admin_db
+from supabase_db import admin_db, get_supabase_admin_client
 from schemas import DownloadOut
-
-# Supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 router = APIRouter(prefix="/downloads", tags=["Downloads"])
 
@@ -40,7 +33,7 @@ def create_download(
     """Create download with PDF upload to Supabase Storage"""
     try:
         content = pdf.file.read()
-        
+        supabase = get_supabase_admin_client()
         if len(content) > 100 * 1024 * 1024:  # 100MB max
             raise HTTPException(status_code=413, detail="PDF too large. Max 100MB.")
         
@@ -90,7 +83,7 @@ def update_download(
             "title": title,
             "description": description,
         }
-
+        supabase = get_supabase_admin_client()
         # Handle PDF upload
         if pdf and pdf.filename:
             content = pdf.file.read()

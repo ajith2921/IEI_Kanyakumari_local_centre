@@ -182,8 +182,16 @@ class ConferenceBase(BaseModel):
     venue: Optional[str] = ""
     button_text: Optional[str] = "More Details"
     link: Optional[str] = "/conference"
-    status: str = "active"
+    status: Optional[str] = "active"
     is_new: bool = True
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def normalize_status(cls, value: Optional[str]) -> str:
+        if value is None:
+            return "inactive"
+        cleaned = str(value).strip()
+        return cleaned or "inactive"
 
 
 class ConferenceCreate(ConferenceBase):

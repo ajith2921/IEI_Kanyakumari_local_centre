@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -13,17 +13,30 @@ import LinksDownloads from "./pages/LinksDownloads";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "./admin/AdminRoute";
-import AdminLogin from "./admin/AdminLogin";
-import AdminLayout from "./admin/AdminLayout";
-import DashboardHome from "./admin/DashboardHome";
-import AdminMembers from "./admin/AdminMembers";
-import AdminGallery from "./admin/AdminGallery";
-import AdminNewsletters from "./admin/AdminNewsletters";
-import AdminActivities from "./admin/AdminActivities";
-import AdminFacilities from "./admin/AdminFacilities";
-import AdminDownloads from "./admin/AdminDownloads";
-import AdminMessages from "./admin/AdminMessages";
-import AdminConference from "./admin/AdminConference";
+
+// Admin pages — lazy loaded so they are excluded from the public bundle
+const AdminLogin    = lazy(() => import("./admin/AdminLogin"));
+const AdminLayout   = lazy(() => import("./admin/AdminLayout"));
+const DashboardHome = lazy(() => import("./admin/DashboardHome"));
+const AdminMembers  = lazy(() => import("./admin/AdminMembers"));
+const AdminGallery  = lazy(() => import("./admin/AdminGallery"));
+const AdminNewsletters = lazy(() => import("./admin/AdminNewsletters"));
+const AdminActivities  = lazy(() => import("./admin/AdminActivities"));
+const AdminFacilities  = lazy(() => import("./admin/AdminFacilities"));
+const AdminDownloads   = lazy(() => import("./admin/AdminDownloads"));
+const AdminMessages    = lazy(() => import("./admin/AdminMessages"));
+const AdminConference  = lazy(() => import("./admin/AdminConference"));
+
+function AdminFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-900 border-t-transparent" />
+        <p className="text-sm font-medium text-gray-500">Loading admin panel…</p>
+      </div>
+    </div>
+  );
+}
 
 const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
 
@@ -125,12 +138,14 @@ export default function App() {
       <Route path="/membership" element={<ExternalRedirect to={MEMBERSHIP_PORTAL_URL} />} />
       <Route path="/membership/*" element={<ExternalRedirect to={MEMBERSHIP_PORTAL_URL} />} />
 
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/login" element={<Suspense fallback={<AdminFallback />}><AdminLogin /></Suspense>} />
       <Route
         path="/admin"
         element={
           <AdminRoute>
-            <AdminLayout />
+            <Suspense fallback={<AdminFallback />}>
+              <AdminLayout />
+            </Suspense>
           </AdminRoute>
         }
       >

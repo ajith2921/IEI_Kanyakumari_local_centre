@@ -58,7 +58,7 @@ export default function TechnicalActivities() {
   useEffect(() => {
     publicApi.getActiveConference()
       .then(res => setActiveConference(res.data))
-      .catch(err => console.error("Failed to fetch conference banner info:", err));
+      .catch(() => { /* conference banner is non-critical */ });
   }, []);
 
   const todayStartMs = useMemo(() => {

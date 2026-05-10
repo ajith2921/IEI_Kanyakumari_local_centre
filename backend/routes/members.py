@@ -1,35 +1,22 @@
 from pathlib import Path
 import re
-import os
 from typing import Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from supabase import create_client
 
 from auth import get_current_active_user
-from supabase_db import admin_db
+from supabase_db import admin_db, get_supabase_admin_client
 from schemas import MemberOut
-
-# Supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+from routes.utils import require_value
 
 router = APIRouter(prefix="/members", tags=["Members"])
 PHONE_PATTERN = re.compile(r"^[+]?[0-9\s()\-]{7,18}$")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def _require_value(value: str, field_label: str) -> str:
-    cleaned = value.strip()
-    if not cleaned:
-        raise HTTPException(status_code=400, detail=f"{field_label} is required.")
-    return cleaned
-
-
 def _require_email(value: str) -> str:
-    cleaned = _require_value(value, "Email")
+    cleaned = require_value(value, "Email")
     if not EMAIL_PATTERN.fullmatch(cleaned):
         raise HTTPException(status_code=400, detail="Please provide a valid email address.")
     return cleaned
@@ -132,10 +119,10 @@ def create_member(
 ) -> dict:
     """Create new member with image upload to Supabase"""
     try:
-        normalized_name = _require_value(name, "Name")
-        normalized_position = _require_value(position, "Position")
+        normalized_name = require_value(name, "Name")
+        normalized_position = require_value(position, "Position")
         normalized_membership_id = membership_id.strip()
-        normalized_address = _require_value(address, "Address")
+        normalized_address = require_value(address, "Address")
         normalized_email = _require_email(email)
         normalized_secondary_email = _optional_email(email_secondary)
         normalized_mobile = _require_mobile(mobile)
@@ -220,10 +207,10 @@ def update_member(
         if not member:
             raise HTTPException(status_code=404, detail="Member not found")
 
-        normalized_name = _require_value(name, "Name")
-        normalized_position = _require_value(position, "Position")
+        normalized_name = require_value(name, "Name")
+        normalized_position = require_value(position, "Position")
         normalized_membership_id = membership_id.strip()
-        normalized_address = _require_value(address, "Address")
+        normalized_address = require_value(address, "Address")
         normalized_email = _require_email(email)
         normalized_secondary_email = _optional_email(email_secondary)
         normalized_mobile = _require_mobile(mobile)

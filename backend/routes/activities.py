@@ -1,28 +1,16 @@
 from pathlib import Path
 from typing import Optional
-import os
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from supabase import create_client
 
 from auth import get_current_active_user
-from supabase_db import admin_db
+from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ActivityOut
-
-# Supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+from routes.utils import require_value
 
 router = APIRouter(prefix="/activities", tags=["Activities"])
 
-
-def _require_value(value: str, field_label: str) -> str:
-    cleaned = value.strip()
-    if not cleaned:
-        raise HTTPException(status_code=400, detail=f"{field_label} is required.")
-    return cleaned
 
 
 @router.get("", response_model=list[ActivityOut])
@@ -62,13 +50,14 @@ def create_activity(
 ) -> dict:
     """Create activity with file uploads to Supabase Storage"""
     try:
-        normalized_title = _require_value(title, "Title")
+        normalized_title = require_value(title, "Title")
         normalized_description = description.strip()
         normalized_event_date = event_date.strip()
 
         image_url_value = ""
         pdf_url_value = ""
         colab_url_value = ""
+        supabase = get_supabase_admin_client()
 
         # Upload image to Supabase Storage
         if image and image.filename:
@@ -164,7 +153,7 @@ def update_activity(
         if not activity:
             raise HTTPException(status_code=404, detail="Activity not found")
 
-        normalized_title = _require_value(title, "Title")
+        normalized_title = require_value(title, "Title")
         normalized_description = description.strip()
         normalized_event_date = event_date.strip()
 
@@ -173,6 +162,7 @@ def update_activity(
             "description": normalized_description,
             "event_date": normalized_event_date,
         }
+        supabase = get_supabase_admin_client()
 
         # Handle image upload
         if image and image.filename:

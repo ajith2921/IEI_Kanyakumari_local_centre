@@ -59,9 +59,7 @@ export default function ConferenceNotification() {
     publicApi.getActiveConference()
       .then((res) => {
         const data = res.data;
-        // Map snake_case from API to camelCase for the component if needed
-        // but here the component uses camelCase.
-        setConference({
+        const conf = {
           id: data.id,
           title: data.title,
           shortTitle: data.short_title,
@@ -74,11 +72,15 @@ export default function ConferenceNotification() {
           buttonText: data.button_text,
           link: data.link,
           isNew: data.is_new,
-        });
+        };
+        setConference(conf);
+        // Restore persisted dismiss state for this specific conference
+        setDismissed(localStorage.getItem(STORAGE_KEY(conf.id)) === "true");
       })
-      .catch((err) => {
-        console.error("Failed to fetch conference:", err);
-        setConference(FALLBACK_CONFERENCE);
+      .catch(() => {
+        const conf = FALLBACK_CONFERENCE;
+        setConference(conf);
+        setDismissed(localStorage.getItem(STORAGE_KEY(conf.id)) === "true");
       });
   }, []);
 
@@ -89,8 +91,11 @@ export default function ConferenceNotification() {
   }, []);
 
   const handleDismiss = useCallback(() => {
+    if (conference?.id != null) {
+      localStorage.setItem(STORAGE_KEY(conference.id), "true");
+    }
     setDismissed(true);
-  }, []);
+  }, [conference]);
 
   /* Visibility gate */
   if (!isConferenceVisible(conference) || dismissed) return null;

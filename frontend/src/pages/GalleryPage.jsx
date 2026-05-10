@@ -13,6 +13,7 @@ export default function GalleryPage() {
       <SectionHeader
         eyebrow="Moments"
         title="Gallery"
+        titleAs="h1"
         description="Snapshots from technical meetings, seminars, and chapter celebrations."
       />
 
