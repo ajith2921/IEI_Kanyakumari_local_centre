@@ -148,6 +148,8 @@ CREATE TABLE IF NOT EXISTS conferences (
     venue VARCHAR(200) DEFAULT '',
     button_text VARCHAR(50) DEFAULT 'More Details',
     link VARCHAR(255) DEFAULT '/conference',
+    image_url VARCHAR(255) DEFAULT '',
+    pdf_url VARCHAR(255) DEFAULT '',
     status VARCHAR(20) DEFAULT 'active',
     is_new BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -132,6 +132,8 @@ class Conference(Base):
     venue: Mapped[str] = mapped_column(String(200), default="")
     button_text: Mapped[str] = mapped_column(String(50), default="More Details")
     link: Mapped[str] = mapped_column(String(255), default="/conference")
+    image_url: Mapped[str] = mapped_column(String(255), default="")
+    pdf_url: Mapped[str] = mapped_column(String(255), default="")
     status: Mapped[str] = mapped_column(String(20), default="active")  # active, completed, cancelled
     is_new: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

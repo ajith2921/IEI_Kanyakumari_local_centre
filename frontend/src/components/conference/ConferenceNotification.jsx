@@ -70,7 +70,7 @@ export default function ConferenceNotification() {
           status: data.status,
           description: data.description,
           buttonText: data.button_text,
-          link: data.link,
+          link: data.pdf_url || (data.link && data.link.trim() !== "/conference" ? data.link : "/conference-overview"),
           isNew: data.is_new,
         };
         setConference(conf);

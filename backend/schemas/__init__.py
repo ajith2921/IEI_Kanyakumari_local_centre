@@ -25,6 +25,8 @@ class MemberBase(BaseModel):
     email_secondary: Optional[str] = ""
     mobile: str
     image_url: Optional[str] = ""
+    
+    model_config = ConfigDict(extra="ignore")
 
 
 class MemberCreate(MemberBase):
@@ -38,8 +40,8 @@ class MemberUpdate(MemberBase):
 class MemberOut(MemberBase):
     id: int
     created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
+    
+    model_config = ConfigDict(extra="ignore")
 
 
 class GalleryOut(BaseModel):
@@ -182,6 +184,8 @@ class ConferenceBase(BaseModel):
     venue: Optional[str] = ""
     button_text: Optional[str] = "More Details"
     link: Optional[str] = "/conference"
+    image_url: Optional[str] = ""
+    pdf_url: Optional[str] = ""
     status: Optional[str] = "active"
     is_new: bool = True
 

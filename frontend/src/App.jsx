@@ -74,7 +74,7 @@ export default function App() {
         path="/conference"
         element={
           <PublicLayout>
-            <Conference />
+            <ConferencePage />
           </PublicLayout>
         }
       />
@@ -129,10 +129,10 @@ export default function App() {
         }
       />
       <Route
-        path="/conference"
+        path="/conference-overview"
         element={
           <PublicLayout>
-            <ConferencePage />
+            <Conference />
           </PublicLayout>
         }
       />

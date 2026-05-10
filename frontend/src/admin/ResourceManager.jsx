@@ -76,7 +76,7 @@ export default function ResourceManager({
   const imageFieldValue = String(form[imageFieldName] || "");
   const entityLabel = title.replace(/^Manage\s+/i, "").toLowerCase();
   const visibleFields = useMemo(
-    () => fields.filter((field) => isFieldVisible(field, form)),
+    () => fields.filter((field) => !field.hidden && isFieldVisible(field, form)),
     [fields, form]
   );
 

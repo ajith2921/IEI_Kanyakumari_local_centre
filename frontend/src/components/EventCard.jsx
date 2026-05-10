@@ -60,6 +60,12 @@ export default function EventCard({ activity }) {
   const category = getCategory(description);
   const imageSrc = toAbsoluteUploadUrl(activity.image_url);
   const venue = activity.venue?.trim() || "IEI Kanyakumari Local Centre";
+  const detailsButtonLabel = activity.details_button_text?.trim() || "View Event Details →";
+  const collapseButtonLabel = activity.collapse_button_text?.trim() || "Hide Details ↑";
+  const primaryResourceUrl = activity.resource_url || activity.pdf_url || activity.link || "";
+  const primaryResourceLabel = activity.resource_label?.trim() || activity.button_text?.trim() || "View PDF";
+  const secondaryResourceUrl = activity.secondary_resource_url || activity.colab_url || "";
+  const secondaryResourceLabel = activity.secondary_resource_label?.trim() || "Colab / Resources";
   const eventDate = activity.event_date
     ? new Date(activity.event_date).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -100,11 +106,11 @@ export default function EventCard({ activity }) {
 
         {isExpanded ? (
           <>
-            {(activity.pdf_url || activity.colab_url) && (
+            {(primaryResourceUrl || secondaryResourceUrl) && (
               <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                {activity.pdf_url && (
+                {primaryResourceUrl && (
                   <a
-                    href={toAbsoluteUploadUrl(activity.pdf_url)}
+                    href={toAbsoluteUploadUrl(primaryResourceUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
@@ -112,12 +118,12 @@ export default function EventCard({ activity }) {
                     <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M4 1.5A1.5 1.5 0 0 0 2.5 3v10A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V5.5L9.5 1.5H4zM10 2v3.5a.5.5 0 0 0 .5.5H14L10 2zM5.5 11v-1h5v1h-5zm0-2V8h5v1h-5z"/>
                     </svg>
-                    View PDF
+                    {primaryResourceLabel}
                   </a>
                 )}
-                {activity.colab_url && (
+                {secondaryResourceUrl && (
                   <a
-                    href={toAbsoluteUploadUrl(activity.colab_url)}
+                    href={toAbsoluteUploadUrl(secondaryResourceUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-100"
@@ -125,7 +131,7 @@ export default function EventCard({ activity }) {
                     <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4zm3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM8 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                     </svg>
-                    Colab / Resources
+                    {secondaryResourceLabel}
                   </a>
                 )}
               </div>
@@ -134,7 +140,7 @@ export default function EventCard({ activity }) {
               onClick={() => setIsExpanded(false)}
               className="mt-2 block pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 hover:text-gray-900"
             >
-              Hide Details ↑
+              {collapseButtonLabel}
             </button>
           </>
         ) : (
@@ -142,7 +148,7 @@ export default function EventCard({ activity }) {
             onClick={() => setIsExpanded(true)}
             className="block pt-2 text-xs font-semibold uppercase tracking-[0.1em] text-gray-400 transition-colors duration-200 hover:text-gray-900"
           >
-            View Event Details →
+            {detailsButtonLabel}
           </button>
         )}
       </div>

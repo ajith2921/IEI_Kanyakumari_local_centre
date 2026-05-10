@@ -9,7 +9,10 @@ const fields = [
   { name: "registration_deadline", label: "Registration Deadline", type: "date", required: true },
   { name: "venue", label: "Venue", required: true },
   { name: "button_text", label: "Button Text", defaultValue: "More Details" },
-  { name: "link", label: "Link (URL or relative path)", defaultValue: "/conference" },
+  { name: "link", label: "Resource Link (PDF or page URL)", defaultValue: "/conference-overview" },
+  { name: "image_url", hidden: true, defaultValue: "" },
+  { name: "pdf_url", hidden: true, defaultValue: "" },
+  { name: "pdf", label: "Conference PDF", type: "file", accept: "application/pdf", fullWidth: true },
   { 
     name: "status", 
     label: "Status", 
@@ -34,6 +37,16 @@ export default function AdminConference() {
       createItem={adminApi.conferences.create}
       updateItem={adminApi.conferences.update}
       deleteItem={adminApi.conferences.remove}
+      imageUploadConfig={{
+        enabled: true,
+        fieldName: "image_url",
+        fileFieldName: "image",
+        previewAspectClass: "aspect-[16/9]",
+        previewFit: "cover",
+        previewPosition: "50% 35%",
+        thumbPosition: "50% 35%",
+        guideline: "Recommended size: 1600x900 banner image",
+      }}
     />
   );
 }

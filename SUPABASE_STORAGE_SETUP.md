@@ -36,7 +36,12 @@ Create these 5 buckets (one at a time):
 - **Public bucket**: ✅ Yes
 - Click **Create bucket**
 
-✅ **You should now see all 5 buckets listed in Storage!**
+#### Bucket 6: **conferences**
+- **Bucket name**: `conferences`
+- **Public bucket**: ✅ Yes
+- Click **Create bucket**
+
+✅ **You should now see all 6 buckets listed in Storage!**
 
 ---
 

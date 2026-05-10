@@ -80,12 +80,18 @@ def _require_mobile(value: str) -> str:
     return cleaned
 
 
-@router.get("", response_model=list[MemberOut])
-def list_members() -> list[dict]:
+@router.get("")
+def list_members():
     """Get all members"""
     try:
         members = admin_db.order_by("members", "created_at", ascending=False)
-        return members
+        result = []
+        for member in members:
+            clean_member = dict(member)
+            if 'created_at' in clean_member and clean_member['created_at']:
+                clean_member['created_at'] = str(clean_member['created_at'])
+            result.append(clean_member)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

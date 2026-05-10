@@ -30,7 +30,6 @@ function getConferenceTime(conference) {
 }
 
 function isUpcomingConference(conference, todayStartMs) {
-  if (conference?.status !== "active") return false;
   const activityTime = getConferenceTime(conference);
   return Number.isFinite(activityTime) && activityTime >= todayStartMs;
 }
@@ -68,6 +67,23 @@ export default function ConferencePage() {
   const totalActivities = data.length;
   const totalUpcoming = sortedUpcoming.length;
   const totalConducted = totalActivities - totalUpcoming;
+
+  const mapConferenceToCard = (conference) => ({
+    id: conference.id,
+    title: conference.title || conference.short_title || "Conference",
+    description: conference.description || "Conference details will be updated soon.",
+    event_date: conference.start_date,
+    venue: conference.venue,
+    image_url: conference.image_url,
+    resource_url:
+      conference.pdf_url ||
+      (conference.link && conference.link.trim() !== "/conference" ? conference.link : "/conference-overview"),
+    resource_label: conference.pdf_url ? (conference.button_text || "View PDF") : (conference.button_text || "View More Details"),
+    secondary_resource_url: conference.pdf_url && conference.link && conference.link.trim() !== "/conference-overview" ? conference.link : "",
+    secondary_resource_label: "Visit Conference Page",
+    details_button_text: "View Conference Details →",
+    collapse_button_text: "Hide Conference Details ↑",
+  });
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -137,10 +153,7 @@ export default function ConferencePage() {
                   {sortedUpcoming.map((conf) => (
                     <EventCard
                       key={conf.id}
-                      title={conf.title || conf.short_title}
-                      date={conf.start_date}
-                      description={conf.description}
-                      isUpcoming={true}
+                      activity={mapConferenceToCard(conf)}
                     />
                   ))}
                 </div>
@@ -154,10 +167,7 @@ export default function ConferencePage() {
                   {sortedPast.map((conf) => (
                     <EventCard
                       key={conf.id}
-                      title={conf.title || conf.short_title}
-                      date={conf.start_date}
-                      description={conf.description}
-                      isUpcoming={false}
+                      activity={mapConferenceToCard(conf)}
                     />
                   ))}
                 </div>
