@@ -102,12 +102,24 @@ export default function TechnicalActivities() {
         <header className="relative mb-14 overflow-hidden rounded-3xl border border-gray-200 bg-white p-7 shadow-sm sm:p-9">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.1),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.08),transparent_42%)]" />
 
-          <div className="relative">
-            <p className="eyebrow-chip mb-3">Knowledge Exchange · Professional Development · Innovation</p>
-            <h1 className="heading-h1 text-gray-900">Events &amp; Technical Activities</h1>
-            <p className="mt-3 text-sm text-gray-500">IEI Kanyakumari Local Centre</p>
+          <div className="relative flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div>
+              <p className="eyebrow-chip mb-3">Knowledge Exchange · Professional Development · Innovation</p>
+              <h1 className="heading-h1 text-gray-900">Events &amp; Technical Activities</h1>
+              <p className="mt-3 text-sm text-gray-500">IEI Kanyakumari Local Centre</p>
+            </div>
+            
+            <div>
+              <Link
+                to="/conference"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-[#05154B] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0a1f66]"
+              >
+                View Conferences
+              </Link>
+            </div>
+          </div>
 
-            {/* Conference Banner/Button */}
+          <div className="relative">
             {activeConference && (
               <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
                 <div>

@@ -181,11 +181,11 @@ export default function Home() {
                   <span className="text-4xl font-light text-cyan-500 ml-1">&rdquo;</span>
                 </blockquote>
                 
-                <div className="mt-7 text-left border-l-4 border-cyan-400 pl-5">
+                {/* <div className="mt-7 text-left border-l-4 border-cyan-400 pl-5">
                   <p className="text-base font-bold text-gray-900">Dr. M. Marsaline Beno</p>
                   <p className="mt-1 text-sm text-gray-500 font-medium">Chairman, IEI Kanyakumari Local Centre</p>
                   <p className="mt-2 text-xs text-gray-400">2025–2027</p>
-                </div>
+                </div> */}
               </div>
 
               {/* Chairman Image */}

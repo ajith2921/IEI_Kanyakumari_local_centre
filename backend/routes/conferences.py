@@ -39,9 +39,7 @@ def get_active_conference():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=List[ConferenceOut])
-def get_all_conferences(
-    _current_user = Depends(get_current_active_user),
-):
+def get_all_conferences():
     """Get all conferences"""
     try:
         conferences = admin_db.order_by("conferences", "created_at", ascending=False)

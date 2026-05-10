@@ -74,7 +74,7 @@ def _update_member_with_secondary_fallback(member_id: int, update_data: dict, pr
 
 
 def _require_mobile(value: str) -> str:
-    cleaned = _require_value(value, "Mobile")
+    cleaned = require_value(value, "Mobile")
     if not PHONE_PATTERN.fullmatch(cleaned):
         raise HTTPException(status_code=400, detail="Please provide a valid mobile number.")
     return cleaned
@@ -132,6 +132,7 @@ def create_member(
 
         # Handle image upload to Supabase Storage
         final_image_url = image_url.strip() if image_url else ""
+        supabase = get_supabase_admin_client()
         
         if image and image.filename:
             content = image.file.read()
@@ -230,6 +231,7 @@ def update_member(
         }
 
         # Handle image upload if provided
+        supabase = get_supabase_admin_client()
         if image and image.filename:
             content = image.file.read()
             

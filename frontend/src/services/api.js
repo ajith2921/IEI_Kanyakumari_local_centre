@@ -132,6 +132,7 @@ export const publicApi = {
   getDownloads: () => api.get("/downloads"),
   submitContact: (payload) => api.post("/contact", payload),
   getActiveConference: () => api.get("/conferences/active"),
+  getConferences: () => api.get("/conferences/"),
 };
 
 export const adminApi = {

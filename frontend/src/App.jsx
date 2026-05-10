@@ -9,6 +9,7 @@ import GalleryPage from "./pages/GalleryPage";
 import Newsletter from "./pages/Newsletter";
 import Facilities from "./pages/Facilities";
 import TechnicalActivities from "./pages/TechnicalActivities";
+import ConferencePage from "./pages/ConferencePage";
 import LinksDownloads from "./pages/LinksDownloads";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -124,6 +125,14 @@ export default function App() {
         element={
           <PublicLayout>
             <LinksDownloads />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/conference"
+        element={
+          <PublicLayout>
+            <ConferencePage />
           </PublicLayout>
         }
       />
