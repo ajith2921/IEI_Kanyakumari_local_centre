@@ -1,13 +1,31 @@
 import ResourceManager from "./ResourceManager";
-import { adminApi } from "../services/api";
+import { adminApi, toAbsoluteUploadUrl } from "../services/api";
 
 const fields = [
   { name: "title", label: "Title", required: true },
   { name: "event_date", label: "Event Date", type: "date" },
   { name: "image_url", label: "Image URL (optional)" },
   { name: "description", label: "Description", type: "textarea" },
-  { name: "pdf", label: "Upload PDF", type: "file", accept: ".pdf" },
-  { name: "colab", label: "Upload Colab/Zip", type: "file", accept: ".ipynb,.zip,.txt,.pdf" },
+  {
+    name: "pdf_url",
+    label: "PDF",
+    hidden: true,
+    renderValue: (value) =>
+      value ? (
+        <a
+          href={toAbsoluteUploadUrl(String(value))}
+          target="_blank"
+          rel="noreferrer"
+          className="text-brand-700 underline"
+        >
+          Open
+        </a>
+      ) : (
+        "N/A"
+      ),
+  },
+
+  { name: "pdf", label: "Upload PDF", type: "file", accept: ".pdf", formOnly: true },
 ];
 
 export default function AdminActivities() {

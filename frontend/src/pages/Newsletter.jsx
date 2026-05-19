@@ -6,6 +6,19 @@ import Button from "../components/ui/Button";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 
+function formatPublishedDate(value) {
+  if (!value) return "Unscheduled";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Unscheduled";
+  }
+  return parsed.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function Newsletter() {
   const { data, loading, error, reload } = useFetchList(publicApi.getNewsletters);
   const totalEditions = data.length;
@@ -54,11 +67,7 @@ export default function Newsletter() {
                     className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-white hover:shadow-sm"
                   >
                     <p className="inline-flex self-start rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-xs font-semibold text-gray-500">
-                      {new Date(item.published_at).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatPublishedDate(item.published_at)}
                     </p>
                     <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
                     <p className="flex-1 line-clamp-5 text-sm leading-relaxed text-gray-500">{item.summary}</p>

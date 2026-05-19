@@ -1,8 +1,14 @@
+import Button from "./ui/Button";
+
 export default function EmptyState({
   title = "Nothing to show",
   description = "Content will appear here when available.",
+  actionLabel = "",
+  onAction = null,
   className = "",
 }) {
+  const canShowAction = Boolean(actionLabel) && typeof onAction === "function";
+
   return (
     <div className={`empty-state ${className}`.trim()}>
       <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white">
@@ -18,6 +24,13 @@ export default function EmptyState({
       </div>
       <p className="text-base font-medium text-gray-900">{title}</p>
       <p className="mt-2 text-sm text-gray-500">{description}</p>
+      {canShowAction && (
+        <div className="mt-4">
+          <Button type="button" onClick={onAction} size="sm" variant="secondary">
+            {actionLabel}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

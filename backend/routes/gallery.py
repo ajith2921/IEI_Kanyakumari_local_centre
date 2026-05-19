@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import GalleryOut
-from routes.utils import require_value
+from routes.utils import require_value, optional_value
 
 router = APIRouter(prefix="/gallery", tags=["Gallery"])
 
@@ -38,7 +38,7 @@ def get_gallery_item(item_id: int) -> dict:
 
 @router.post("", response_model=GalleryOut, status_code=status.HTTP_201_CREATED)
 def create_gallery_item(
-    title: str = Form(...),
+    title: str = Form(default=""),
     description: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
     image_url: str = Form(default=""),
@@ -47,9 +47,9 @@ def create_gallery_item(
     """Create gallery item with image upload to Supabase Storage"""
     try:
         normalized_title = require_value(title, "Title")
-        normalized_description = description.strip()
+        normalized_description = optional_value(description)
 
-        image_url_value = ""
+        image_url_value = None
         supabase = get_supabase_admin_client()
         if image and image.filename:
             content = image.file.read()
@@ -69,11 +69,6 @@ def create_gallery_item(
             image_url_value = supabase.storage.from_("gallery").get_public_url(img_path)
         elif image_url.strip():
             image_url_value = image_url.strip()
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail="Please upload an image file or provide an image URL."
-            )
 
         # Create gallery item in Supabase
         item_data = {

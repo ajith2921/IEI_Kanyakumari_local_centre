@@ -77,7 +77,7 @@ export default function ConferencePage() {
     image_url: conference.image_url,
     resource_url:
       conference.pdf_url ||
-      (conference.link && conference.link.trim() !== "/conference" ? conference.link : "/conference-overview"),
+      (conference.link && conference.link.trim() !== "/conference-overview" ? conference.link : "/conference-overview"),
     resource_label: conference.pdf_url ? (conference.button_text || "View PDF") : (conference.button_text || "View More Details"),
     secondary_resource_url: conference.pdf_url && conference.link && conference.link.trim() !== "/conference-overview" ? conference.link : "",
     secondary_resource_label: "Visit Conference Page",
@@ -140,7 +140,7 @@ export default function ConferencePage() {
         ) : !error && allSortedConferences.length === 0 ? (
           <EmptyState
             title="No Conferences Found"
-            message="There are currently no conferences scheduled. Check back later for updates."
+            description="There are currently no conferences scheduled. Check back later for updates."
             actionLabel="Refresh"
             onAction={reload}
           />

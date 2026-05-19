@@ -39,3 +39,9 @@ backend/uploads/newsletters/*
 !backend/uploads/gallery/.gitkeep
 !backend/uploads/members/.gitkeep
 !backend/uploads/newsletters/.gitkeep
+backend/uploads/facilities/*
+backend/uploads/conferences/*
+backend/uploads/activities/*
+!backend/uploads/facilities/.gitkeep
+!backend/uploads/conferences/.gitkeep
+!backend/uploads/activities/.gitkeep

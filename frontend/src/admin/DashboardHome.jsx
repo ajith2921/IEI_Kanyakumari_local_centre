@@ -18,7 +18,7 @@ export default function DashboardHome() {
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [auditLoading, setAuditLoading] = useState(true);
+  const [auditLoading, setAuditLoading] = useState(false);
   const [auditError, setAuditError] = useState("");
   const [auditReport, setAuditReport] = useState({ scanned: 0, flagged_count: 0, items: [] });
   const [autoFixingKey, setAutoFixingKey] = useState("");
@@ -26,6 +26,7 @@ export default function DashboardHome() {
   const loadCounts = async () => {
     setLoading(true);
     setError("");
+    setAuditLoading(true);
 
     const requests = [
       ["members", adminApi.members.list()],
@@ -35,43 +36,40 @@ export default function DashboardHome() {
       ["facilities", adminApi.facilities.list()],
       ["downloads", adminApi.downloads.list()],
       ["contacts", adminApi.contacts.list()],
+      ["audit", adminApi.audit?.scan?.() || Promise.resolve({ data: { scanned: 0, flagged_count: 0, items: [] } })],
     ];
 
     const settled = await Promise.allSettled(requests.map(([, request]) => request));
     const nextCounts = {};
+    const nextAuditReport = { scanned: 0, flagged_count: 0, items: [] };
     const failures = [];
 
     settled.forEach((result, index) => {
       const [key] = requests[index];
       if (result.status === "fulfilled") {
-        nextCounts[key] = result.value.data.length;
+        if (key === "audit") {
+          nextAuditReport.scanned = result.value.data?.scanned || 0;
+          nextAuditReport.flagged_count = result.value.data?.flagged_count || 0;
+          nextAuditReport.items = result.value.data?.items || [];
+        } else {
+          nextCounts[key] = result.value.data.length;
+        }
       } else {
-        nextCounts[key] = 0;
-        failures.push(parseApiError(result.reason));
+        if (key !== "audit") nextCounts[key] = 0;
+        if (key === "audit") setAuditError(parseApiError(result.reason));
+        else failures.push(parseApiError(result.reason));
       }
     });
 
     setCounts(nextCounts);
+    setAuditReport(nextAuditReport);
     setError(failures[0] || "");
     setLoading(false);
+    setAuditLoading(false);
   };
 
   useEffect(() => {
-    const loadAudit = async () => {
-      setAuditLoading(true);
-      setAuditError("");
-      try {
-        const response = await adminApi.imageAudit.list();
-        setAuditReport(response.data || { scanned: 0, flagged_count: 0, items: [] });
-      } catch (err) {
-        setAuditError(parseApiError(err));
-      } finally {
-        setAuditLoading(false);
-      }
-    };
-
     loadCounts();
-    loadAudit();
   }, []);
 
   const onAutoFix = async (entity, id) => {

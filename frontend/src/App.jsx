@@ -3,17 +3,20 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
-import Conference from "./pages/Conference";
-import MembersList from "./pages/MembersList";
-import GalleryPage from "./pages/GalleryPage";
-import Newsletter from "./pages/Newsletter";
-import Facilities from "./pages/Facilities";
-import TechnicalActivities from "./pages/TechnicalActivities";
-import ConferencePage from "./pages/ConferencePage";
-import LinksDownloads from "./pages/LinksDownloads";
-import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "./admin/AdminRoute";
+
+// Public pages — lazy loaded to reduce initial bundle size
+// Home is loaded eagerly for better landing page performance
+const Conference = lazy(() => import("./pages/Conference"));
+const ConferencePage = lazy(() => import("./pages/ConferencePage"));
+const MembersList = lazy(() => import("./pages/MembersList"));
+const GalleryPage = lazy(() => import("./pages/GalleryPage"));
+const Newsletter = lazy(() => import("./pages/Newsletter"));
+const Facilities = lazy(() => import("./pages/Facilities"));
+const TechnicalActivities = lazy(() => import("./pages/TechnicalActivities"));
+const LinksDownloads = lazy(() => import("./pages/LinksDownloads"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 // Admin pages — lazy loaded so they are excluded from the public bundle
 const AdminLogin    = lazy(() => import("./admin/AdminLogin"));
@@ -34,6 +37,17 @@ function AdminFallback() {
       <div className="flex flex-col items-center gap-3">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-900 border-t-transparent" />
         <p className="text-sm font-medium text-gray-500">Loading admin panel…</p>
+      </div>
+    </div>
+  );
+}
+
+function PageFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-900 border-t-transparent" />
+        <p className="text-sm font-medium text-gray-500">Loading page…</p>
       </div>
     </div>
   );
@@ -74,7 +88,9 @@ export default function App() {
         path="/conference"
         element={
           <PublicLayout>
-            <ConferencePage />
+            <Suspense fallback={<PageFallback />}>
+              <ConferencePage />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -84,7 +100,9 @@ export default function App() {
         path="/members"
         element={
           <PublicLayout>
-            <MembersList />
+            <Suspense fallback={<PageFallback />}>
+              <MembersList />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -92,7 +110,9 @@ export default function App() {
         path="/gallery"
         element={
           <PublicLayout>
-            <GalleryPage />
+            <Suspense fallback={<PageFallback />}>
+              <GalleryPage />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -100,7 +120,9 @@ export default function App() {
         path="/newsletter"
         element={
           <PublicLayout>
-            <Newsletter />
+            <Suspense fallback={<PageFallback />}>
+              <Newsletter />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -108,7 +130,9 @@ export default function App() {
         path="/facilities"
         element={
           <PublicLayout>
-            <Facilities />
+            <Suspense fallback={<PageFallback />}>
+              <Facilities />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -116,7 +140,9 @@ export default function App() {
         path="/technical-activities"
         element={
           <PublicLayout>
-            <TechnicalActivities />
+            <Suspense fallback={<PageFallback />}>
+              <TechnicalActivities />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -124,7 +150,9 @@ export default function App() {
         path="/links-downloads"
         element={
           <PublicLayout>
-            <LinksDownloads />
+            <Suspense fallback={<PageFallback />}>
+              <LinksDownloads />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -132,7 +160,9 @@ export default function App() {
         path="/conference-overview"
         element={
           <PublicLayout>
-            <Conference />
+            <Suspense fallback={<PageFallback />}>
+              <Conference />
+            </Suspense>
           </PublicLayout>
         }
       />
@@ -140,7 +170,9 @@ export default function App() {
         path="/contact"
         element={
           <PublicLayout>
-            <Contact />
+            <Suspense fallback={<PageFallback />}>
+              <Contact />
+            </Suspense>
           </PublicLayout>
         }
       />

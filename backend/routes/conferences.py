@@ -66,7 +66,7 @@ def get_all_conferences():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/", response_model=ConferenceOut)
+@router.post("/", response_model=ConferenceOut, status_code=status.HTTP_201_CREATED)
 def create_conference(
     title: str = Form(...),
     short_title: str = Form(...),
@@ -120,6 +120,8 @@ def create_conference(
         
         new_conf = admin_db.insert("conferences", payload.model_dump())
         return new_conf
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating conference: {str(e)}")
 

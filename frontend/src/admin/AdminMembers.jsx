@@ -82,7 +82,6 @@ const fields = [
     formOnly: true,
     excludeFromPayload: true,
     visibleWhen: (form) => String(form.position || "") === "Executive Member",
-    requiredWhen: (form) => String(form.position || "") === "Executive Member",
     mapFromItem: (item) => extractDivisionFromPosition(item.position),
     options: ENGINEERING_DIVISIONS.map((division) => ({
       label: division,
@@ -91,12 +90,11 @@ const fields = [
   },
   { name: "name", label: "Name", required: true },
   { name: "membership_id", label: "Membership ID", maxLength: 80 },
-  { name: "address", label: "Address", type: "textarea", required: true, rows: 3, fullWidth: true },
+  { name: "details", label: "Details", type: "textarea", rows: 3, fullWidth: true },
   {
     name: "email",
     label: "Primary Email",
     type: "email",
-    required: true,
     autoComplete: "email",
     mapFromItem: (item) => {
       return splitMemberEmails(item.email).primary;
@@ -132,7 +130,6 @@ const fields = [
     name: "mobile",
     label: "Mobile Number",
     type: "tel",
-    required: true,
     inputMode: "tel",
     pattern: "[+0-9\\s\\(\\)\\-]{7,18}",
   },

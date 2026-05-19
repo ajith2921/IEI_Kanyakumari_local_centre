@@ -10,7 +10,7 @@ const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
 
 function buildEmptyForm(fields) {
   return fields.reduce((acc, field) => {
-    acc[field.name] = field.defaultValue || "";
+    acc[field.name] = field.defaultValue ?? "";
     return acc;
   }, {});
 }
@@ -52,15 +52,17 @@ export default function ResourceManager({
   const imageFieldName = imageUploadConfig?.fieldName || "image_url";
   const imageFileFieldName = imageUploadConfig?.fileFieldName || "image";
   const imageRequired = Boolean(imageUploadConfig?.required);
-  const imagePreviewAspectClass = imageUploadConfig?.previewAspectClass || "aspect-[4/3]";
-  const imagePreviewFit = imageUploadConfig?.previewFit || "cover";
   const imagePreviewPosition = imageUploadConfig?.previewPosition || "50% 50%";
   const imageThumbPosition = imageUploadConfig?.thumbPosition || imagePreviewPosition;
   const imageGuideline = imageUploadConfig?.guideline || "Recommended size: 400x300";
+  const imagePreviewAspectClass = imageUploadConfig?.previewAspectClass || "aspect-[4/3]";
+  const imagePreviewFit = imageUploadConfig?.previewFit || "cover";
 
   const emptyForm = useMemo(() => buildEmptyForm(fields), [fields]);
   const tableFields = useMemo(() => fields.filter((field) => !field.formOnly), [fields]);
   const [items, setItems] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
   const [isDropActive, setIsDropActive] = useState(false);
@@ -68,6 +70,7 @@ export default function ResourceManager({
   const [previewSource, setPreviewSource] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -79,6 +82,10 @@ export default function ResourceManager({
     () => fields.filter((field) => !field.hidden && isFieldVisible(field, form)),
     [fields, form]
   );
+
+  // Pagination calculations
+  const totalPages = Math.ceil(items.length / pageSize);
+  const paginatedItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const getActionErrorMessage = (action, err) => {
     const details = parseApiError(err);
@@ -107,6 +114,7 @@ export default function ResourceManager({
     try {
       const response = await fetchList();
       setItems(response.data || []);
+      setCurrentPage(1);
     } catch (err) {
       setError(`Unable to load ${entityLabel}. ${parseApiError(err)}`);
     } finally {
@@ -155,17 +163,20 @@ export default function ResourceManager({
   };
 
   const onDelete = async (id) => {
-    const confirmDelete = window.confirm("Delete this item?");
-    if (!confirmDelete) return;
+    setConfirmDeleteId(id);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteId) return;
     try {
-      setDeletingId(id);
-      await deleteItem(id);
+      setDeletingId(confirmDeleteId);
+      await deleteItem(confirmDeleteId);
       await loadItems();
     } catch (err) {
       setError(getActionErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -235,7 +246,17 @@ export default function ResourceManager({
         if (typeof formElement.reportValidity === "function") {
           formElement.reportValidity();
         }
-        setError("Please correct the highlighted fields and try again.");
+        
+        // Try to find the first invalid element to give a more specific error
+        const invalidElement = formElement.querySelector(':invalid');
+        if (invalidElement && invalidElement.name) {
+          const field = fields.find(f => f.name === invalidElement.name);
+          const label = field ? field.label : invalidElement.name;
+          setError(`Please provide a valid value for ${label}.`);
+        } else {
+          setError("Please correct the highlighted fields and try again.");
+        }
+        
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
@@ -274,9 +295,19 @@ export default function ResourceManager({
       }
     }
 
+    const nullifiedForm = fields.reduce((acc, field) => {
+      const value = normalizedForm[field.name];
+      if (typeof value === "string" && value.trim() === "") {
+        acc[field.name] = null;
+      } else {
+        acc[field.name] = value;
+      }
+      return acc;
+    }, {});
+
     const payloadEntries = fields
       .filter((field) => !field.excludeFromPayload && field.type !== "file")
-      .map((field) => [field.name, normalizedForm[field.name]]);
+      .map((field) => [field.name, nullifiedForm[field.name]]);
 
     const hasExtraFiles = Object.keys(extraFiles).length > 0;
 
@@ -305,7 +336,10 @@ export default function ResourceManager({
         ? (() => {
             const data = new FormData();
             payloadEntries.forEach(([key, value]) => {
-              data.append(key, value == null ? "" : value);
+              if (value === null || value === undefined || value === "") {
+                return;
+              }
+              data.append(key, value);
             });
             if (imageFile) {
               data.append(imageFileFieldName, imageFile);
@@ -449,6 +483,7 @@ export default function ResourceManager({
               pattern={field.pattern}
               inputMode={field.inputMode}
               autoComplete={field.autoComplete}
+              {...(field.type === "date" ? { max: "9999-12-31" } : {})}
             />
           );
         })}
@@ -549,10 +584,10 @@ export default function ResourceManager({
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
+              {paginatedItems.map((item) => (
                 <tr key={item.id} className="border-t border-slate-200">
                   {tableFields.map((field) => {
-                    const value = item[field.name] || "";
+                    const value = item[field.name] ?? "";
                     if (imageUploadEnabled && field.name === imageFieldName) {
                       return (
                         <td key={field.name} className="px-3 py-2 text-gray-700">
@@ -626,6 +661,35 @@ export default function ResourceManager({
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-all duration-300">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">Confirm Deletion</h3>
+            <p className="mb-6 text-sm text-gray-600">
+              Are you sure you want to delete this item? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={deletingId === confirmDeleteId}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={handleConfirmDelete}
+                disabled={deletingId === confirmDeleteId}
+              >
+                {deletingId === confirmDeleteId ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

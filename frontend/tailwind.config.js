@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
+  safelist: [],
   theme: {
     extend: {
       colors: {
@@ -30,9 +31,14 @@ export default {
           "0%": { opacity: "0", transform: "translateY(14px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         rise: "rise 0.45s ease-out forwards",
+        "fade-up": "fade-up 0.6s ease-out",
       },
     },
   },

@@ -1,30 +1,58 @@
 import ResourceManager from "./ResourceManager";
-import { adminApi } from "../services/api";
+import { adminApi, toAbsoluteUploadUrl } from "../services/api";
 
 const fields = [
-  { name: "title", label: "Full Title", required: true, fullWidth: true },
-  { name: "short_title", label: "Short Title (e.g. SUSTAIN-TECH 2026)", required: true },
+  { name: "title", label: "Full Title", fullWidth: true, required: true },
+  { name: "short_title", label: "Short Title" },
   { name: "start_date", label: "Start Date", type: "date", required: true },
   { name: "end_date", label: "End Date", type: "date", required: true },
-  { name: "registration_deadline", label: "Registration Deadline", type: "date", required: true },
+  { name: "registration_deadline", label: "Registration Deadline", type: "date" },
   { name: "venue", label: "Venue", required: true },
-  { name: "button_text", label: "Button Text", defaultValue: "More Details" },
-  { name: "link", label: "Resource Link (PDF or page URL)", defaultValue: "/conference-overview" },
-  { name: "image_url", hidden: true, defaultValue: "" },
-  { name: "pdf_url", hidden: true, defaultValue: "" },
-  { name: "pdf", label: "Conference PDF", type: "file", accept: "application/pdf", fullWidth: true },
-  { 
-    name: "status", 
-    label: "Status", 
-    type: "select", 
+  { name: "button_text", label: "Button Text" },
+  { name: "link", label: "Resource Link (PDF or page URL)" },
+  { name: "image_url", label: "Image URL", hidden: false, defaultValue: "" },
+  {
+    name: "pdf_url",
+    label: "PDF",
+    hidden: true,
+    defaultValue: "",
+    renderValue: (value) =>
+      value ? (
+        <a
+          href={toAbsoluteUploadUrl(String(value))}
+          target="_blank"
+          rel="noreferrer"
+          className="text-brand-700 underline"
+        >
+          Open
+        </a>
+      ) : (
+        "N/A"
+      ),
+  },
+  { name: "pdf", label: "Conference PDF", type: "file", accept: "application/pdf", fullWidth: true, formOnly: true },
+  {
+    name: "status",
+    label: "Status",
+    type: "select",
+    required: true,
+    placeholder: "Select Status",
     options: [
       { label: "Active", value: "active" },
       { label: "Inactive", value: "inactive" },
       { label: "Completed", value: "completed" },
     ],
-    defaultValue: "active"
   },
-  { name: "is_new", label: "Show 'NEW' badge", type: "select", options: [{label: "Yes", value: true}, {label: "No", value: false}], defaultValue: true },
+  {
+    name: "is_new",
+    label: "Show 'NEW' badge",
+    type: "select",
+    placeholder: "Select",
+    options: [
+      { label: "Yes", value: true },
+      { label: "No", value: false }
+    ]
+  },
   { name: "description", label: "Short Description", type: "textarea", fullWidth: true },
 ];
 

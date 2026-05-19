@@ -30,6 +30,19 @@ function getInitials(title) {
   return `${words[0][0]}${words[1][0]}`.toUpperCase();
 }
 
+function formatEventDate(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  return parsed.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function EventImageFallback({ title, category }) {
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 text-white">
@@ -63,27 +76,41 @@ export default function EventCard({ activity }) {
   const detailsButtonLabel = activity.details_button_text?.trim() || "View Event Details →";
   const collapseButtonLabel = activity.collapse_button_text?.trim() || "Hide Details ↑";
   const primaryResourceUrl = activity.resource_url || activity.pdf_url || activity.link || "";
+  const imageClickUrl = activity.pdf_url?.trim() || primaryResourceUrl;
   const primaryResourceLabel = activity.resource_label?.trim() || activity.button_text?.trim() || "View PDF";
   const secondaryResourceUrl = activity.secondary_resource_url || activity.colab_url || "";
   const secondaryResourceLabel = activity.secondary_resource_label?.trim() || "Colab / Resources";
-  const eventDate = activity.event_date
-    ? new Date(activity.event_date).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const eventDate = formatEventDate(activity.event_date);
   return (
     <Card interactive padded={false} className={"group overflow-hidden"}>
       <div className={"relative aspect-[4/3] w-full overflow-hidden bg-gray-50"}>
-        <ImageMedia
-          src={imageSrc}
-          alt={title}
-          fit="cover"
-          position="50% 50%"
-          className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
-          fallback={<EventImageFallback title={title} category={category} />}
-        />
+        {imageClickUrl ? (
+          <a
+            href={toAbsoluteUploadUrl(imageClickUrl)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open PDF for ${title}`}
+            className="block h-full w-full"
+          >
+            <ImageMedia
+              src={imageSrc}
+              alt={title}
+              fit="cover"
+              position="50% 50%"
+              className="h-full w-full cursor-pointer transition-transform duration-300 group-hover:scale-[1.02]"
+              fallback={<EventImageFallback title={title} category={category} />}
+            />
+          </a>
+        ) : (
+          <ImageMedia
+            src={imageSrc}
+            alt={title}
+            fit="cover"
+            position="50% 50%"
+            className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
+            fallback={<EventImageFallback title={title} category={category} />}
+          />
+        )}
         {eventDate && (
           <span className="absolute left-3 top-3 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur" >
             {eventDate}

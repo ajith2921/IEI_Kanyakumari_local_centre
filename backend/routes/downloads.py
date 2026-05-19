@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import DownloadOut
+from routes.utils import require_value
 
 router = APIRouter(prefix="/downloads", tags=["Downloads"])
 
@@ -25,33 +26,35 @@ def list_downloads() -> list[dict]:
 
 @router.post("", response_model=DownloadOut, status_code=status.HTTP_201_CREATED)
 def create_download(
-    title: str = Form(...),
+    title: str = Form(default=""),
     description: str = Form(default=""),
-    pdf: UploadFile = File(...),
+    pdf: Optional[UploadFile] = File(default=None),
     _current_user = Depends(get_current_active_user),
 ) -> dict:
     """Create download with PDF upload to Supabase Storage"""
     try:
-        content = pdf.file.read()
+        pdf_url = None
         supabase = get_supabase_admin_client()
-        if len(content) > 100 * 1024 * 1024:  # 100MB max
-            raise HTTPException(status_code=413, detail="PDF too large. Max 100MB.")
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        pdf_path = f"download_{timestamp}{Path(pdf.filename).suffix}"
-        
-        supabase.storage.from_("downloads").upload(
-            path=pdf_path,
-            file=content,
-            file_options={"content-type": "application/pdf"}
-        )
-        
-        pdf_url = supabase.storage.from_("downloads").get_public_url(pdf_path)
+        if pdf and pdf.filename:
+            content = pdf.file.read()
+            if len(content) > 100 * 1024 * 1024:  # 100MB max
+                raise HTTPException(status_code=413, detail="PDF too large. Max 100MB.")
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path = f"download_{timestamp}{Path(pdf.filename).suffix}"
+            
+            supabase.storage.from_("downloads").upload(
+                path=pdf_path,
+                file=content,
+                file_options={"content-type": "application/pdf"}
+            )
+            
+            pdf_url = supabase.storage.from_("downloads").get_public_url(pdf_path)
 
         # Create download in Supabase
         download_data = {
-            "title": title,
-            "description": description,
+            "title": require_value(title, "Title"),
+            "description": description.strip() or None,
             "pdf_url": pdf_url,
         }
         
@@ -67,7 +70,7 @@ def create_download(
 @router.put("/{download_id}", response_model=DownloadOut)
 def update_download(
     download_id: int,
-    title: str = Form(...),
+    title: str = Form(default=""),
     description: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
     _current_user = Depends(get_current_active_user),
@@ -80,8 +83,8 @@ def update_download(
             raise HTTPException(status_code=404, detail="Download not found")
 
         update_data = {
-            "title": title,
-            "description": description,
+            "title": require_value(title, "Title"),
+            "description": description.strip() or None,
         }
         supabase = get_supabase_admin_client()
         # Handle PDF upload

@@ -7,6 +7,68 @@ const API_BASE_URL =
 const UPLOADS_BASE_URL =
   import.meta.env.VITE_UPLOADS_BASE_URL || "http://localhost:8000";
 
+// ───────────────────────────────────────────────────────────────────────────
+// Request Deduplication & Caching
+// ───────────────────────────────────────────────────────────────────────────
+const inflight = new Map(); // Track in-flight requests
+const cache = new Map(); // Cache with TTL
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes for general data
+const CONFERENCE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes for conference data
+
+function getCacheKey(url) {
+  return `cache:${url}`;
+}
+
+function isValidCacheEntry(entry) {
+  if (!entry) return false;
+  return Date.now() - entry.timestamp < entry.ttl;
+}
+
+function getFromCache(key) {
+  const entry = cache.get(key);
+  if (isValidCacheEntry(entry)) {
+    return entry.data;
+  }
+  cache.delete(key);
+  return null;
+}
+
+function setInCache(key, data, ttl = CACHE_TTL) {
+  cache.set(key, { data, timestamp: Date.now(), ttl });
+}
+
+// Wrapper to add deduplication & caching to GET requests
+function cachedGet(url, ttl = CACHE_TTL) {
+  const cacheKey = getCacheKey(url);
+  
+  // Check cache first
+  const cached = getFromCache(cacheKey);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+  
+  // Check if request is in-flight
+  if (inflight.has(url)) {
+    return inflight.get(url);
+  }
+  
+  // Make new request
+  const promise = api
+    .get(url)
+    .then(response => {
+      setInCache(cacheKey, response, ttl);
+      inflight.delete(url);
+      return response;
+    })
+    .catch(error => {
+      inflight.delete(url);
+      throw error;
+    });
+  
+  inflight.set(url, promise);
+  return promise;
+}
+
 export const toAbsoluteUploadUrl = (url = "") => {
   if (!url) return "";
   if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) return url;
@@ -123,16 +185,22 @@ export const authApi = {
   login: (payload) => api.post("/auth/login", payload),
 };
 
+// Public API with request deduplication & caching
 export const publicApi = {
-  getMembers: () => api.get("/members"),
-  getGallery: () => api.get("/gallery"),
-  getNewsletters: () => api.get("/newsletters"),
-  getActivities: () => api.get("/activities"),
-  getFacilities: () => api.get("/facilities"),
-  getDownloads: () => api.get("/downloads"),
+  getMembers: () => cachedGet("/members", CACHE_TTL),
+  getGallery: () => cachedGet("/gallery", CACHE_TTL),
+  getNewsletters: () => cachedGet("/newsletters", CACHE_TTL),
+  getActivities: () => cachedGet("/activities", CACHE_TTL),
+  getFacilities: () => cachedGet("/facilities", CACHE_TTL),
+  getDownloads: () => cachedGet("/downloads", CACHE_TTL),
   submitContact: (payload) => api.post("/contact", payload),
-  getActiveConference: () => api.get("/conferences/active"),
-  getConferences: () => api.get("/conferences/"),
+  getActiveConference: () => cachedGet("/conferences/active", CONFERENCE_CACHE_TTL),
+  getConferences: () => cachedGet("/conferences/", CONFERENCE_CACHE_TTL),
+  
+  // Force refresh (clear cache for specific endpoint)
+  clearMemberCache: () => cache.delete(getCacheKey("/members")),
+  clearConferenceCache: () => cache.delete(getCacheKey("/conferences/")),
+  clearAllCache: () => cache.clear(),
 };
 
 export const adminApi = {
@@ -180,10 +248,10 @@ export const adminApi = {
     autoFix: (entity, id) => api.post(`/image-audit/auto-fix/${entity}/${id}`),
   },
   conferences: {
-    list: () => api.get("/conferences"),
+    list: () => api.get("/conferences/"),
     active: () => api.get("/conferences/active"),
-    create: (payload) => api.post("/conferences", payload),
-    update: (id, payload) => api.put(`/conferences/${id}`, payload),
+    create: (payload) => postWithOptionalMultipart("/conferences/", payload),
+    update: (id, payload) => putWithOptionalMultipart(`/conferences/${id}`, payload),
     remove: (id) => api.delete(`/conferences/${id}`),
   },
 };

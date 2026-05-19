@@ -37,6 +37,19 @@ function getDivisionLabel(position) {
   return divisionName || "Engineering Divisions";
 }
 
+function splitMemberEmails(value) {
+  const raw = String(value || "");
+  const emails = raw
+    .split(/[;,\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    primary: emails[0] || "",
+    secondary: emails[1] || "",
+  };
+}
+
 /* ── AVATAR FALLBACK ──────────────────────────────────── */
 function AvatarFallback({ name }) {
   return (
@@ -79,8 +92,9 @@ function MemberRow({ member, rowIndex }) {
   const name         = member.name?.trim()                     || "Member";
   const position     = member.position?.trim()                 || "Member";
   const address      = member.address?.trim()                  || "";
-  const email        = member.email?.trim()                    || "";
-  const emailSecondary = member.email_secondary?.trim()        || "";
+  const emailParts   = splitMemberEmails(member.email);
+  const email        = emailParts.primary;
+  const emailSecondary = member.email_secondary?.trim()        || emailParts.secondary;
   const phone        = member.mobile?.trim() || member.phone?.trim() || "";
   const membershipId = member.membership_id?.toString().trim() || "";
   const imgSrc       = toAbsoluteUploadUrl(member.image_url);

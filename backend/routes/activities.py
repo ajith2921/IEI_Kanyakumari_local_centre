@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ActivityOut
-from routes.utils import require_value
+from routes.utils import optional_value, require_value
 
 router = APIRouter(prefix="/activities", tags=["Activities"])
 
@@ -39,7 +39,7 @@ def get_activity(activity_id: int) -> dict:
 
 @router.post("", response_model=ActivityOut, status_code=status.HTTP_201_CREATED)
 def create_activity(
-    title: str = Form(...),
+    title: str = Form(default=""),
     description: str = Form(default=""),
     event_date: str = Form(default=""),
     image_url: str = Form(default=""),
@@ -51,12 +51,12 @@ def create_activity(
     """Create activity with file uploads to Supabase Storage"""
     try:
         normalized_title = require_value(title, "Title")
-        normalized_description = description.strip()
-        normalized_event_date = event_date.strip()
+        normalized_description = optional_value(description)
+        normalized_event_date = optional_value(event_date)
 
-        image_url_value = ""
-        pdf_url_value = ""
-        colab_url_value = ""
+        image_url_value = None
+        pdf_url_value = None
+        colab_url_value = None
         supabase = get_supabase_admin_client()
 
         # Upload image to Supabase Storage
@@ -137,7 +137,7 @@ def create_activity(
 @router.put("/{activity_id}", response_model=ActivityOut)
 def update_activity(
     activity_id: int,
-    title: str = Form(...),
+    title: str = Form(default=""),
     description: str = Form(default=""),
     event_date: str = Form(default=""),
     image_url: str = Form(default=""),
@@ -154,8 +154,8 @@ def update_activity(
             raise HTTPException(status_code=404, detail="Activity not found")
 
         normalized_title = require_value(title, "Title")
-        normalized_description = description.strip()
-        normalized_event_date = event_date.strip()
+        normalized_description = optional_value(description)
+        normalized_event_date = optional_value(event_date)
 
         update_data = {
             "title": normalized_title,
@@ -181,6 +181,8 @@ def update_activity(
             update_data["image_url"] = supabase.storage.from_("activities").get_public_url(img_path)
         elif image_url.strip():
             update_data["image_url"] = image_url.strip()
+        else:
+            update_data["image_url"] = None
 
         # Handle PDF upload
         if pdf and pdf.filename:

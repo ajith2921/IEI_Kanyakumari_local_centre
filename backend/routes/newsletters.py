@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import NewsletterOut
+from routes.utils import require_value
 
 router = APIRouter(prefix="/newsletters", tags=["Newsletters"])
 
@@ -25,14 +26,14 @@ def list_newsletters() -> list[dict]:
 
 @router.post("", response_model=NewsletterOut, status_code=status.HTTP_201_CREATED)
 def create_newsletter(
-    title: str = Form(...),
+    title: str = Form(default=""),
     summary: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
     _current_user = Depends(get_current_active_user),
 ) -> dict:
     """Create newsletter with PDF upload to Supabase Storage"""
     try:
-        pdf_url = ""
+        pdf_url = None
         supabase = get_supabase_admin_client()
         # Upload PDF to Supabase Storage
         if pdf and pdf.filename:
@@ -54,8 +55,8 @@ def create_newsletter(
 
         # Create newsletter in Supabase
         newsletter_data = {
-            "title": title,
-            "summary": summary,
+            "title": require_value(title, "Title"),
+            "summary": summary.strip() or None,
             "pdf_url": pdf_url,
         }
         
@@ -71,7 +72,7 @@ def create_newsletter(
 @router.put("/{newsletter_id}", response_model=NewsletterOut)
 def update_newsletter(
     newsletter_id: int,
-    title: str = Form(...),
+    title: str = Form(default=""),
     summary: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
     _current_user = Depends(get_current_active_user),
@@ -84,8 +85,8 @@ def update_newsletter(
             raise HTTPException(status_code=404, detail="Newsletter not found")
 
         update_data = {
-            "title": title,
-            "summary": summary,
+            "title": require_value(title, "Title"),
+            "summary": summary.strip() or None,
         }
         supabase = get_supabase_admin_client()
         # Handle PDF upload

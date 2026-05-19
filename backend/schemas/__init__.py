@@ -17,14 +17,14 @@ class TokenResponse(BaseModel):
 
 
 class MemberBase(BaseModel):
-    name: str
-    position: str
-    membership_id: Optional[str] = ""
-    address: str
-    email: str
-    email_secondary: Optional[str] = ""
-    mobile: str
-    image_url: Optional[str] = ""
+    name: Optional[str] = None
+    position: Optional[str] = None
+    membership_id: Optional[str] = None
+    address: Optional[str] = None
+    email: Optional[str] = None
+    email_secondary: Optional[str] = None
+    mobile: Optional[str] = None
+    image_url: Optional[str] = None
     
     model_config = ConfigDict(extra="ignore")
 
@@ -46,17 +46,17 @@ class MemberOut(MemberBase):
 
 class GalleryOut(BaseModel):
     id: int
-    title: str
-    description: Optional[str] = ""
-    image_url: str
+    title: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class NewsletterBase(BaseModel):
-    title: str
-    summary: Optional[str] = ""
+    title: Optional[str] = None
+    summary: Optional[str] = None
 
 
 class NewsletterCreate(NewsletterBase):
@@ -64,26 +64,26 @@ class NewsletterCreate(NewsletterBase):
 
 
 class NewsletterUpdate(NewsletterBase):
-    pdf_url: str = ""
+    pdf_url: Optional[str] = None
 
 
 class NewsletterOut(BaseModel):
     id: int
-    title: str
-    summary: Optional[str] = ""
-    pdf_url: Optional[str] = ""
+    title: Optional[str] = None
+    summary: Optional[str] = None
+    pdf_url: Optional[str] = None
     published_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class ActivityBase(BaseModel):
-    title: str
-    description: Optional[str] = ""
-    event_date: Optional[str] = ""
-    image_url: Optional[str] = ""
-    pdf_url: Optional[str] = ""
-    colab_url: Optional[str] = ""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    event_date: Optional[str] = None
+    image_url: Optional[str] = None
+    pdf_url: Optional[str] = None
+    colab_url: Optional[str] = None
 
 
 class ActivityCreate(ActivityBase):
@@ -102,9 +102,9 @@ class ActivityOut(ActivityBase):
 
 
 class FacilityBase(BaseModel):
-    name: str
-    description: Optional[str] = ""
-    image_url: Optional[str] = ""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class FacilityCreate(FacilityBase):
@@ -124,9 +124,9 @@ class FacilityOut(FacilityBase):
 
 class DownloadOut(BaseModel):
     id: int
-    title: str
-    description: Optional[str] = ""
-    pdf_url: str
+    title: Optional[str] = None
+    description: Optional[str] = None
+    pdf_url: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -175,27 +175,27 @@ class ContactOut(BaseModel):
 
 
 class ConferenceBase(BaseModel):
-    title: str
-    short_title: str
-    description: Optional[str] = ""
-    start_date: str
-    end_date: str
-    registration_deadline: str
-    venue: Optional[str] = ""
-    button_text: Optional[str] = "More Details"
-    link: Optional[str] = "/conference"
-    image_url: Optional[str] = ""
-    pdf_url: Optional[str] = ""
-    status: Optional[str] = "active"
-    is_new: bool = True
+    title: Optional[str] = None
+    short_title: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    registration_deadline: Optional[str] = None
+    venue: Optional[str] = None
+    button_text: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    pdf_url: Optional[str] = None
+    status: Optional[str] = None
+    is_new: Optional[bool] = None
 
     @field_validator("status", mode="before")
     @classmethod
     def normalize_status(cls, value: Optional[str]) -> str:
         if value is None:
-            return "inactive"
+            return None
         cleaned = str(value).strip()
-        return cleaned or "inactive"
+        return cleaned or None
 
 
 class ConferenceCreate(ConferenceBase):

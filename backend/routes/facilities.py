@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import FacilityOut
-from routes.utils import require_value
+from routes.utils import optional_value, require_value
 
 router = APIRouter(prefix="/facilities", tags=["Facilities"])
 
@@ -24,7 +24,7 @@ def list_facilities() -> list[dict]:
 
 @router.post("", response_model=FacilityOut, status_code=status.HTTP_201_CREATED)
 def create_facility(
-    name: str = Form(...),
+    name: str = Form(default=""),
     description: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
@@ -33,9 +33,9 @@ def create_facility(
     """Create facility with image upload to Supabase Storage"""
     try:
         normalized_name = require_value(name, "Name")
-        normalized_description = description.strip()
+        normalized_description = optional_value(description)
 
-        image_url_value = ""
+        image_url_value = None
         supabase = get_supabase_admin_client()
         # Upload image to Supabase Storage
         if image and image.filename:
@@ -76,7 +76,7 @@ def create_facility(
 @router.put("/{facility_id}", response_model=FacilityOut)
 def update_facility(
     facility_id: int,
-    name: str = Form(...),
+    name: str = Form(default=""),
     description: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
@@ -90,7 +90,7 @@ def update_facility(
             raise HTTPException(status_code=404, detail="Facility not found")
 
         normalized_name = require_value(name, "Name")
-        normalized_description = description.strip()
+        normalized_description = optional_value(description)
 
         update_data = {
             "name": normalized_name,
@@ -114,6 +114,8 @@ def update_facility(
             update_data["image_url"] = supabase.storage.from_("facilities").get_public_url(img_path)
         elif image_url.strip():
             update_data["image_url"] = image_url.strip()
+        else:
+            update_data["image_url"] = None
 
         # Update in Supabase
         updated_facility = admin_db.update("facilities", update_data, {"id": facility_id})

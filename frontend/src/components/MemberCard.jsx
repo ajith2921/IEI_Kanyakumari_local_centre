@@ -3,12 +3,26 @@ import { toAbsoluteUploadUrl } from "../services/api";
 import ImageMedia from "./ImageMedia";
 import Card from "./ui/Card";
 
+function splitMemberEmails(value) {
+  const raw = String(value || "");
+  const emails = raw
+    .split(/[;,\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    primary: emails[0] || "",
+    secondary: emails[1] || "",
+  };
+}
+
 export default function MemberCard({ member }) {
   const name = member.name?.trim() || "Member";
   const position = member.position?.trim() || "Member";
   const membershipId = member.membership_id ? String(member.membership_id).trim() : "";
-  const email = member.email?.trim() || "";
-  const emailSecondary = member.email_secondary?.trim() || "";
+  const emailParts = splitMemberEmails(member.email);
+  const email = emailParts.primary;
+  const emailSecondary = member.email_secondary?.trim() || emailParts.secondary;
   const phone = member.mobile?.trim() || member.phone?.trim() || "";
 
   return (

@@ -4,6 +4,19 @@ import EmptyState from "./EmptyState";
 import { SkeletonRows } from "./Skeletons";
 import Button from "./ui/Button";
 
+function formatPublishedDate(value) {
+  if (!value) return "Unscheduled";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Unscheduled";
+  }
+  return parsed.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function AnnouncementSection({ newsletters, loading = false }) {
   return (
     <section className="border-b border-gray-200 bg-white">
@@ -32,11 +45,7 @@ export default function AnnouncementSection({ newsletters, loading = false }) {
                 style={{ "--shadow-md": "0 4px 16px -2px rgb(0 0 0 / 0.08)" }}
               >
                 <p className="mb-4 inline-flex self-start rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-xs font-semibold text-gray-500">
-                  {new Date(item.published_at).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formatPublishedDate(item.published_at)}
                 </p>
                 <h3 className="mb-3 text-base font-semibold leading-snug text-gray-900">{item.title}</h3>
                 <p className="mb-6 flex-1 line-clamp-3 text-sm leading-relaxed text-gray-500">{item.summary}</p>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { parseApiError } from "../services/api";
 
 export default function useFetchList(fetchFn, deps = []) {
@@ -6,22 +6,41 @@ export default function useFetchList(fetchFn, deps = []) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const hasLoadedDataRef = useRef(false);
+  const fetchFnRef = useRef(fetchFn);
+
+  // Update ref without triggering re-fetch if function reference changes
+  // This prevents unnecessary re-fetches when parent re-renders
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  }, [fetchFn]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetchFn();
-      setData(response.data || []);
+      const response = await fetchFnRef.current();
+      const nextData = response.data || [];
+      setData(nextData);
+      if (Array.isArray(nextData) ? nextData.length > 0 : Boolean(nextData)) {
+        hasLoadedDataRef.current = true;
+      }
     } catch (err) {
-      setError(parseApiError(err));
+      // Keep already-rendered data visible when a transient retry/timeout happens.
+      if (hasLoadedDataRef.current) {
+        setError("");
+      } else {
+        setError(parseApiError(err));
+      }
     } finally {
       setLoading(false);
     }
-  }, [fetchFn, ...deps]);
+  }, []);
 
+  // Only fetch once on mount + when deps change
   useEffect(() => {
     load();
-  }, [load]);
+  }, deps.length > 0 ? deps : []);
 
   return {
     data,

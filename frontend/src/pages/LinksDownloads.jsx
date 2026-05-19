@@ -101,9 +101,15 @@ export default function LinksDownloads() {
                       <h3 className="text-sm font-semibold text-gray-900">{file.title}</h3>
                       <p className="mt-1 text-sm leading-relaxed text-gray-500">{file.description}</p>
                     </div>
-                    <Button as="a" href={toAbsoluteUploadUrl(file.pdf_url)} target="_blank" rel="noreferrer" size="sm">
-                      Download PDF
-                    </Button>
+                    {file.pdf_url ? (
+                      <Button as="a" href={toAbsoluteUploadUrl(file.pdf_url)} target="_blank" rel="noreferrer" size="sm">
+                        Download PDF
+                      </Button>
+                    ) : (
+                      <span className="text-xs font-semibold uppercase tracking-[0.1em] text-gray-400">
+                        Unavailable
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

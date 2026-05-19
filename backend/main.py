@@ -10,6 +10,7 @@ load_dotenv(dotenv_path=env_path)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from auth import hash_password
 from supabase_db import admin_db
@@ -155,6 +156,9 @@ def on_startup() -> None:
 
 upload_dir = Path(__file__).resolve().parent / "uploads"
 upload_dir.mkdir(parents=True, exist_ok=True)
+
+# Mount static files for uploads (backward compatibility and potential local uploads)
+app.mount("/uploads", StaticFiles(directory=str(upload_dir)), name="uploads")
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(members.router, prefix="/api")

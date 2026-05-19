@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from auth import get_current_active_user
@@ -7,14 +9,40 @@ from schemas import ContactCreate, ContactOut
 router = APIRouter(prefix="/contact", tags=["Contact"])
 
 
+def _is_missing_table_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "does not exist" in message and "contact" in message
+
+
+def _insert_contact(table: str, payload: ContactCreate) -> None:
+    admin_db.insert(table, payload.model_dump())
+
+
+def _select_contacts(table: str) -> list[dict]:
+    return admin_db.order_by(table, "created_at", ascending=False)
+
+
+def _select_contact(table: str, message_id: int) -> Optional[dict]:
+    return admin_db.select_one(table, {"id": message_id})
+
+
+def _delete_contact(table: str, message_id: int) -> int:
+    return admin_db.delete(table, {"id": message_id})
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_message(payload: ContactCreate) -> dict:
     """Create contact message"""
     try:
-        message_data = payload.model_dump()
-        admin_db.insert("contact_messages", message_data)
+        _insert_contact("contact_messages", payload)
         return {"message": "Message sent successfully"}
     except Exception as e:
+        if _is_missing_table_error(e):
+            try:
+                _insert_contact("contacts", payload)
+                return {"message": "Message sent successfully"}
+            except Exception as inner_exc:
+                raise HTTPException(status_code=500, detail=f"Error creating message: {str(inner_exc)}")
         raise HTTPException(status_code=500, detail=f"Error creating message: {str(e)}")
 
 
@@ -24,9 +52,14 @@ def list_messages(
 ) -> list[dict]:
     """Get all contact messages"""
     try:
-        messages = admin_db.order_by("contact_messages", "created_at", ascending=False)
+        messages = _select_contacts("contact_messages")
         return messages
     except Exception as e:
+        if _is_missing_table_error(e):
+            try:
+                return _select_contacts("contacts")
+            except Exception as inner_exc:
+                raise HTTPException(status_code=500, detail=str(inner_exc))
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -37,13 +70,18 @@ def get_message(
 ) -> dict:
     """Get single contact message"""
     try:
-        message = admin_db.select_one("contact_messages", {"id": message_id})
+        message = _select_contact("contact_messages", message_id)
         if not message:
             raise HTTPException(status_code=404, detail="Message not found")
         return message
     except HTTPException:
         raise
     except Exception as e:
+        if _is_missing_table_error(e):
+            message = _select_contact("contacts", message_id)
+            if not message:
+                raise HTTPException(status_code=404, detail="Message not found")
+            return message
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -58,11 +96,16 @@ def delete_message(
 ) -> None:
     """Delete contact message"""
     try:
-        count = admin_db.delete("contact_messages", {"id": message_id})
+        count = _delete_contact("contact_messages", message_id)
         if count == 0:
             raise HTTPException(status_code=404, detail="Message not found")
         return None
     except HTTPException:
         raise
     except Exception as e:
+        if _is_missing_table_error(e):
+            count = _delete_contact("contacts", message_id)
+            if count == 0:
+                raise HTTPException(status_code=404, detail="Message not found")
+            return None
         raise HTTPException(status_code=500, detail=f"Error deleting message: {str(e)}")

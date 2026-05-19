@@ -20,6 +20,7 @@ export default function AdminDownloads() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [error, setError] = useState("");
   const entityLabel = "download";
 
@@ -80,16 +81,6 @@ export default function AdminDownloads() {
     const title = form.title.trim();
     const description = form.description.trim();
 
-    if (!title) {
-      setError("Title is required.");
-      return;
-    }
-
-    if (!editingId && !form.pdf) {
-      setError("PDF file is required for new entries.");
-      return;
-    }
-
     if (form.pdf) {
       const validationError = validatePdfFile(form.pdf);
       if (validationError) {
@@ -130,17 +121,21 @@ export default function AdminDownloads() {
   };
 
   const onDelete = async (id) => {
-    const confirmDelete = window.confirm("Delete this document?");
-    if (!confirmDelete) return;
+    setConfirmDeleteId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteId) return;
 
     try {
-      setDeletingId(id);
-      await adminApi.downloads.remove(id);
+      setDeletingId(confirmDeleteId);
+      await adminApi.downloads.remove(confirmDeleteId);
       await loadItems();
     } catch (err) {
       setError(buildErrorMessage("delete", err));
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -158,8 +153,8 @@ export default function AdminDownloads() {
           label="Title"
           value={form.title}
           onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-          required
           placeholder="Title"
+          required
         />
         <Input
           label="PDF File"
@@ -212,14 +207,18 @@ export default function AdminDownloads() {
                   <td className="px-3 py-2">{item.title}</td>
                   <td className="max-w-xs whitespace-pre-wrap break-words px-3 py-2">{item.description}</td>
                   <td className="px-3 py-2">
-                    <a
-                      href={toAbsoluteUploadUrl(item.pdf_url)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="focus-ring rounded px-1 text-brand-700 underline"
-                    >
-                      Open
-                    </a>
+                    {item.pdf_url ? (
+                      <a
+                        href={toAbsoluteUploadUrl(item.pdf_url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="focus-ring rounded px-1 text-brand-700 underline"
+                      >
+                        Open
+                      </a>
+                    ) : (
+                      "N/A"
+                    )}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
@@ -251,6 +250,35 @@ export default function AdminDownloads() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-all duration-300">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">Confirm Deletion</h3>
+            <p className="mb-6 text-sm text-gray-600">
+              Are you sure you want to delete this item? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={deletingId === confirmDeleteId}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={handleConfirmDelete}
+                disabled={deletingId === confirmDeleteId}
+              >
+                {deletingId === confirmDeleteId ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

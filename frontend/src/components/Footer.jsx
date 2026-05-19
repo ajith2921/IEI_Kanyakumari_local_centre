@@ -13,7 +13,7 @@ export default function Footer() {
           </div>
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
             <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Local Centre</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">Established 2025</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">Established 2015</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
             <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Service Tracks</p>
@@ -59,10 +59,6 @@ export default function Footer() {
           <p className="eyebrow-chip mb-5">Services</p>
           <div className="grid gap-3 text-sm text-gray-400">
             <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Membership</a>
-            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Chartered Engineer</a>
-            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Professional Engineer</a>
-            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Section A & B</a>
-            <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Publications</a>
             <Link to="/newsletter" className="transition-colors duration-200 hover:text-gray-900">Newsletter</Link>
             <Link to="/links-downloads" className="transition-colors duration-200 hover:text-gray-900">Downloads</Link>
             <Link to="/facilities" className="transition-colors duration-200 hover:text-gray-900">Facilities</Link>

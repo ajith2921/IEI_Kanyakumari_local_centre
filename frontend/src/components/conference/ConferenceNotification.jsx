@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import ConferenceBadge from "./ConferenceBadge";
 import ConferenceButton from "./ConferenceButton";
 import { publicApi } from "../../services/api";
@@ -18,7 +18,7 @@ const FALLBACK_CONFERENCE = {
   status: "active",
   description: "Engineering Sustainable Futures Through Innovation and Collaboration.",
   buttonText: "More Details",
-  link: "/conference",
+  link: "/conference-overview",
   isNew: true,
 };
 
@@ -28,8 +28,11 @@ const FALLBACK_CONFERENCE = {
 const STORAGE_KEY = (id) => `conf_dismissed_${id}`;
 
 function formatDate(dateStr) {
-  if (!dateStr) return "";
+  if (!dateStr) return "TBA";
   const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) {
+    return "TBA";
+  }
   return d.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "long",
@@ -43,6 +46,9 @@ function isConferenceVisible(conference) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const deadline = new Date(conference.registrationDeadline);
+  if (Number.isNaN(deadline.getTime())) {
+    return false;
+  }
   deadline.setHours(0, 0, 0, 0);
   return today <= deadline;
 }
@@ -80,7 +86,7 @@ function pickNearestUpcomingConference(conferences, todayStartMs) {
 /* ─────────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
-export default function ConferenceNotification() {
+function ConferenceNotification() {
   const [conference, setConference] = useState(null);
   const [dismissed, setDismissed] = useState(false);
   const [visible, setVisible] = useState(false); // drives CSS entry animation
@@ -104,7 +110,7 @@ export default function ConferenceNotification() {
           status: data.status,
           description: data.description,
           buttonText: data.button_text,
-          link: data.pdf_url || (data.link && data.link.trim() !== "/conference" ? data.link : "/conference-overview"),
+          link: data.pdf_url || (data.link && data.link.trim() !== "/conference-overview" ? data.link : "/conference-overview"),
           isNew: data.is_new,
         };
         setConference(conf);
@@ -213,3 +219,5 @@ export default function ConferenceNotification() {
     </div>
   );
 }
+
+export default memo(ConferenceNotification);

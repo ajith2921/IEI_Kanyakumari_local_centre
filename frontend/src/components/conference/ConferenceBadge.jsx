@@ -6,9 +6,28 @@
  * - Otherwise  → "NEW"          (emerald pulse)
  */
 export default function ConferenceBadge({ registrationDeadline, isNew }) {
+  const deadlineRaw = String(registrationDeadline || "").trim();
+  if (!deadlineRaw) {
+    return isNew ? (
+      <span className="conf-badge conf-badge--new" aria-label="Conference status: NEW">
+        <span className="conf-badge__dot conf-badge__dot--new" aria-hidden="true" />
+        NEW
+      </span>
+    ) : null;
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const deadline = new Date(registrationDeadline);
+  const deadline = new Date(deadlineRaw);
+  if (Number.isNaN(deadline.getTime())) {
+    return isNew ? (
+      <span className="conf-badge conf-badge--new" aria-label="Conference status: NEW">
+        <span className="conf-badge__dot conf-badge__dot--new" aria-hidden="true" />
+        NEW
+      </span>
+    ) : null;
+  }
+
   deadline.setHours(0, 0, 0, 0);
   const daysLeft = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
 
