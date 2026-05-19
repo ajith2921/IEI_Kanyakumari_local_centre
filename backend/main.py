@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from time import time
 
 from dotenv import load_dotenv
 
@@ -27,6 +28,35 @@ from routes import (
     newsletters,
     conferences,
 )
+
+# ─────────────────────────────────────────────────────────────────
+# Simple in-memory cache for database queries
+# ─────────────────────────────────────────────────────────────────
+_query_cache = {}
+CACHE_TTL = 300  # 5 minutes
+
+def cache_key(name: str) -> str:
+    return f"cache:{name}"
+
+def get_from_cache(name: str):
+    """Get cached value if still valid"""
+    key = cache_key(name)
+    if key in _query_cache:
+        value, expiry = _query_cache[key]
+        if time() < expiry:
+            return value
+        del _query_cache[key]
+    return None
+
+def set_in_cache(name: str, value):
+    """Cache a value for CACHE_TTL seconds"""
+    _query_cache[cache_key(name)] = (value, time() + CACHE_TTL)
+
+def invalidate_cache(name: str):
+    """Invalidate a cache entry"""
+    key = cache_key(name)
+    if key in _query_cache:
+        del _query_cache[key]
 
 app = FastAPI(title="Institution Website API", version="1.0.0")
 

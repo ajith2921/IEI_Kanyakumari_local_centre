@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosRetry from "axios-retry";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
@@ -6,6 +7,22 @@ const API_BASE_URL =
   "http://localhost:8000/api";
 const UPLOADS_BASE_URL =
   import.meta.env.VITE_UPLOADS_BASE_URL || "http://localhost:8000";
+
+// ───────────────────────────────────────────────────────────────────────────
+// Retry Configuration (Exponential Backoff)
+// ───────────────────────────────────────────────────────────────────────────
+const RETRY_CONFIG = {
+  retries: 3,
+  retryDelay: (retryCount) => {
+    // Exponential backoff: 1s, 2s, 4s
+    return Math.pow(2, retryCount - 1) * 1000;
+  },
+  retryCondition: (error) => {
+    // Retry on network errors and 5xx status codes, NOT on 4xx
+    return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+           (error.response?.status >= 500);
+  },
+};
 
 // ───────────────────────────────────────────────────────────────────────────
 // Request Deduplication & Caching
@@ -77,7 +94,11 @@ export const toAbsoluteUploadUrl = (url = "") => {
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000, // 30 second timeout
 });
+
+// Apply retry middleware with exponential backoff
+axiosRetry(api, RETRY_CONFIG);
 
 const multipartConfig = {
   headers: { "Content-Type": "multipart/form-data" },
@@ -187,15 +208,34 @@ export const authApi = {
 
 // Public API with request deduplication & caching
 export const publicApi = {
-  getMembers: () => cachedGet("/members", CACHE_TTL),
-  getGallery: () => cachedGet("/gallery", CACHE_TTL),
-  getNewsletters: () => cachedGet("/newsletters", CACHE_TTL),
-  getActivities: () => cachedGet("/activities", CACHE_TTL),
+  // Paginated endpoints with optional parameters
+  getMembers: (params = {}) => {
+    const url = `/members?page=${params.page || 1}&limit=${params.limit || 20}`;
+    return cachedGet(url, CACHE_TTL);
+  },
+  getGallery: (params = {}) => {
+    const url = `/gallery?page=${params.page || 1}&limit=${params.limit || 12}`;
+    return cachedGet(url, CACHE_TTL);
+  },
+  getActivities: (params = {}) => {
+    const url = `/activities?page=${params.page || 1}&limit=${params.limit || 10}`;
+    return cachedGet(url, CACHE_TTL);
+  },
+  getNewsletters: (params = {}) => {
+    const url = `/newsletters?page=${params.page || 1}&limit=${params.limit || 15}`;
+    return cachedGet(url, CACHE_TTL);
+  },
+  getDownloads: (params = {}) => {
+    const url = `/downloads?page=${params.page || 1}&limit=${params.limit || 20}`;
+    return cachedGet(url, CACHE_TTL);
+  },
   getFacilities: () => cachedGet("/facilities", CACHE_TTL),
-  getDownloads: () => cachedGet("/downloads", CACHE_TTL),
   submitContact: (payload) => api.post("/contact", payload),
   getActiveConference: () => cachedGet("/conferences/active", CONFERENCE_CACHE_TTL),
-  getConferences: () => cachedGet("/conferences/", CONFERENCE_CACHE_TTL),
+  getConferences: (params = {}) => {
+    const url = `/conferences/?page=${params.page || 1}&limit=${params.limit || 10}`;
+    return cachedGet(url, CONFERENCE_CACHE_TTL);
+  },
   
   // Force refresh (clear cache for specific endpoint)
   clearMemberCache: () => cache.delete(getCacheKey("/members")),

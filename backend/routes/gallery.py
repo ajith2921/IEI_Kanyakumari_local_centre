@@ -2,22 +2,22 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import GalleryOut
-from routes.utils import require_value, optional_value
+from routes.utils import require_value, optional_value, paginate_results
 
 router = APIRouter(prefix="/gallery", tags=["Gallery"])
 
 
-@router.get("", response_model=list[GalleryOut])
-def list_gallery() -> list[dict]:
-    """Get all gallery items"""
+@router.get("")
+def list_gallery(page: int = Query(1, ge=1), limit: int = Query(12, ge=1, le=100)):
+    """Get paginated gallery items"""
     try:
         items = admin_db.order_by("gallery", "created_at", ascending=False)
-        return items
+        return paginate_results(items, page, limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

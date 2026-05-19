@@ -2,11 +2,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
+from routes.utils import paginate_results
 
 router = APIRouter(prefix="/conferences", tags=["Conferences"])
 
@@ -57,12 +58,13 @@ def get_active_conference():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/", response_model=List[ConferenceOut])
-def get_all_conferences():
-    """Get all conferences"""
+@router.get("/")
+def get_all_conferences(page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100)):
+    """Get paginated conferences"""
     try:
         conferences = admin_db.order_by("conferences", "created_at", ascending=False)
-        return [_normalize_conference_status(conf) for conf in conferences]
+        normalized = [_normalize_conference_status(conf) for conf in conferences]
+        return paginate_results(normalized, page, limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

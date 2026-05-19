@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
+import PageMeta from "../components/PageMeta";
+import Pagination from "../components/Pagination";
 import useFetchList from "../hooks/useFetchList";
 import { publicApi, toAbsoluteUploadUrl } from "../services/api";
 
@@ -72,8 +74,7 @@ function AvatarFallback({ name }) {
 
 /* ── PROFILE IMAGE ────────────────────────────────────── */
 function ProfileImage({ src, name }) {
-  const [error, setError] = useState(false);
-  if (!src || error) return <AvatarFallback name={name} />;
+  if (!src) return <AvatarFallback name={name} />;
 
   return (
     <img
@@ -81,7 +82,6 @@ function ProfileImage({ src, name }) {
       alt={name}
       loading="eager"
       decoding="async"
-      onError={() => setError(true)}
       className="block h-full w-full object-cover object-center"
     />
   );
@@ -234,7 +234,7 @@ function InstitutionalHeader({ totalMembers }) {
 
 /* ── PAGE — MembersList ───────────────────────────────── */
 export default function MembersList() {
-  const { data, loading, error, reload } = useFetchList(publicApi.getMembers);
+  const { data, loading, error, reload, page, totalPages, totalCount, goToPage } = useFetchList(publicApi.getMembers);
   const members = Array.isArray(data) ? data : [];
   const divisionSections = useMemo(() => {
     const groupedMembers = new Map();
@@ -288,10 +288,18 @@ export default function MembersList() {
     });
   }, [members]);
 
-  const registerSummary = `${members.length} members across ${divisionSections.length} sections`;
+  const registerSummary = `${members.length} members on this page`;
 
   return (
-    <div className="directory-shell min-h-screen">
+    <>
+      <PageMeta
+        title="Committee Members"
+        description="Meet the executive leadership and committee members of IEI Kanyakumari Local Centre. Engineers from various disciplines serving the organization."
+        canonical="https://www.ieikanyakumarilc.org/members"
+        ogTitle="IEI Kanyakumari Committee Members"
+        ogDescription="Executive leadership and engineering division committee members of IEI Kanyakumari Local Centre"
+      />
+      <div className="directory-shell min-h-screen">
       <main className="page-shell py-10 sm:py-14 lg:py-20">
 
         <InstitutionalHeader
@@ -353,7 +361,19 @@ export default function MembersList() {
             </div>
           )
         )}
+
+        {!loading && !error && members.length > 0 && totalPages > 1 && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={20}
+            onPageChange={goToPage}
+            loading={loading}
+          />
+        )}
       </main>
-    </div>
+      </div>
+    </>
   );
 }

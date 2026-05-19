@@ -2,23 +2,23 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ActivityOut
-from routes.utils import optional_value, require_value
+from routes.utils import optional_value, require_value, paginate_results
 
 router = APIRouter(prefix="/activities", tags=["Activities"])
 
 
 
-@router.get("", response_model=list[ActivityOut])
-def list_activities() -> list[dict]:
-    """Get all activities"""
+@router.get("")
+def list_activities(page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100)):
+    """Get paginated activities"""
     try:
         activities = admin_db.order_by("activities", "created_at", ascending=False)
-        return activities
+        return paginate_results(activities, page, limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

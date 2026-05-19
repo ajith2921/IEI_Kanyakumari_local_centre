@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import EventCard from "../components/EventCard";
+import PageMeta from "../components/PageMeta";
 import SectionHeader from "../components/SectionHeader";
 import { SkeletonGrid } from "../components/Skeletons";
 import Button from "../components/ui/Button";
@@ -133,7 +134,15 @@ export default function TechnicalActivities() {
   const totalConducted = totalActivities - totalUpcoming;
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <>
+      <PageMeta
+        title="Technical Activities & Events"
+        description="Explore technical seminars, workshops, conferences, and professional development programs organized by IEI Kanyakumari Local Centre."
+        canonical="https://www.ieikanyakumarilc.org/technical-activities"
+        ogTitle="IEI Kanyakumari Technical Events"
+        ogDescription="Upcoming and past technical seminars, conferences, and engineering events at IEI Kanyakumari"
+      />
+      <div className="min-h-screen bg-gray-50/50">
       <main className="page-shell py-20">
 
         {/* ── Page header ────────────────────────────── */}
@@ -216,6 +225,7 @@ export default function TechnicalActivities() {
         </section>
 
       </main>
-    </div>
+      </div>
+    </>
   );
 }

@@ -3,12 +3,12 @@ import re
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import MemberOut
-from routes.utils import require_value
+from routes.utils import require_value, paginate_results
 
 router = APIRouter(prefix="/members", tags=["Members"])
 PHONE_PATTERN = re.compile(r"^[+]?[0-9\s()\-]{7,18}$")
@@ -109,8 +109,8 @@ def _optional_value(value: str) -> Optional[str]:
 
 
 @router.get("")
-def list_members():
-    """Get all members"""
+def list_members(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100)):
+    """Get paginated list of members"""
     try:
         members = admin_db.order_by("members", "created_at", ascending=False)
         result = []
@@ -119,7 +119,9 @@ def list_members():
             if 'created_at' in clean_member and clean_member['created_at']:
                 clean_member['created_at'] = str(clean_member['created_at'])
             result.append(clean_member)
-        return result
+        
+        # Apply pagination
+        return paginate_results(result, page, limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
