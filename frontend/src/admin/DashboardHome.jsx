@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { adminApi, parseApiError } from "../services/api";
+import DashboardStats from "./DashboardStats";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import ErrorState from "../components/ErrorState";
@@ -93,7 +94,13 @@ export default function DashboardHome() {
       <p className="mb-6 text-gray-600">Manage website content and incoming requests.</p>
 
       {loading && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <DashboardStats />
+        </div>
+      )}
+
+      {loading && (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
             <article key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="skeleton h-3 w-2/3" />
