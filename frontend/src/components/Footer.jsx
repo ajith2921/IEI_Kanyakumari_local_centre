@@ -4,7 +4,7 @@ const MEMBERSHIP_PORTAL_URL = "https://www.ieindia.org/web/home";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-100 bg-white">
+    <footer className="border-t border-gray-100 bg-white" aria-label="Site footer">
       <div className="border-b border-gray-200 bg-gray-50">
         <div className="page-shell grid gap-3 py-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
@@ -47,7 +47,6 @@ export default function Footer() {
           <p className="eyebrow-chip mb-5">Quick Links</p>
           <div className="grid gap-3 text-sm text-gray-400">
             <Link to="/" className="transition-colors duration-200 hover:text-gray-900">Home</Link>
-            <Link to="/conference" className="transition-colors duration-200 hover:text-gray-900">Conference</Link>
             <Link to="/technical-activities" className="transition-colors duration-200 hover:text-gray-900">Events</Link>
             <Link to="/members" className="transition-colors duration-200 hover:text-gray-900">Committee</Link>
             <Link to="/gallery" className="transition-colors duration-200 hover:text-gray-900">Gallery</Link>

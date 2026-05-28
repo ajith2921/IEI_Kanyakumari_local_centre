@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import EventCard from "../components/EventCard";
+import PageMeta from "../components/PageMeta";
 import SectionHeader from "../components/SectionHeader";
 import { SkeletonGrid } from "../components/Skeletons";
 import useFetchList from "../hooks/useFetchList";
@@ -35,7 +36,9 @@ function isUpcomingConference(conference, todayStartMs) {
 }
 
 export default function ConferencePage() {
-  const { data, loading, error, reload } = useFetchList(publicApi.getConferences);
+  // Fetch up to 100 conferences so we never silently paginate
+  const fetchAll = useMemo(() => (params) => publicApi.getConferences({ ...params, limit: 100 }), []);
+  const { data, loading, error, reload } = useFetchList(fetchAll);
 
   const todayStartMs = useMemo(() => {
     const today = new Date();
@@ -77,16 +80,32 @@ export default function ConferencePage() {
     image_url: conference.image_url,
     resource_url:
       conference.pdf_url ||
-      (conference.link && conference.link.trim() !== "/conference-overview" ? conference.link : "/conference-overview"),
+      (conference.link && conference.link.trim() !== "/conference-overview" && conference.link.trim() !== "/conference"
+        ? conference.link
+        : "/conferences"),
     resource_label: conference.pdf_url ? (conference.button_text || "View PDF") : (conference.button_text || "View More Details"),
-    secondary_resource_url: conference.pdf_url && conference.link && conference.link.trim() !== "/conference-overview" ? conference.link : "",
+    secondary_resource_url:
+      conference.pdf_url &&
+      conference.link &&
+      conference.link.trim() !== "/conference-overview" &&
+      conference.link.trim() !== "/conference"
+        ? conference.link
+        : "",
     secondary_resource_label: "Visit Conference Page",
     details_button_text: "View Conference Details →",
     collapse_button_text: "Hide Conference Details ↑",
   });
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <>
+      <PageMeta
+        title="Conferences"
+        description="Upcoming and past conferences organised by IEI Kanyakumari Local Centre. Register for SUSTAIN-TECH 2026 and other engineering conferences."
+        canonical="https://www.ieikanyakumarilc.org/conferences"
+        ogTitle="IEI Kanyakumari Local Centre — Conferences"
+        ogDescription="Register for upcoming conferences and explore past events at IEI Kanyakumari Local Centre."
+      />
+      <div className="min-h-screen bg-gray-50/50">
       <main className="page-shell py-20">
 
         <header className="relative mb-14 overflow-hidden rounded-3xl border border-gray-200 bg-white p-7 shadow-sm sm:p-9">
@@ -176,6 +195,7 @@ export default function ConferencePage() {
           </>
         )}
       </main>
-    </div>
+      </div>
+    </>
   );
 }

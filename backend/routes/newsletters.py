@@ -4,22 +4,30 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import NewsletterOut
 from routes.utils import require_value
 
 router = APIRouter(prefix="/newsletters", tags=["Newsletters"])
 
 
-@router.get("", response_model=list[NewsletterOut])
-def list_newsletters() -> list[dict]:
-    """Get all newsletters"""
+@router.get("")
+def list_newsletters(
+    page: int = Query(1, ge=1),
+    limit: int = Query(15, ge=1, le=100)
+):
+    """Get paginated newsletters"""
     try:
-        newsletters = admin_db.order_by("newsletters", "published_at", ascending=False)
-        return newsletters
+        return admin_db.select_paginated(
+            "newsletters",
+            order_by="published_at",
+            ascending=False,
+            page=page,
+            limit=limit
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -140,9 +148,15 @@ def delete_newsletter(
 ) -> None:
     """Delete newsletter"""
     try:
-        count = admin_db.delete("newsletters", {"id": newsletter_id})
-        if count == 0:
+        newsletter = admin_db.select_one("newsletters", {"id": newsletter_id})
+        if not newsletter:
             raise HTTPException(status_code=404, detail="Newsletter not found")
+            
+        admin_db.delete("newsletters", {"id": newsletter_id})
+        
+        if newsletter.get("pdf_url"):
+            delete_storage_file("newsletters", newsletter["pdf_url"])
+            
         return None
     except HTTPException:
         raise

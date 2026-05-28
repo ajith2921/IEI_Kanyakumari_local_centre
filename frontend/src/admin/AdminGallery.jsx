@@ -58,7 +58,9 @@ export default function AdminGallery() {
     setError("");
     try {
       const response = await adminApi.gallery.list();
-      setItems(response.data || []);
+      const responseData = response.data;
+      const dataArray = Array.isArray(responseData) ? responseData : (responseData?.items || []);
+      setItems(dataArray);
     } catch (err) {
       setError(buildErrorMessage("load", err));
     } finally {

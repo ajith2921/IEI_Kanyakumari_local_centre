@@ -4,22 +4,30 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import DownloadOut
 from routes.utils import require_value
 
 router = APIRouter(prefix="/downloads", tags=["Downloads"])
 
 
-@router.get("", response_model=list[DownloadOut])
-def list_downloads() -> list[dict]:
-    """Get all downloads"""
+@router.get("")
+def list_downloads(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get paginated downloads"""
     try:
-        downloads = admin_db.order_by("downloads", "created_at", ascending=False)
-        return downloads
+        return admin_db.select_paginated(
+            "downloads",
+            order_by="created_at",
+            ascending=False,
+            page=page,
+            limit=limit
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -138,9 +146,15 @@ def delete_download(
 ) -> None:
     """Delete download"""
     try:
-        count = admin_db.delete("downloads", {"id": download_id})
-        if count == 0:
+        download = admin_db.select_one("downloads", {"id": download_id})
+        if not download:
             raise HTTPException(status_code=404, detail="Download not found")
+            
+        admin_db.delete("downloads", {"id": download_id})
+        
+        if download.get("pdf_url"):
+            delete_storage_file("downloads", download["pdf_url"])
+            
         return None
     except HTTPException:
         raise

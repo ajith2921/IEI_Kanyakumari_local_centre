@@ -5,9 +5,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import FacilityOut
 from routes.utils import optional_value, require_value
+from routes.file_utils import compress_image_to_webp
 
 router = APIRouter(prefix="/facilities", tags=["Facilities"])
 
@@ -44,13 +45,15 @@ def create_facility(
             if len(content) > 10 * 1024 * 1024:  # 10MB max
                 raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
             
+            content = compress_image_to_webp(content)
+            
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            img_path = f"facility_{timestamp}{Path(image.filename).suffix}"
+            img_path = f"facility_{timestamp}.webp"
             
             supabase.storage.from_("facilities").upload(
                 path=img_path,
                 file=content,
-                file_options={"content-type": image.content_type or "image/jpeg"}
+                file_options={"content-type": "image/webp"}
             )
             
             image_url_value = supabase.storage.from_("facilities").get_public_url(img_path)
@@ -103,13 +106,15 @@ def update_facility(
             if len(content) > 10 * 1024 * 1024:
                 raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
             
+            content = compress_image_to_webp(content)
+            
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            img_path = f"facility_{facility_id}_{timestamp}{Path(image.filename).suffix}"
+            img_path = f"facility_{facility_id}_{timestamp}.webp"
             
             supabase.storage.from_("facilities").upload(
                 path=img_path,
                 file=content,
-                file_options={"content-type": image.content_type}
+                file_options={"content-type": "image/webp"}
             )
             update_data["image_url"] = supabase.storage.from_("facilities").get_public_url(img_path)
         elif image_url.strip():
@@ -152,9 +157,15 @@ def delete_facility(
 ) -> None:
     """Delete facility"""
     try:
-        count = admin_db.delete("facilities", {"id": facility_id})
-        if count == 0:
+        facility = admin_db.select_one("facilities", {"id": facility_id})
+        if not facility:
             raise HTTPException(status_code=404, detail="Facility not found")
+            
+        admin_db.delete("facilities", {"id": facility_id})
+        
+        if facility.get("image_url"):
+            delete_storage_file("facilities", facility["image_url"])
+            
         return None
     except HTTPException:
         raise

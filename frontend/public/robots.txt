@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow admin area from indexing
+Disallow: /admin/
+Disallow: /admin
+
+# Sitemap location
+Sitemap: https://www.ieikanyakumarilc.org/sitemap.xml

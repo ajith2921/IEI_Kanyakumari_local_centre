@@ -30,7 +30,8 @@ const RETRY_CONFIG = {
 const inflight = new Map(); // Track in-flight requests
 const cache = new Map(); // Cache with TTL
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes for general data
-const CONFERENCE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes for conference data
+const CONFERENCE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes for conference list
+const ACTIVE_CONFERENCE_CACHE_TTL = 2 * 60 * 1000; // 2 minutes for active conference (admin changes must propagate fast)
 
 function getCacheKey(url) {
   return `cache:${url}`;
@@ -95,6 +96,7 @@ export const toAbsoluteUploadUrl = (url = "") => {
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // 30 second timeout
+  withCredentials: true, // Required for cross-origin cookie-based auth
 });
 
 // Apply retry middleware with exponential backoff
@@ -114,11 +116,11 @@ const putWithOptionalMultipart = (url, payload) =>
   isFormDataPayload(payload) ? api.put(url, payload, multipartConfig) : api.put(url, payload);
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("admin_token");
+  // Auth is cookie-based (HTTP-only admin_token set by server).
+  // withCredentials: true on the axios instance handles this automatically.
+  // We keep the Bearer header fallback for direct API tooling / non-browser clients.
+  const token = document.cookie.match(/admin_token=([^;]+)/);
   config.headers = config.headers || {};
-  if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
   return config;
 });
 
@@ -204,6 +206,8 @@ export const parseApiError = (error) => {
 
 export const authApi = {
   login: (payload) => api.post("/auth/login", payload),
+  me: () => api.get("/auth/me"),
+  logout: () => api.post("/auth/logout"),
 };
 
 // Public API with request deduplication & caching
@@ -231,7 +235,7 @@ export const publicApi = {
   },
   getFacilities: () => cachedGet("/facilities", CACHE_TTL),
   submitContact: (payload) => api.post("/contact", payload),
-  getActiveConference: () => cachedGet("/conferences/active", CONFERENCE_CACHE_TTL),
+  getActiveConference: () => cachedGet("/conferences/active", ACTIVE_CONFERENCE_CACHE_TTL),
   getConferences: (params = {}) => {
     const url = `/conferences/?page=${params.page || 1}&limit=${params.limit || 10}`;
     return cachedGet(url, CONFERENCE_CACHE_TTL);
@@ -240,7 +244,14 @@ export const publicApi = {
   // Force refresh (clear cache for specific endpoint)
   clearMemberCache: () => cache.delete(getCacheKey("/members")),
   clearConferenceCache: () => cache.delete(getCacheKey("/conferences/")),
+  clearActiveConferenceCache: () => cache.delete(getCacheKey("/conferences/active")),
   clearAllCache: () => cache.clear(),
+  // Utility: clear the dismissed localStorage flag so the notification shows again
+  clearNotificationDismissal: () => {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("conference_banner_dismissed"))
+      .forEach((k) => localStorage.removeItem(k));
+  },
 };
 
 export const adminApi = {

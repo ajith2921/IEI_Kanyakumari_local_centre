@@ -58,8 +58,13 @@ def invalidate_cache(name: str):
     if key in _query_cache:
         del _query_cache[key]
 
-app = FastAPI(title="Institution Website API", version="1.0.0")
+from limiter import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 
+app = FastAPI(title="Institution Website API", version="1.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 origins = [
     origin.strip()
     for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")

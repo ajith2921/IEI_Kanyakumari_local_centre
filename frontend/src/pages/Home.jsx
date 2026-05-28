@@ -24,8 +24,9 @@ export default function Home() {
   useEffect(() => {
     const fetchChairmanImage = async () => {
       try {
-        const response = await publicApi.getMembers();
-        const members = response.data || [];
+        // Fetch up to 100 members so the Chairman is found regardless of insertion order
+        const response = await publicApi.getMembers({ page: 1, limit: 100 });
+        const members = response.data?.items || response.data || [];
         // Match exact "Chairman" to avoid matching "Immediate Past Chairman"
         const chairman = members.find(m => m.position?.trim().toLowerCase() === "chairman");
         if (chairman && chairman.image_url) {
@@ -47,8 +48,10 @@ export default function Home() {
       {/* ── Full-screen hero image + floating conference notification ── */}
       <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
         <img
-          src="/home-bg.jpg"
+          src="/home-bg.webp"
           alt="IEI Kanyakumari Local Centre Event"
+          fetchpriority="high"
+          decoding="sync"
           style={{
             width: '100%',
             height: '100%',
@@ -57,14 +60,14 @@ export default function Home() {
             display: 'block',
           }}
         />
-        {/* Desktop + Tablet: floating absolutely over the hero */}
-        <div className="hidden sm:block">
-          <ConferenceNotification />
+        <div className="pointer-events-none hidden lg:flex absolute inset-y-0 right-0 z-20 items-end justify-end pr-6 xl:pr-10 pb-16">
+          <div className="pointer-events-auto w-[19rem] xl:w-[20rem]">
+            <ConferenceNotification />
+          </div>
         </div>
       </div>
 
-      {/* Mobile: stacked below hero in normal flow */}
-      <div className="block sm:hidden px-4 pt-5 pb-1 bg-white">
+      <div className="block lg:hidden px-4 pt-5">
         <ConferenceNotification />
       </div>
 

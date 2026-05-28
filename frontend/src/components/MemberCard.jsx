@@ -38,6 +38,7 @@ export default function MemberCard({ member }) {
               alt={name}
               fit="cover"
               position="50% 50%"
+              loading="lazy"
               className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
               fallback={
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-200 via-slate-100 to-white text-slate-500">

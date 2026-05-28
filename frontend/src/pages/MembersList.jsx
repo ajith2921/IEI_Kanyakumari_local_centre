@@ -56,7 +56,6 @@ function splitMemberEmails(value) {
 function AvatarFallback({ name }) {
   return (
     <div
-      aria-hidden="true"
       className="flex h-full w-full select-none items-center justify-center bg-gradient-to-br from-slate-200 via-slate-100 to-white text-slate-500"
     >
       <svg viewBox="0 0 24 24" fill="none" className="h-12 w-12" role="img" aria-label={`${name || "Member"} profile placeholder`}>
@@ -73,14 +72,14 @@ function AvatarFallback({ name }) {
 }
 
 /* ── PROFILE IMAGE ────────────────────────────────────── */
-function ProfileImage({ src, name }) {
+function ProfileImage({ src, name, rowIndex = 0 }) {
   if (!src) return <AvatarFallback name={name} />;
 
   return (
     <img
       src={src}
       alt={name}
-      loading="eager"
+      loading={rowIndex < 3 ? "eager" : "lazy"}
       decoding="async"
       className="block h-full w-full object-cover object-center"
     />
@@ -168,7 +167,7 @@ function MemberRow({ member, rowIndex }) {
 
         <div className="mx-auto flex-shrink-0 sm:mx-0">
           <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-sm ring-1 ring-slate-200 sm:h-28 sm:w-28">
-            <ProfileImage src={imgSrc} name={name} />
+            <ProfileImage src={imgSrc} name={name} rowIndex={rowIndex} />
           </div>
         </div>
       </div>

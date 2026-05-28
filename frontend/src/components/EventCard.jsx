@@ -97,6 +97,7 @@ export default function EventCard({ activity }) {
               alt={title}
               fit="cover"
               position="50% 50%"
+              loading="lazy"
               className="h-full w-full cursor-pointer transition-transform duration-300 group-hover:scale-[1.02]"
               fallback={<EventImageFallback title={title} category={category} />}
             />
@@ -107,6 +108,7 @@ export default function EventCard({ activity }) {
             alt={title}
             fit="cover"
             position="50% 50%"
+            loading="lazy"
             className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
             fallback={<EventImageFallback title={title} category={category} />}
           />

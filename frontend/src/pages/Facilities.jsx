@@ -24,7 +24,7 @@ export default function Facilities() {
       {!loading && !error && (
         data.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {data.map((facility) => (
+            {data.map((facility, index) => (
               <article
                 key={facility.id}
                 className="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
@@ -35,6 +35,7 @@ export default function Facilities() {
                     alt={facility.name}
                     fit="cover"
                     position="50% 50%"
+                    loading={index < 4 ? "eager" : "lazy"}
                     className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
                     fallback={
                       <div className="flex h-full items-center justify-center bg-gray-50 text-sm text-gray-300">

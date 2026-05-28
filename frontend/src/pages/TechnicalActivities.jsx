@@ -158,7 +158,7 @@ export default function TechnicalActivities() {
             
             <div>
               <Link
-                to="/conference"
+                to="/conferences"
                 className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-[#05154B] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0a1f66]"
               >
                 View Conferences
@@ -175,7 +175,7 @@ export default function TechnicalActivities() {
                     {upcomingConference.title} — {formatDateRange(upcomingConference.start_date, upcomingConference.end_date)}
                   </p>
                 </div>
-                <Button as={Link} to={upcomingConference.link || "/conference"} className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
+                <Button as={Link} to={upcomingConference.link || "/conferences"} className="sm:ml-auto whitespace-nowrap bg-emerald-700 hover:bg-emerald-800 text-white">
                   {upcomingConference.button_text || "More Details"}
                 </Button>
               </div>

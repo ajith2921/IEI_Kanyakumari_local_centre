@@ -1,57 +1,56 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, useEffect } from "react";
 import { authApi, parseApiError } from "../services/api";
 
 const AuthContext = createContext(null);
 
-function readValidToken() {
-  const stored = localStorage.getItem("admin_token") || "";
-  if (!stored) return "";
-  try {
-    const payload = JSON.parse(atob(stored.split(".")[1]));
-    return payload.exp * 1000 > Date.now() ? stored : "";
-  } catch {
-    return "";
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => {
-    const valid = readValidToken();
-    if (!valid) localStorage.removeItem("admin_token");
-    return valid;
-  });
-  const [loading, setLoading] = useState(false);
-  const isAuthenticated = Boolean(token);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const login = async (username, password) => {
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await authApi.me();
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const login = useCallback(async (username, password) => {
     setLoading(true);
     try {
-      const response = await authApi.login({ username, password });
-      const nextToken = response.data.access_token;
-      localStorage.setItem("admin_token", nextToken);
-      setToken(nextToken);
+      await authApi.login({ username, password });
+      setIsAuthenticated(true);
       return { success: true };
     } catch (error) {
       return { success: false, message: parseApiError(error) };
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem("admin_token");
-    setToken("");
-  };
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout();
+    } catch (e) {
+      // Swallow logout errors — session cleanup happens regardless
+    }
+    setIsAuthenticated(false);
+  }, []);
 
   const value = useMemo(
     () => ({
-      token,
       isAuthenticated,
       loading,
       login,
       logout,
     }),
-    [token, isAuthenticated, loading]
+    [isAuthenticated, loading, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

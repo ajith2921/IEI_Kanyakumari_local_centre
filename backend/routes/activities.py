@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ActivityOut
-from routes.utils import optional_value, require_value, paginate_results
+from routes.utils import optional_value, require_value
 
 router = APIRouter(prefix="/activities", tags=["Activities"])
 
@@ -15,10 +15,15 @@ router = APIRouter(prefix="/activities", tags=["Activities"])
 
 @router.get("")
 def list_activities(page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100)):
-    """Get paginated activities"""
+    """Get paginated activities (server-side DB pagination)"""
     try:
-        activities = admin_db.order_by("activities", "created_at", ascending=False)
-        return paginate_results(activities, page, limit)
+        return admin_db.select_paginated(
+            "activities",
+            order_by="created_at",
+            ascending=False,
+            page=page,
+            limit=limit,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

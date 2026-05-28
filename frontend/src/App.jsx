@@ -8,13 +8,12 @@ import AdminRoute from "./admin/AdminRoute";
 
 // Public pages — lazy loaded to reduce initial bundle size
 // Home is loaded eagerly for better landing page performance
-const Conference = lazy(() => import("./pages/Conference"));
-const ConferencePage = lazy(() => import("./pages/ConferencePage"));
 const MembersList = lazy(() => import("./pages/MembersList"));
 const GalleryPage = lazy(() => import("./pages/GalleryPage"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const Facilities = lazy(() => import("./pages/Facilities"));
 const TechnicalActivities = lazy(() => import("./pages/TechnicalActivities"));
+const ConferencePage = lazy(() => import("./pages/ConferencePage"));
 const LinksDownloads = lazy(() => import("./pages/LinksDownloads"));
 const Contact = lazy(() => import("./pages/Contact"));
 
@@ -84,8 +83,9 @@ export default function App() {
           </PublicLayout>
         }
       />
+      {/* Conference pages — /conferences is the canonical route */}
       <Route
-        path="/conference"
+        path="/conferences"
         element={
           <PublicLayout>
             <Suspense fallback={<PageFallback />}>
@@ -94,8 +94,11 @@ export default function App() {
           </PublicLayout>
         }
       />
-      {/* Redirect old /about links to /conference */}
-      <Route path="/about" element={<Navigate to="/conference" replace />} />
+      {/* Legacy paths redirect to canonical /conferences */}
+      <Route path="/conference" element={<Navigate to="/conferences" replace />} />
+      <Route path="/conference-overview" element={<Navigate to="/conferences" replace />} />
+      {/* Redirect old /about links to the home page */}
+      <Route path="/about" element={<Navigate to="/" replace />} />
       <Route
         path="/members"
         element={
@@ -152,16 +155,6 @@ export default function App() {
           <PublicLayout>
             <Suspense fallback={<PageFallback />}>
               <LinksDownloads />
-            </Suspense>
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/conference-overview"
-        element={
-          <PublicLayout>
-            <Suspense fallback={<PageFallback />}>
-              <Conference />
             </Suspense>
           </PublicLayout>
         }

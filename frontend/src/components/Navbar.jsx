@@ -10,6 +10,7 @@ const primaryLinks = [
 ];
 
 const moreLinks = [
+  { to: "/conferences", label: "Conferences" },
   { to: "/contact", label: "Contact" },
   { to: "/newsletter", label: "Newsletter" },
   { to: "/facilities", label: "Facilities" },
@@ -72,6 +73,9 @@ function MoreDropdown() {
     <div ref={ref} className="relative">
       <button
         type="button"
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-label="More navigation links"
         onClick={() => setOpen((p) => !p)}
         className={`inline-flex h-11 items-center gap-1 rounded-lg px-3.5 text-[13px] transition-colors duration-200 ${
           isChildActive
@@ -154,8 +158,8 @@ Skip to main content
       <div className="page-shell flex items-center justify-between py-2.5 sm:py-3">
         <Link to="/" className="flex items-center gap-3 leading-tight">
           <img
-            src="https://www.liblogo.com/img-logo/ie3298ie54-iei-logo-iei-salem.png"
-            alt="Institution of Engineers (India) logo"
+            src="/iei-logo.webp"
+            alt="IEI Kanyakumari Local Centre Logo"
             className="h-12 w-12 flex-shrink-0 rounded-full border border-gray-100 bg-white object-contain p-1 sm:h-14 sm:w-14"
             loading="eager"
             decoding="sync"
@@ -166,8 +170,8 @@ Skip to main content
             </span>
             <span className="mt-1 inline-flex w-[152px] overflow-hidden rounded-full border border-gray-200 bg-gray-50 px-2 py-[2px] text-[10px] text-gray-500 sm:w-[170px]">
               <span className="navbar-marquee-track inline-flex whitespace-nowrap font-medium">
-                <span className="pr-8">(Established in 2025)</span>
-                <span className="pr-8" aria-hidden="true">(Established in 2025)</span>
+                <span className="pr-8">IEI KKLC (Est. 2015)</span>
+                <span className="pr-8" aria-hidden="true">IEI KKLC (Est. 2015)</span>
               </span>
             </span>
           </span>
@@ -177,6 +181,9 @@ Skip to main content
           type="button"
           className="focus-ring h-11 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-50 lg:hidden"
           onClick={() => setOpen((prev) => !prev)}
+          aria-expanded={open}
+          aria-controls="mobile-nav-drawer"
+          aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         >
           {open ? "Close" : "Menu"}
         </button>
@@ -208,7 +215,7 @@ Skip to main content
 
       {/* Mobile drawer */}
       {open && (
-        <div className="animate-fade-in border-t border-gray-100 bg-white lg:hidden">
+        <div id="mobile-nav-drawer" className="animate-fade-in border-t border-gray-100 bg-white lg:hidden">
           <div className="page-shell grid gap-1 py-4">
             {primaryLinks.map((item) => (
               <NavItem key={item.to} {...item} onClick={() => setOpen(false)} mobile />

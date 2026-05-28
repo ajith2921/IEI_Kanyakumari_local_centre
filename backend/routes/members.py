@@ -110,18 +110,21 @@ def _optional_value(value: str) -> Optional[str]:
 
 @router.get("")
 def list_members(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100)):
-    """Get paginated list of members"""
+    """Get paginated list of members (server-side pagination via Supabase)"""
     try:
-        members = admin_db.order_by("members", "created_at", ascending=False)
-        result = []
-        for member in members:
-            clean_member = dict(member)
-            if 'created_at' in clean_member and clean_member['created_at']:
-                clean_member['created_at'] = str(clean_member['created_at'])
-            result.append(clean_member)
-        
-        # Apply pagination
-        return paginate_results(result, page, limit)
+        result = admin_db.select_paginated(
+            "members",
+            order_by="created_at",
+            ascending=False,
+            page=page,
+            limit=limit,
+        )
+        # Normalize created_at to string for JSON serialization
+        result["items"] = [
+            {**m, "created_at": str(m["created_at"])} if m.get("created_at") else m
+            for m in result["items"]
+        ]
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

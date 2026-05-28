@@ -26,7 +26,7 @@ export default function GalleryGrid({ items }) {
         />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <Card
               key={item.id}
               as="button"
@@ -40,6 +40,7 @@ export default function GalleryGrid({ items }) {
                   src={toAbsoluteUploadUrl(item.image_url)}
                   alt={item.title}
                   position="50% 50%"
+                  loading={index < 4 ? "eager" : "lazy"}
                   className="h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
                   fallback={
                     <div className="flex h-full w-full items-center justify-center bg-gray-50 text-sm text-gray-300">

@@ -140,3 +140,33 @@ def delete_local_upload_if_exists(upload_url: str, upload_root: Path) -> None:
         return
 
     target_path.unlink(missing_ok=True)
+
+
+def compress_image_to_webp(content: bytes, max_width: int = 1920) -> bytes:
+    """Compress image bytes to WebP format, resizing if too wide."""
+    if not content:
+        return content
+
+    try:
+        image = Image.open(BytesIO(content))
+        image = ImageOps.exif_transpose(image)  # Correct orientation
+        
+        # Convert to RGB if necessary (WebP supports RGB and RGBA)
+        if image.mode not in ("RGB", "RGBA"):
+            image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
+            
+        # Resize if too large
+        if image.width > max_width:
+            ratio = max_width / image.width
+            new_height = int(image.height * ratio)
+            image = image.resize(
+                (max_width, new_height), 
+                Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
+            )
+            
+        output = BytesIO()
+        image.save(output, format="WEBP", quality=80, method=6)
+        return output.getvalue()
+    except Exception as e:
+        print(f"Warning: Failed to compress image: {e}")
+        return content  # Fallback to original content if compression fails

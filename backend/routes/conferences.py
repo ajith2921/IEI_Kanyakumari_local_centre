@@ -1,13 +1,12 @@
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
-from routes.utils import paginate_results
 
 router = APIRouter(prefix="/conferences", tags=["Conferences"])
 
@@ -20,10 +19,17 @@ def _normalize_conference_status(conference: dict) -> dict:
     return conference
 
 
+# 20 MB limit for conference uploads
+_CONF_MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
+
 def _upload_conference_file(file: UploadFile, prefix: str, bucket: str, content_type: Optional[str] = None) -> str:
     content = file.file.read()
     if not content:
         return ""
+
+    if len(content) > _CONF_MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Max 20 MB allowed.")
 
     supabase = get_supabase_admin_client()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -60,11 +66,17 @@ def get_active_conference():
 
 @router.get("/")
 def get_all_conferences(page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100)):
-    """Get paginated conferences"""
+    """Get paginated conferences (server-side DB pagination)"""
     try:
-        conferences = admin_db.order_by("conferences", "created_at", ascending=False)
-        normalized = [_normalize_conference_status(conf) for conf in conferences]
-        return paginate_results(normalized, page, limit)
+        result = admin_db.select_paginated(
+            "conferences",
+            order_by="created_at",
+            ascending=False,
+            page=page,
+            limit=limit,
+        )
+        result["items"] = [_normalize_conference_status(c) for c in result["items"]]
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -114,12 +126,12 @@ def create_conference(
             is_new=is_new,
         )
 
-        # If this one is active, deactivate others
+        # If this one is active, deactivate all others in one pass
         if payload.status == "active":
-            all_confs = admin_db.select("conferences")
-            for conf in all_confs:
+            other_confs = admin_db.select("conferences", filters={"status": "active"})
+            for conf in other_confs:
                 admin_db.update("conferences", {"status": "inactive"}, {"id": conf["id"]})
-        
+
         new_conf = admin_db.insert("conferences", payload.model_dump())
         return new_conf
     except HTTPException:
@@ -175,10 +187,10 @@ def update_conference(
         if pdf and pdf.filename:
             update_data["pdf_url"] = _upload_conference_file(pdf, f"conference_{conf_id}_pdf", "conferences", "application/pdf")
         
-        # If setting to active, deactivate others
+        # If setting to active, deactivate other active conferences
         if update_data["status"] == "active" and conf.get("status") != "active":
-            all_confs = admin_db.select("conferences")
-            for other_conf in all_confs:
+            other_active = admin_db.select("conferences", filters={"status": "active"})
+            for other_conf in other_active:
                 if other_conf["id"] != conf_id:
                     admin_db.update("conferences", {"status": "inactive"}, {"id": other_conf["id"]})
         

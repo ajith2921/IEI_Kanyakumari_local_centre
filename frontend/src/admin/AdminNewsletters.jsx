@@ -31,7 +31,7 @@ export default function AdminNewsletters() {
     setError("");
     try {
       const response = await adminApi.newsletters.list();
-      setItems(response.data || []);
+      setItems(Array.isArray(response.data) ? response.data : (response.data?.items || []));
     } catch (err) {
       setError(buildErrorMessage("load", err));
     } finally {

@@ -113,7 +113,9 @@ export default function ResourceManager({
     setError("");
     try {
       const response = await fetchList();
-      setItems(response.data || []);
+      const responseData = response.data;
+      const dataArray = Array.isArray(responseData) ? responseData : (responseData?.items || []);
+      setItems(dataArray);
       setCurrentPage(1);
     } catch (err) {
       setError(`Unable to load ${entityLabel}. ${parseApiError(err)}`);
@@ -365,10 +367,7 @@ export default function ResourceManager({
       }
 
       setSuccess(editingId ? "Item updated successfully!" : "Item created successfully!");
-      
-      const currentEditingId = editingId;
       resetForm();
-      await loadItems();
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(""), 3000);

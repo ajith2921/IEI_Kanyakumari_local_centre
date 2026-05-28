@@ -30,16 +30,25 @@ if not SUPABASE_URL or not SUPABASE_ANON_KEY:
     )
 
 
-@lru_cache(maxsize=1)
+# ── Singleton clients (created once per process) ──────────────────────────────
+_anon_client: "Client | None" = None
+_admin_client: "Client | None" = None
+
+
 def get_supabase_client() -> Client:
-    """Get Supabase client (cached)"""
-    return create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+    """Get Supabase anon client (singleton)"""
+    global _anon_client
+    if _anon_client is None:
+        _anon_client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+    return _anon_client
 
 
-@lru_cache(maxsize=1)
 def get_supabase_admin_client() -> Client:
-    """Get Supabase admin client (with service role key)"""
-    return create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    """Get Supabase service-role client (singleton)"""
+    global _admin_client
+    if _admin_client is None:
+        _admin_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    return _admin_client
 
 
 class SupabaseDB:
@@ -51,7 +60,11 @@ class SupabaseDB:
         Args:
             is_admin: Use admin client (service role) for admin operations
         """
-        self.client = get_supabase_admin_client() if is_admin else get_supabase_client()
+        self.is_admin = is_admin
+
+    @property
+    def client(self) -> Client:
+        return get_supabase_admin_client() if self.is_admin else get_supabase_client()
     
     def select(self, table: str, columns: str = "*", filters: Optional[Dict[str, Any]] = None) -> List[Dict]:
         """
@@ -100,10 +113,9 @@ class SupabaseDB:
             return result.data[0] if result.data else {}
         except Exception as exc:
             message = str(exc).lower()
-            if "duplicate key value violates unique constraint" not in message or "pkey" not in message:
-                raise
-
-            if "id" in data:
+            # Only attempt ID-based retry for sequence/duplicate-key errors on non-id fields
+            is_dup_key = "duplicate key value violates unique constraint" in message
+            if not is_dup_key or "id" in data:
                 raise
 
             latest = self.client.table(table).select("id").order("id", desc=True).limit(1).execute().data or []
@@ -174,6 +186,73 @@ class SupabaseDB:
             query = query.limit(limit)
         
         return query.execute().data or []
+    
+    def select_paginated(
+        self,
+        table: str,
+        columns: str = "*",
+        filters: Optional[Dict[str, Any]] = None,
+        order_by: Optional[str] = None,
+        ascending: bool = True,
+        page: int = 1,
+        limit: int = 20
+    ) -> Dict[str, Any]:
+        """
+        Database-level pagination query.
+        Returns a dict with items, total count, pages, and current page/limit.
+        """
+        # Ensure positive integers
+        page = max(1, int(page))
+        limit = max(1, min(int(limit), 100))
+        
+        # Start query for data with exact count
+        query = self.client.table(table).select(columns, count="exact")
+        
+        if filters:
+            for key, value in filters.items():
+                if isinstance(value, list):
+                    query = query.in_(key, value)
+                elif value is None:
+                    query = query.is_(key, None)
+                else:
+                    query = query.eq(key, value)
+                    
+        if order_by:
+            query = query.order(order_by, desc=not ascending)
+            
+        # Calculate range (0-indexed for Postgrest)
+        start = (page - 1) * limit
+        end = start + limit - 1
+        
+        result = query.range(start, end).execute()
+        
+        total = result.count or 0
+        pages = (total + limit - 1) // limit if limit > 0 else 0
+        
+        return {
+            "items": result.data or [],
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": pages
+        }
+
+
+
+def delete_storage_file(bucket_name: str, file_url: str) -> None:
+    """Delete a file from Supabase Storage given its public URL"""
+    if not file_url:
+        return
+    
+    marker = f"/object/public/{bucket_name}/"
+    if marker in file_url:
+        file_path = file_url.split(marker, 1)[1]
+        if file_path:
+            try:
+                client = get_supabase_admin_client()
+                client.storage.from_(bucket_name).remove([file_path])
+            except Exception as e:
+                print(f"Warning: Failed to delete storage file {file_path}: {e}")
 
 
 # Convenience instance for non-admin operations
@@ -183,4 +262,4 @@ admin_db = SupabaseDB(is_admin=True)
 
 
 # Export for use in routes
-__all__ = ["db", "admin_db", "get_supabase_client", "get_supabase_admin_client", "SupabaseDB"]
+__all__ = ["db", "admin_db", "get_supabase_client", "get_supabase_admin_client", "SupabaseDB", "delete_storage_file"]

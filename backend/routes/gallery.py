@@ -7,17 +7,22 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import GalleryOut
-from routes.utils import require_value, optional_value, paginate_results
+from routes.utils import require_value, optional_value
 
 router = APIRouter(prefix="/gallery", tags=["Gallery"])
 
 
 @router.get("")
 def list_gallery(page: int = Query(1, ge=1), limit: int = Query(12, ge=1, le=100)):
-    """Get paginated gallery items"""
+    """Get paginated gallery items (server-side pagination via Supabase)"""
     try:
-        items = admin_db.order_by("gallery", "created_at", ascending=False)
-        return paginate_results(items, page, limit)
+        return admin_db.select_paginated(
+            "gallery",
+            order_by="created_at",
+            ascending=False,
+            page=page,
+            limit=limit,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -53,6 +58,14 @@ def create_gallery_item(
         supabase = get_supabase_admin_client()
         if image and image.filename:
             content = image.file.read()
+
+            # Validate file type
+            allowed_types = ["image/jpeg", "image/png", "image/webp"]
+            if image.content_type not in allowed_types:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}"
+                )
             
             if len(content) > 10 * 1024 * 1024:  # 10MB max
                 raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")

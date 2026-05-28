@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 PHONE_PATTERN = re.compile(r"^[+]?[0-9\s()\-]{7,18}$")
@@ -25,8 +25,8 @@ class MemberBase(BaseModel):
     email_secondary: Optional[str] = None
     mobile: Optional[str] = None
     image_url: Optional[str] = None
-    
-    model_config = ConfigDict(extra="ignore")
+
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
 class MemberCreate(MemberBase):
@@ -39,9 +39,10 @@ class MemberUpdate(MemberBase):
 
 class MemberOut(MemberBase):
     id: int
-    created_at: datetime
-    
-    model_config = ConfigDict(extra="ignore")
+    # Accept both datetime objects and ISO strings returned by Supabase
+    created_at: Optional[Any] = None
+
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
 class GalleryOut(BaseModel):
@@ -49,9 +50,9 @@ class GalleryOut(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     image_url: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class NewsletterBase(BaseModel):
@@ -72,9 +73,9 @@ class NewsletterOut(BaseModel):
     title: Optional[str] = None
     summary: Optional[str] = None
     pdf_url: Optional[str] = None
-    published_at: datetime
+    published_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class ActivityBase(BaseModel):
@@ -96,9 +97,9 @@ class ActivityUpdate(ActivityBase):
 
 class ActivityOut(ActivityBase):
     id: int
-    created_at: datetime
+    created_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class FacilityBase(BaseModel):
@@ -117,9 +118,9 @@ class FacilityUpdate(FacilityBase):
 
 class FacilityOut(FacilityBase):
     id: int
-    created_at: datetime
+    created_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class DownloadOut(BaseModel):
@@ -127,9 +128,9 @@ class DownloadOut(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     pdf_url: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class ContactCreate(BaseModel):
@@ -169,9 +170,9 @@ class ContactOut(BaseModel):
     email: EmailStr
     phone: Optional[str] = ""
     message: str
-    created_at: datetime
+    created_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class ConferenceBase(BaseModel):
@@ -191,7 +192,7 @@ class ConferenceBase(BaseModel):
 
     @field_validator("status", mode="before")
     @classmethod
-    def normalize_status(cls, value: Optional[str]) -> str:
+    def normalize_status(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
         cleaned = str(value).strip()
@@ -208,7 +209,6 @@ class ConferenceUpdate(ConferenceBase):
 
 class ConferenceOut(ConferenceBase):
     id: int
-    created_at: datetime
+    created_at: Optional[Any] = None
 
-    model_config = ConfigDict(from_attributes=True)
-
+    model_config = ConfigDict(from_attributes=True, extra="ignore")

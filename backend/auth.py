@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import os
+from time import monotonic
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -27,6 +28,22 @@ if not SECRET_KEY or SECRET_KEY == "change-me":
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
+# ── Simple in-process user cache (TTL = 60 s) ─────────────────────────────
+_USER_CACHE_TTL = 60.0  # seconds
+_user_cache: dict[str, tuple[dict, float]] = {}
+
+
+def _get_cached_user(username: str) -> Optional[dict]:
+    entry = _user_cache.get(username)
+    if entry and monotonic() - entry[1] < _USER_CACHE_TTL:
+        return entry[0]
+    _user_cache.pop(username, None)
+    return None
+
+
+def _set_cached_user(username: str, user: dict) -> None:
+    _user_cache[username] = (user, monotonic())
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -46,13 +63,23 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
 ) -> dict:
+    token = request.cookies.get("admin_token")
+    if not token:
+        # Fallback to auth header
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    if not token:
+        raise credentials_exception
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -62,9 +89,13 @@ def get_current_user(
     except JWTError as exc:
         raise credentials_exception from exc
 
-    user = admin_db.select_one("users", {"username": username})
+    # Check cache before hitting DB
+    user = _get_cached_user(username)
     if user is None:
-        raise credentials_exception
+        user = admin_db.select_one("users", {"username": username})
+        if user is None:
+            raise credentials_exception
+        _set_cached_user(username, user)
     return user
 
 

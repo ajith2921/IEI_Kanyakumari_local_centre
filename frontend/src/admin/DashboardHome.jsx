@@ -5,18 +5,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import ErrorState from "../components/ErrorState";
 
-const cards = [
-  { label: "Members", key: "members" },
-  { label: "Gallery Items", key: "gallery" },
-  { label: "Newsletters", key: "newsletters" },
-  { label: "Activities", key: "activities" },
-  { label: "Facilities", key: "facilities" },
-  { label: "Downloads", key: "downloads" },
-  { label: "Contact Messages", key: "contacts" },
-];
-
 export default function DashboardHome() {
-  const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [auditLoading, setAuditLoading] = useState(false);
@@ -24,53 +13,31 @@ export default function DashboardHome() {
   const [auditReport, setAuditReport] = useState({ scanned: 0, flagged_count: 0, items: [] });
   const [autoFixingKey, setAutoFixingKey] = useState("");
 
-  const loadCounts = async () => {
+  const loadAudit = async () => {
     setLoading(true);
     setError("");
     setAuditLoading(true);
 
-    const requests = [
-      ["members", adminApi.members.list()],
-      ["gallery", adminApi.gallery.list()],
-      ["newsletters", adminApi.newsletters.list()],
-      ["activities", adminApi.activities.list()],
-      ["facilities", adminApi.facilities.list()],
-      ["downloads", adminApi.downloads.list()],
-      ["contacts", adminApi.contacts.list()],
-      ["audit", adminApi.audit?.scan?.() || Promise.resolve({ data: { scanned: 0, flagged_count: 0, items: [] } })],
-    ];
+    const result = await Promise.allSettled([
+      adminApi.audit?.scan?.() || Promise.resolve({ data: { scanned: 0, flagged_count: 0, items: [] } }),
+    ]);
 
-    const settled = await Promise.allSettled(requests.map(([, request]) => request));
-    const nextCounts = {};
     const nextAuditReport = { scanned: 0, flagged_count: 0, items: [] };
-    const failures = [];
+    if (result[0].status === "fulfilled") {
+      nextAuditReport.scanned = result[0].value.data?.scanned || 0;
+      nextAuditReport.flagged_count = result[0].value.data?.flagged_count || 0;
+      nextAuditReport.items = result[0].value.data?.items || [];
+    } else {
+      setAuditError(parseApiError(result[0].reason));
+    }
 
-    settled.forEach((result, index) => {
-      const [key] = requests[index];
-      if (result.status === "fulfilled") {
-        if (key === "audit") {
-          nextAuditReport.scanned = result.value.data?.scanned || 0;
-          nextAuditReport.flagged_count = result.value.data?.flagged_count || 0;
-          nextAuditReport.items = result.value.data?.items || [];
-        } else {
-          nextCounts[key] = result.value.data.length;
-        }
-      } else {
-        if (key !== "audit") nextCounts[key] = 0;
-        if (key === "audit") setAuditError(parseApiError(result.reason));
-        else failures.push(parseApiError(result.reason));
-      }
-    });
-
-    setCounts(nextCounts);
     setAuditReport(nextAuditReport);
-    setError(failures[0] || "");
     setLoading(false);
     setAuditLoading(false);
   };
 
   useEffect(() => {
-    loadCounts();
+    loadAudit();
   }, []);
 
   const onAutoFix = async (entity, id) => {
@@ -78,7 +45,7 @@ export default function DashboardHome() {
     setAutoFixingKey(key);
     try {
       await adminApi.imageAudit.autoFix(entity, id);
-      await Promise.all([loadCounts(), adminApi.imageAudit.list().then((response) => {
+      await Promise.all([loadAudit(), adminApi.imageAudit.list().then((response) => {
         setAuditReport(response.data || { scanned: 0, flagged_count: 0, items: [] });
       })]);
     } catch (err) {
@@ -93,11 +60,7 @@ export default function DashboardHome() {
       <h2 className="heading-h2 mb-2 font-semibold text-gray-900">Overview</h2>
       <p className="mb-6 text-gray-600">Manage website content and incoming requests.</p>
 
-      {loading && (
-        <div>
-          <DashboardStats />
-        </div>
-      )}
+      <DashboardStats />
 
       {loading && (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -110,20 +73,6 @@ export default function DashboardHome() {
         </div>
       )}
       {error && <ErrorState message={error} />}
-
-      {!loading && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {cards.map((card) => (
-            <Card
-              key={card.key}
-              className="p-4"
-            >
-              <p className="text-sm font-medium text-brand-700">{card.label}</p>
-              <p className="mt-2 text-3xl font-semibold text-gray-900">{counts[card.key] ?? 0}</p>
-            </Card>
-          ))}
-        </div>
-      )}
 
       <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
