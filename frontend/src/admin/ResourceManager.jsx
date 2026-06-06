@@ -545,7 +545,7 @@ export default function ResourceManager({
               onChange={onImageFileChange}
               className="input-base mb-3 cursor-pointer"
             />
-            <div className="overflow-hidden rounded-lg bg-slate-50">
+            <div className="max-w-[240px] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
               {previewSource ? (
                 <div className={`flex w-full items-center justify-center ${imagePreviewAspectClass}`}>
                   <ImageMedia
