@@ -253,7 +253,7 @@ export default function AdminGallery() {
               </span>
             )}
           </div>
-          <div className="overflow-hidden rounded-lg bg-slate-50">
+          <div className="max-w-[240px] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
             {previewSource ? (
               <div className="flex aspect-[4/3] w-full items-center justify-center">
                 <ImageMedia
