@@ -46,20 +46,15 @@ export default function Home() {
   return (
     <>
       {/* ── Full-screen hero image + floating conference notification ── */}
-      <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      <div className="home-hero-shell">
         <img
+          className="home-hero-image"
           src="/home-bg.webp"
           alt="IEI Kanyakumari Local Centre Event"
           fetchpriority="high"
           decoding="sync"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            display: 'block',
-          }}
         />
+        <div aria-hidden="true" className="home-hero-overlay" />
         <div className="pointer-events-none hidden lg:flex absolute inset-y-0 right-0 z-20 items-end justify-end pr-6 xl:pr-10 pb-16">
           <div className="pointer-events-auto w-[19rem] xl:w-[20rem]">
             <ConferenceNotification />

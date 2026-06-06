@@ -103,6 +103,31 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--home-premium-shadow);
 }
 
+.home-hero-shell {
+  position: relative;
+  width: 100%;
+  height: min(100vh, 54rem);
+  height: min(100svh, 54rem);
+  min-height: 24rem;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.home-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.home-hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(15 23 42 / 0.08) 0%, rgb(15 23 42 / 0.22) 100%);
+}
+
 .home-premium-kicker {
   font-size: 0.7rem;
   font-weight: 700;
@@ -672,6 +697,18 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+@media (max-width: 767px) {
+  .home-hero-shell {
+    height: min(62vh, 34rem);
+    height: min(62svh, 34rem);
+    min-height: 22rem;
+  }
+
+  .home-hero-image {
+    object-position: center top;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════
    CONFERENCE NOTIFICATION SYSTEM
 ═══════════════════════════════════════════════════════ */
@@ -1142,4 +1179,3 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.98rem;
   }
 }
-
