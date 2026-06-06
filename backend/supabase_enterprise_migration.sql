@@ -8,7 +8,11 @@
 -- 1. ADMIN USERS TABLE
 -- Replaces the thin `users` table for multi-admin RBAC
 -- ============================================================
-CREATE TABLE IF NOT EXISTS admin_users (
+DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS login_logs CASCADE;
+DROP TABLE IF EXISTS admin_users CASCADE;
+
+CREATE TABLE admin_users (
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(120) NOT NULL DEFAULT '',
     username    VARCHAR(50)  UNIQUE NOT NULL,
@@ -31,7 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_users_status   ON admin_users(status);
 -- ============================================================
 -- 2. AUDIT LOGS TABLE (Immutable — no UPDATE/DELETE allowed)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS audit_logs (
+CREATE TABLE audit_logs (
     id          BIGSERIAL    PRIMARY KEY,
     admin_id    INTEGER      REFERENCES admin_users(id) ON DELETE SET NULL,
     admin_name  VARCHAR(120) NOT NULL DEFAULT '',
@@ -55,7 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DE
 -- ============================================================
 -- 3. LOGIN LOGS TABLE
 -- ============================================================
-CREATE TABLE IF NOT EXISTS login_logs (
+CREATE TABLE login_logs (
     id           BIGSERIAL    PRIMARY KEY,
     admin_id     INTEGER      REFERENCES admin_users(id) ON DELETE SET NULL,
     admin_name   VARCHAR(120) NOT NULL DEFAULT '',
