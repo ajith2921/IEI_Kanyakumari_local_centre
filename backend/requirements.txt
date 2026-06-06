@@ -14,8 +14,3 @@ Pillow==10.4.0
 
 # Supabase and related clients
 supabase==2.9.1
-postgrest-py==0.10.4
-gotrue==2.12.4
-storage3==0.8.2
-supafunc==0.6.2
-realtime==2.5.3
