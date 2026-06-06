@@ -22,6 +22,7 @@ from routes import (
     audit_logs,
     auth,
     conferences,
+    conference_portal,
     contact,
     downloads,
     facilities,
@@ -254,6 +255,8 @@ app.include_router(facilities.router, prefix="/api")
 app.include_router(downloads.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
 app.include_router(conferences.router, prefix="/api")
+app.include_router(conference_portal.router, prefix="/api")
+app.include_router(conference_portal.public_router, prefix="/api")
 
 
 @app.get("/api/health")

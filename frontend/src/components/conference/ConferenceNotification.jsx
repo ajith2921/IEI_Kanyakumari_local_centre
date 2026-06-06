@@ -286,7 +286,7 @@ export default function ConferenceNotification({ previewMode = false }) {
                 </Link>
               )
             ) : (
-              <Link to="/conferences" className="conf-cta-btn">
+              <Link to="/conference-portal" className="conf-cta-btn">
                 <span>{conference.buttonText || "View Conference"}</span>
                 <svg className="conf-cta-btn__icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path d="M5 10h10M11 6l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

@@ -264,6 +264,12 @@ export const publicApi = {
   clearConferenceCache: () => cache.delete(getCacheKey("/conferences/")),
   clearActiveConferenceCache: () => cache.delete(getCacheKey("/conferences/active")),
   clearAllCache: () => cache.clear(),
+  // Conference Portal Generic Getters
+  getConferencePortalResource: (resource, conferenceId) => {
+    const url = `/conference-portal/${resource}?conference_id=${conferenceId}&limit=100`;
+    return cachedGet(url, CONFERENCE_CACHE_TTL);
+  },
+  submitConferencePortal: (resource, payload) => postWithOptionalMultipart(`/public/conference-portal/${resource}`, payload),
   // Utility: clear the dismissed localStorage flag so the notification shows again
   clearNotificationDismissal: () => {
     Object.keys(localStorage)
@@ -319,9 +325,15 @@ export const adminApi = {
   conferences: {
     list: () => api.get("/conferences/"),
     active: () => api.get("/conferences/active"),
-    create: (payload) => postWithOptionalMultipart("/conferences/", payload),
+    create: (payload) => postWithOptionalMultipart("/conferences", payload),
     update: (id, payload) => putWithOptionalMultipart(`/conferences/${id}`, payload),
     remove: (id) => api.delete(`/conferences/${id}`),
+  },
+  conferencePortal: {
+    list: (resource, conferenceId) => api.get(`/conference-portal/${resource}?conference_id=${conferenceId}&limit=100`),
+    create: (resource, payload) => postWithOptionalMultipart(`/conference-portal/${resource}`, payload),
+    update: (resource, id, payload) => putWithOptionalMultipart(`/conference-portal/${resource}/${id}`, payload),
+    remove: (resource, id) => api.delete(`/conference-portal/${resource}/${id}`),
   },
   users: {
     list: () => api.get("/admin/users"),

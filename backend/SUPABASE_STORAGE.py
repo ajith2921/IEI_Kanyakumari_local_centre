@@ -67,11 +67,35 @@ def create_storage_buckets():
             "public": True,
             "file_size_limit": 10485760,  # 10MB
             "allowed_mime_types": ["image/jpeg", "image/png", "image/webp"]
+        },
+        {
+            "name": "conference-portal",
+            "public": True,
+            "file_size_limit": 52428800,  # 50MB
+            "allowed_mime_types": ["image/jpeg", "image/png", "image/webp", "application/pdf"]
         }
     ]
+    print("Setting up Supabase Storage buckets...")
     
     for bucket_config in buckets:
         try:
+            # First check if it exists by trying to get it
+            try:
+                supabase.storage.get_bucket(bucket_config["name"])
+                # Exists! Update the bucket settings to ensure they match our config
+                supabase.storage.update_bucket(
+                    bucket_config["name"],
+                    public=bucket_config["public"],
+                    file_size_limit=bucket_config["file_size_limit"],
+                    allowed_mime_types=bucket_config["allowed_mime_types"]
+                )
+                print(f"[*] Bucket updated: {bucket_config['name']}")
+                continue
+            except Exception as e:
+                # If we get here, bucket might not exist or another error occurred
+                pass
+
+            # Try to create it
             supabase.storage.create_bucket(
                 bucket_config["name"],
                 options={
@@ -80,12 +104,15 @@ def create_storage_buckets():
                     "allowed_mime_types": bucket_config["allowed_mime_types"]
                 }
             )
-            print(f"✅ Created bucket: {bucket_config['name']}")
+            print(f"[+] Bucket created: {bucket_config['name']}")
+            
         except Exception as e:
-            if "already exists" in str(e):
-                print(f"⏭️  Bucket already exists: {bucket_config['name']}")
+            # Check if error is 'Duplicate' which means it exists
+            error_str = str(e)
+            if 'Duplicate' in error_str or 'already exists' in error_str.lower():
+                print(f"[*] Bucket already exists: {bucket_config['name']}")
             else:
-                print(f"❌ Error creating {bucket_config['name']}: {e}")
+                print(f"[-] Error setting up bucket {bucket_config['name']}: {e}")
 
 
 # ============================================================================
@@ -438,4 +465,4 @@ if __name__ == "__main__":
     print("Setting up Supabase Storage buckets...\n")
     create_storage_buckets()
     
-    print("\n✅ Storage setup complete!")
+    print("\n[+] Storage setup complete!")

@@ -17,6 +17,24 @@ const ConferencePage = lazy(() => import("./pages/ConferencePage"));
 const LinksDownloads = lazy(() => import("./pages/LinksDownloads"));
 const Contact = lazy(() => import("./pages/Contact"));
 
+// Conference Portal
+const ConferencePortal = lazy(() => import("./pages/conference-portal/ConferencePortal"));
+const PortalHome = lazy(() => import("./pages/conference-portal/PortalHome"));
+const PortalAbout = lazy(() => import("./pages/conference-portal/PortalAbout"));
+const PortalDates = lazy(() => import("./pages/conference-portal/PortalDates"));
+const PortalCallForPapers = lazy(() => import("./pages/conference-portal/PortalCallForPapers"));
+const PortalSpeakers = lazy(() => import("./pages/conference-portal/PortalSpeakers"));
+const PortalCommittees = lazy(() => import("./pages/conference-portal/PortalCommittees"));
+const PortalVenue = lazy(() => import("./pages/conference-portal/PortalVenue"));
+const PortalSponsors = lazy(() => import("./pages/conference-portal/PortalSponsors"));
+const PortalRegistration = lazy(() => import("./pages/conference-portal/PortalRegistration"));
+const PortalSubmission = lazy(() => import("./pages/conference-portal/PortalSubmission"));
+const PortalProgram = lazy(() => import("./pages/conference-portal/PortalProgram"));
+const PortalGallery = lazy(() => import("./pages/conference-portal/PortalGallery"));
+const PortalDownloads = lazy(() => import("./pages/conference-portal/PortalDownloads"));
+const PortalFAQ = lazy(() => import("./pages/conference-portal/PortalFAQ"));
+const PortalContact = lazy(() => import("./pages/conference-portal/PortalContact"));
+
 // Admin pages — lazy loaded so they are excluded from the public bundle
 const AdminLogin    = lazy(() => import("./admin/AdminLogin"));
 const AdminLayout   = lazy(() => import("./admin/AdminLayout"));
@@ -29,6 +47,7 @@ const AdminFacilities  = lazy(() => import("./admin/AdminFacilities"));
 const AdminDownloads   = lazy(() => import("./admin/AdminDownloads"));
 const AdminMessages    = lazy(() => import("./admin/AdminMessages"));
 const AdminConference  = lazy(() => import("./admin/AdminConference"));
+const AdminConferencePortal = lazy(() => import("./admin/AdminConferencePortal"));
 const AdminUsers       = lazy(() => import("./admin/AdminUsers"));
 const AuditLogs        = lazy(() => import("./admin/AuditLogs"));
 const LoginHistory     = lazy(() => import("./admin/LoginHistory"));
@@ -100,8 +119,38 @@ export default function App() {
       {/* Legacy paths redirect to canonical /conferences */}
       <Route path="/conference" element={<Navigate to="/conferences" replace />} />
       <Route path="/conference-overview" element={<Navigate to="/conferences" replace />} />
+      
+      {/* Active Conference Portal */}
+      <Route
+        path="/conference-portal"
+        element={
+          <Suspense fallback={<PageFallback />}>
+            <ConferencePortal />
+          </Suspense>
+        }
+      >
+        <Route index element={<PortalHome />} />
+        <Route path="about" element={<PortalAbout />} />
+        <Route path="dates" element={<PortalDates />} />
+        <Route path="call-for-papers" element={<PortalCallForPapers />} />
+        <Route path="speakers" element={<PortalSpeakers />} />
+        <Route path="committees" element={<PortalCommittees />} />
+        <Route path="venue" element={<PortalVenue />} />
+        <Route path="sponsors" element={<PortalSponsors />} />
+        <Route path="registration" element={<PortalRegistration />} />
+        <Route path="submission" element={<PortalSubmission />} />
+        <Route path="program" element={<PortalProgram />} />
+        <Route path="gallery" element={<PortalGallery />} />
+        <Route path="downloads" element={<PortalDownloads />} />
+        <Route path="faq" element={<PortalFAQ />} />
+        <Route path="contact" element={<PortalContact />} />
+        
+        {/* Placeholder sub-routes for now until components are ready */}
+        <Route path="*" element={<PortalHome />} />
+      </Route>
       {/* Redirect old /about links to the home page */}
       <Route path="/about" element={<Navigate to="/" replace />} />
+      <Route path="/register" element={<Navigate to="/conference-portal/registration" replace />} />
       <Route
         path="/members"
         element={
@@ -192,6 +241,7 @@ export default function App() {
         <Route path="newsletters" element={<AdminNewsletters />} />
         <Route path="activities" element={<AdminActivities />} />
         <Route path="conference" element={<AdminConference />} />
+        <Route path="conference-portal" element={<AdminConferencePortal />} />
         <Route path="facilities" element={<AdminFacilities />} />
         <Route path="downloads" element={<AdminDownloads />} />
         <Route path="messages" element={<AdminMessages />} />

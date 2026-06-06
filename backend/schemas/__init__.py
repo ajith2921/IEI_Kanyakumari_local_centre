@@ -212,3 +212,5 @@ class ConferenceOut(ConferenceBase):
     created_at: Optional[Any] = None
 
     model_config = ConfigDict(from_attributes=True, extra="ignore")
+
+from .conference_portal import *
