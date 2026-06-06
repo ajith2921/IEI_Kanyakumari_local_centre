@@ -53,8 +53,20 @@ def create_storage_buckets():
         {
             "name": "downloads",
             "public": True,
-            "file_size_limit": 104857600,  # 100MB
+            "file_size_limit": 52428800,  # 50MB
             "allowed_mime_types": ["application/pdf", "text/csv", "application/vnd.ms-excel"]
+        },
+        {
+            "name": "conferences",
+            "public": True,
+            "file_size_limit": 52428800,  # 50MB
+            "allowed_mime_types": ["image/jpeg", "image/png", "image/webp", "application/pdf"]
+        },
+        {
+            "name": "facilities",
+            "public": True,
+            "file_size_limit": 10485760,  # 10MB
+            "allowed_mime_types": ["image/jpeg", "image/png", "image/webp"]
         }
     ]
     
