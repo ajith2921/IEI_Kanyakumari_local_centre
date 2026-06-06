@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
 from audit import log_action
 
@@ -236,6 +236,12 @@ def delete_conference(
             raise HTTPException(status_code=404, detail="Conference not found")
 
         admin_db.delete("conferences", {"id": conf_id})
+
+        if conf:
+            if conf.get("image_url"):
+                delete_storage_file("conferences", conf["image_url"])
+            if conf.get("pdf_url"):
+                delete_storage_file("conferences", conf["pdf_url"])
 
         log_action(
             request=request,

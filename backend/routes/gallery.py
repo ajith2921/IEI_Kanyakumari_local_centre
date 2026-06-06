@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import GalleryOut
 from routes.utils import require_value, optional_value
 from audit import log_action
@@ -119,6 +119,9 @@ def delete_gallery_item(
         count = admin_db.delete("gallery", {"id": item_id})
         if count == 0:
             raise HTTPException(status_code=404, detail="Gallery item not found")
+
+        if item and item.get("image_url"):
+            delete_storage_file("gallery", item["image_url"])
 
         log_action(
             request=request,

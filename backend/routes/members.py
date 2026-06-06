@@ -6,7 +6,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import MemberOut
 from routes.utils import require_value, paginate_results
 from audit import log_action
@@ -332,6 +332,9 @@ def delete_member(
         count = admin_db.delete("members", {"id": member_id})
         if count == 0:
             raise HTTPException(status_code=404, detail="Member not found")
+
+        if member and member.get("image_url"):
+            delete_storage_file("members", member["image_url"])
 
         # Audit log
         log_action(

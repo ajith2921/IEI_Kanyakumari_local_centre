@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
-from supabase_db import admin_db, get_supabase_admin_client
+from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import ActivityOut
 from routes.utils import optional_value, require_value
 from audit import log_action
@@ -269,6 +269,14 @@ def delete_activity(
         count = admin_db.delete("activities", {"id": activity_id})
         if count == 0:
             raise HTTPException(status_code=404, detail="Activity not found")
+
+        if activity:
+            if activity.get("image_url"):
+                delete_storage_file("activities", activity["image_url"])
+            if activity.get("pdf_url"):
+                delete_storage_file("activities", activity["pdf_url"])
+            if activity.get("colab_url") and "/storage/" in activity["colab_url"]:
+                delete_storage_file("activities", activity["colab_url"])
 
         log_action(
             request=request,
