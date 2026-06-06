@@ -94,7 +94,7 @@ export default function HeroSlider({ stats = defaultStats }) {
                   <p className="text-2xl font-semibold tracking-tight text-gray-900">
                     {stat.value}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-400">{stat.label}</p>
+                  <p className="mt-0.5 text-xs text-gray-500">{stat.label}</p>
                 </div>
               ))}
             

@@ -124,6 +124,24 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// In production, suppress console noise from expected network failures
+// (e.g. backend unreachable, CORS errors). Errors are still propagated
+// to calling code for UI handling — we just avoid console spam.
+const IS_PROD = import.meta.env.PROD;
+if (IS_PROD) {
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      // Only suppress network-level errors (no response), not API errors
+      if (!error.response) {
+        // Silently reject — component error handlers still fire
+        return Promise.reject(error);
+      }
+      return Promise.reject(error);
+    }
+  );
+}
+
 export const parseApiError = (error) => {
   const status = error.response?.status;
   const data = error.response?.data;

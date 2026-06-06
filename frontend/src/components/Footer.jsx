@@ -8,19 +8,19 @@ export default function Footer() {
       <div className="border-b border-gray-200 bg-gray-50">
         <div className="page-shell grid gap-3 py-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Institution</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Institution</p>
             <p className="mt-1 text-lg font-semibold text-gray-900">Since 1920</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Local Centre</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Local Centre</p>
             <p className="mt-1 text-lg font-semibold text-gray-900">Established 2015</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Service Tracks</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Service Tracks</p>
             <p className="mt-1 text-lg font-semibold text-gray-900">CEng / PEng / CPD</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-gray-400">Member Access</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Member Access</p>
             <p className="mt-1 text-lg font-semibold text-gray-900">Portal and Resources</p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default function Footer() {
           <p className="mt-0.5 text-sm font-medium text-gray-500">
             Kanyakumari Local Centre
           </p>
-          <p className="mt-4 text-xs leading-relaxed text-gray-400">
+          <p className="mt-4 text-xs leading-relaxed text-gray-500">
             Building Engineers for a Better Tomorrow.<br />
             Engineering Excellence · Innovation · Ethics
           </p>
@@ -45,7 +45,7 @@ export default function Footer() {
         {/* Quick Links */}
         <div>
           <p className="eyebrow-chip mb-5">Quick Links</p>
-          <div className="grid gap-3 text-sm text-gray-400">
+          <div className="grid gap-3 text-sm text-gray-500">
             <Link to="/" className="transition-colors duration-200 hover:text-gray-900">Home</Link>
             <Link to="/technical-activities" className="transition-colors duration-200 hover:text-gray-900">Events</Link>
             <Link to="/members" className="transition-colors duration-200 hover:text-gray-900">Committee</Link>
@@ -56,7 +56,7 @@ export default function Footer() {
         {/* Services */}
         <div>
           <p className="eyebrow-chip mb-5">Services</p>
-          <div className="grid gap-3 text-sm text-gray-400">
+          <div className="grid gap-3 text-sm text-gray-500">
             <a href={MEMBERSHIP_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-gray-900">Membership</a>
             <Link to="/newsletter" className="transition-colors duration-200 hover:text-gray-900">Newsletter</Link>
             <Link to="/links-downloads" className="transition-colors duration-200 hover:text-gray-900">Downloads</Link>
@@ -68,7 +68,7 @@ export default function Footer() {
         {/* Office */}
         <div>
           <p className="eyebrow-chip mb-5">Office</p>
-          <div className="space-y-2 text-sm text-gray-400">
+          <div className="space-y-2 text-sm text-gray-500">
             <p>Nagercoil, Kanyakumari District,</p>
             <p>Tamil Nadu, India</p>
             <a
@@ -80,7 +80,7 @@ export default function Footer() {
             <a href="tel:+919443993659" className="block transition-colors duration-200 hover:text-gray-900">
               +91-9443993659
             </a>
-            <p className="pt-1 text-xs text-gray-300">Mon–Sat: 10:00 AM – 5:30 PM</p>
+            <p className="pt-1 text-xs text-gray-400">Mon–Sat: 10:00 AM – 5:30 PM</p>
           </div>
         </div>
       </div>

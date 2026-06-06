@@ -74,6 +74,7 @@ export default function ResourceManager({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [offline, setOffline] = useState(false);
   const [success, setSuccess] = useState("");
   const [extraFiles, setExtraFiles] = useState({});
   const imageFieldValue = String(form[imageFieldName] || "");
@@ -111,6 +112,7 @@ export default function ResourceManager({
   const loadItems = async () => {
     setLoading(true);
     setError("");
+    setOffline(false);
     try {
       const response = await fetchList();
       const responseData = response.data;
@@ -118,7 +120,14 @@ export default function ResourceManager({
       setItems(dataArray);
       setCurrentPage(1);
     } catch (err) {
-      setError(`Unable to load ${entityLabel}. ${parseApiError(err)}`);
+      const parsed = parseApiError(err);
+      // Detect likely network/offline errors
+      if (/network|failed to fetch|getaddrinfo|connection refused/i.test(String(err?.message || parsed))) {
+        setOffline(true);
+        setError(`Network error: Unable to reach the backend. Please check your connection and try again.`);
+      } else {
+        setError(`Unable to load ${entityLabel}. ${parsed}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -255,6 +264,7 @@ export default function ResourceManager({
           const field = fields.find(f => f.name === invalidElement.name);
           const label = field ? field.label : invalidElement.name;
           setError(`Please provide a valid value for ${label}.`);
+          try { invalidElement.focus(); } catch {}
         } else {
           setError("Please correct the highlighted fields and try again.");
         }
@@ -381,6 +391,11 @@ export default function ResourceManager({
 
   return (
     <div>
+      {offline && (
+        <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-3 text-sm font-medium text-yellow-700">
+          Network appears to be offline or backend unreachable. <button onClick={loadItems} className="underline">Retry</button>
+        </div>
+      )}
       <div className="mb-4">
         <h2 className="heading-h2 mb-2 font-semibold text-gray-900">{title}</h2>
         <p className="text-sm text-gray-600">
