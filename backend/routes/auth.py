@@ -72,8 +72,8 @@ def login(request: Request, payload: LoginRequest, response: Response) -> TokenR
         key="admin_token",
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=is_prod,
+        samesite="none",
+        secure=True,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60 if (ACCESS_TOKEN_EXPIRE_MINUTES := int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "120"))) else 7200,
     )
 
@@ -83,8 +83,8 @@ def login(request: Request, payload: LoginRequest, response: Response) -> TokenR
             key="admin_login_log_id",
             value=str(login_log_id),
             httponly=True,
-            samesite="lax",
-            secure=is_prod,
+            samesite="none",
+            secure=True,
             max_age=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "120")) * 60,
         )
 
