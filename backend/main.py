@@ -71,7 +71,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 origins = [
     origin.strip()
-    for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+    for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,https://iei-kanyakumari-local-centre.vercel.app").split(",")
     if origin.strip()
 ]
 
