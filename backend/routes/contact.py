@@ -1,10 +1,11 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db
 from schemas import ContactCreate, ContactOut
+from audit import log_action
 
 router = APIRouter(prefix="/contact", tags=["Contact"])
 
@@ -92,13 +93,29 @@ def get_message(
 )
 def delete_message(
     message_id: int,
-    _current_user = Depends(get_current_active_user),
+    request: Request,
+    current_user: dict = Depends(get_current_active_user),
 ) -> None:
     """Delete contact message"""
     try:
+        # We need the message data for the audit log
+        try:
+            message = _select_contact("contact_messages", message_id)
+        except Exception:
+            message = _select_contact("contacts", message_id)
+
         count = _delete_contact("contact_messages", message_id)
         if count == 0:
             raise HTTPException(status_code=404, detail="Message not found")
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="DELETE",
+            module="contact_messages",
+            record_id=message_id,
+            old_data=message,
+        )
         return None
     except HTTPException:
         raise
@@ -107,5 +124,14 @@ def delete_message(
             count = _delete_contact("contacts", message_id)
             if count == 0:
                 raise HTTPException(status_code=404, detail="Message not found")
+
+            log_action(
+                request=request,
+                current_user=current_user,
+                action="DELETE",
+                module="contacts",
+                record_id=message_id,
+                old_data=message,
+            )
             return None
         raise HTTPException(status_code=500, detail=f"Error deleting message: {str(e)}")

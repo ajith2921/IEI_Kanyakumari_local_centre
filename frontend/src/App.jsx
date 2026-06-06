@@ -29,6 +29,9 @@ const AdminFacilities  = lazy(() => import("./admin/AdminFacilities"));
 const AdminDownloads   = lazy(() => import("./admin/AdminDownloads"));
 const AdminMessages    = lazy(() => import("./admin/AdminMessages"));
 const AdminConference  = lazy(() => import("./admin/AdminConference"));
+const AdminUsers       = lazy(() => import("./admin/AdminUsers"));
+const AuditLogs        = lazy(() => import("./admin/AuditLogs"));
+const LoginHistory     = lazy(() => import("./admin/LoginHistory"));
 
 function AdminFallback() {
   return (
@@ -192,6 +195,9 @@ export default function App() {
         <Route path="facilities" element={<AdminFacilities />} />
         <Route path="downloads" element={<AdminDownloads />} />
         <Route path="messages" element={<AdminMessages />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="audit-logs" element={<AuditLogs />} />
+        <Route path="login-history" element={<LoginHistory />} />
       </Route>
 
       <Route path="/admin/*" element={<Navigate to="/admin" replace />} />

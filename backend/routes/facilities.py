@@ -2,13 +2,14 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import FacilityOut
 from routes.utils import optional_value, require_value
 from routes.file_utils import compress_image_to_webp
+from audit import log_action
 
 router = APIRouter(prefix="/facilities", tags=["Facilities"])
 
@@ -25,11 +26,12 @@ def list_facilities() -> list[dict]:
 
 @router.post("", response_model=FacilityOut, status_code=status.HTTP_201_CREATED)
 def create_facility(
+    request: Request,
     name: str = Form(default=""),
     description: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Create facility with image upload to Supabase Storage"""
     try:
@@ -68,8 +70,17 @@ def create_facility(
         }
         
         created_facility = admin_db.insert("facilities", facility_data)
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="CREATE",
+            module="facilities",
+            record_id=created_facility.get("id"),
+            new_data=created_facility,
+        )
         return created_facility
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -79,11 +90,12 @@ def create_facility(
 @router.put("/{facility_id}", response_model=FacilityOut)
 def update_facility(
     facility_id: int,
+    request: Request,
     name: str = Form(default=""),
     description: str = Form(default=""),
     image_url: str = Form(default=""),
     image: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Update facility with optional image upload to Supabase Storage"""
     try:
@@ -124,8 +136,18 @@ def update_facility(
 
         # Update in Supabase
         updated_facility = admin_db.update("facilities", update_data, {"id": facility_id})
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="UPDATE",
+            module="facilities",
+            record_id=facility_id,
+            old_data=facility,
+            new_data=updated_facility,
+        )
         return updated_facility
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -153,19 +175,28 @@ def get_facility(facility_id: int) -> dict:
 )
 def delete_facility(
     facility_id: int,
-    _current_user = Depends(get_current_active_user),
+    request: Request,
+    current_user: dict = Depends(get_current_active_user),
 ) -> None:
     """Delete facility"""
     try:
         facility = admin_db.select_one("facilities", {"id": facility_id})
         if not facility:
             raise HTTPException(status_code=404, detail="Facility not found")
-            
+
         admin_db.delete("facilities", {"id": facility_id})
-        
+
         if facility.get("image_url"):
             delete_storage_file("facilities", facility["image_url"])
-            
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="DELETE",
+            module="facilities",
+            record_id=facility_id,
+            old_data=facility,
+        )
         return None
     except HTTPException:
         raise

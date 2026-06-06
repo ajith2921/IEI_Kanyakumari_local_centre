@@ -4,12 +4,13 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import NewsletterOut
 from routes.utils import require_value
+from audit import log_action
 
 router = APIRouter(prefix="/newsletters", tags=["Newsletters"])
 
@@ -34,10 +35,11 @@ def list_newsletters(
 
 @router.post("", response_model=NewsletterOut, status_code=status.HTTP_201_CREATED)
 def create_newsletter(
+    request: Request,
     title: str = Form(default=""),
     summary: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Create newsletter with PDF upload to Supabase Storage"""
     try:
@@ -69,8 +71,17 @@ def create_newsletter(
         }
         
         created_newsletter = admin_db.insert("newsletters", newsletter_data)
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="CREATE",
+            module="newsletters",
+            record_id=created_newsletter.get("id"),
+            new_data=created_newsletter,
+        )
         return created_newsletter
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -80,10 +91,11 @@ def create_newsletter(
 @router.put("/{newsletter_id}", response_model=NewsletterOut)
 def update_newsletter(
     newsletter_id: int,
+    request: Request,
     title: str = Form(default=""),
     summary: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Update newsletter with optional PDF upload to Supabase Storage"""
     try:
@@ -115,8 +127,18 @@ def update_newsletter(
 
         # Update in Supabase
         updated_newsletter = admin_db.update("newsletters", update_data, {"id": newsletter_id})
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="UPDATE",
+            module="newsletters",
+            record_id=newsletter_id,
+            old_data=newsletter,
+            new_data=updated_newsletter,
+        )
         return updated_newsletter
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -144,19 +166,28 @@ def get_newsletter(newsletter_id: int) -> dict:
 )
 def delete_newsletter(
     newsletter_id: int,
-    _current_user = Depends(get_current_active_user),
+    request: Request,
+    current_user: dict = Depends(get_current_active_user),
 ) -> None:
     """Delete newsletter"""
     try:
         newsletter = admin_db.select_one("newsletters", {"id": newsletter_id})
         if not newsletter:
             raise HTTPException(status_code=404, detail="Newsletter not found")
-            
+
         admin_db.delete("newsletters", {"id": newsletter_id})
-        
+
         if newsletter.get("pdf_url"):
             delete_storage_file("newsletters", newsletter["pdf_url"])
-            
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="DELETE",
+            module="newsletters",
+            record_id=newsletter_id,
+            old_data=newsletter,
+        )
         return None
     except HTTPException:
         raise

@@ -323,6 +323,22 @@ export const adminApi = {
     update: (id, payload) => putWithOptionalMultipart(`/conferences/${id}`, payload),
     remove: (id) => api.delete(`/conferences/${id}`),
   },
+  users: {
+    list: () => api.get("/admin-users"),
+    create: (payload) => api.post("/admin-users", payload),
+    update: (id, payload) => api.put(`/admin-users/${id}`, payload),
+    remove: (id) => api.delete(`/admin-users/${id}`),
+  },
+  audit: {
+    list: (params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return api.get(`/audit-logs?${qs}`);
+    },
+    loginHistory: (params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return api.get(`/login-logs?${qs}`);
+    },
+  },
 };
 
 export default api;

@@ -5,15 +5,18 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await authApi.me();
+        const response = await authApi.me();
         setIsAuthenticated(true);
+        setUser(response.data);
       } catch {
         setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -25,7 +28,9 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       await authApi.login({ username, password });
+      const meResponse = await authApi.me();
       setIsAuthenticated(true);
+      setUser(meResponse.data);
       return { success: true };
     } catch (error) {
       return { success: false, message: parseApiError(error) };
@@ -41,16 +46,18 @@ export function AuthProvider({ children }) {
       // Swallow logout errors — session cleanup happens regardless
     }
     setIsAuthenticated(false);
+    setUser(null);
   }, []);
 
   const value = useMemo(
     () => ({
       isAuthenticated,
+      user,
       loading,
       login,
       logout,
     }),
-    [isAuthenticated, loading, login, logout]
+    [isAuthenticated, user, loading, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

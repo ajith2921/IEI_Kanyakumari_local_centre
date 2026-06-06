@@ -4,12 +4,13 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import DownloadOut
 from routes.utils import require_value
+from audit import log_action
 
 router = APIRouter(prefix="/downloads", tags=["Downloads"])
 
@@ -34,10 +35,11 @@ def list_downloads(
 
 @router.post("", response_model=DownloadOut, status_code=status.HTTP_201_CREATED)
 def create_download(
+    request: Request,
     title: str = Form(default=""),
     description: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Create download with PDF upload to Supabase Storage"""
     try:
@@ -67,8 +69,17 @@ def create_download(
         }
         
         created_download = admin_db.insert("downloads", download_data)
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="CREATE",
+            module="downloads",
+            record_id=created_download.get("id"),
+            new_data=created_download,
+        )
         return created_download
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -78,10 +89,11 @@ def create_download(
 @router.put("/{download_id}", response_model=DownloadOut)
 def update_download(
     download_id: int,
+    request: Request,
     title: str = Form(default=""),
     description: str = Form(default=""),
     pdf: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Update download with optional PDF upload to Supabase Storage"""
     try:
@@ -113,8 +125,18 @@ def update_download(
 
         # Update in Supabase
         updated_download = admin_db.update("downloads", update_data, {"id": download_id})
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="UPDATE",
+            module="downloads",
+            record_id=download_id,
+            old_data=download,
+            new_data=updated_download,
+        )
         return updated_download
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -142,19 +164,28 @@ def get_download(download_id: int) -> dict:
 )
 def delete_download(
     download_id: int,
-    _current_user = Depends(get_current_active_user),
+    request: Request,
+    current_user: dict = Depends(get_current_active_user),
 ) -> None:
     """Delete download"""
     try:
         download = admin_db.select_one("downloads", {"id": download_id})
         if not download:
             raise HTTPException(status_code=404, detail="Download not found")
-            
+
         admin_db.delete("downloads", {"id": download_id})
-        
+
         if download.get("pdf_url"):
             delete_storage_file("downloads", download["pdf_url"])
-            
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="DELETE",
+            module="downloads",
+            record_id=download_id,
+            old_data=download,
+        )
         return None
     except HTTPException:
         raise

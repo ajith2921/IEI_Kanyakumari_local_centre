@@ -45,6 +45,11 @@ def _set_cached_user(username: str, user: dict) -> None:
     _user_cache[username] = (user, monotonic())
 
 
+def invalidate_user_cache(username: str) -> None:
+    """Call this whenever an admin_users record is updated."""
+    _user_cache.pop(username, None)
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -62,6 +67,37 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+def _lookup_user(username: str) -> Optional[dict]:
+    """
+    Look up admin in admin_users table first, fall back to legacy users table.
+    Returns a normalised dict with 'id', 'username', 'password_hash',
+    'hashed_password' (alias), 'is_active', 'role', 'name'.
+    """
+    # Try admin_users first (enterprise system)
+    try:
+        user = admin_db.select_one("admin_users", {"username": username})
+        if user:
+            # Normalise for backward compatibility
+            user.setdefault("hashed_password", user.get("password_hash", ""))
+            user.setdefault("is_active", user.get("status", "active") == "active")
+            user.setdefault("role", "ADMIN")
+            return user
+    except Exception:
+        pass
+
+    # Fall back to legacy users table
+    try:
+        user = admin_db.select_one("users", {"username": username})
+        if user:
+            user.setdefault("role", "SUPER_ADMIN")  # Legacy single admin = super
+            user.setdefault("name", username)
+            return user
+    except Exception:
+        pass
+
+    return None
+
+
 def get_current_user(
     request: Request,
 ) -> dict:
@@ -77,7 +113,7 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     if not token:
         raise credentials_exception
 
@@ -92,7 +128,7 @@ def get_current_user(
     # Check cache before hitting DB
     user = _get_cached_user(username)
     if user is None:
-        user = admin_db.select_one("users", {"username": username})
+        user = _lookup_user(username)
         if user is None:
             raise credentials_exception
         _set_cached_user(username, user)
@@ -100,8 +136,28 @@ def get_current_user(
 
 
 def get_current_active_user(current_user: dict = Depends(get_current_user)) -> dict:
-    if not current_user.get("is_active", False):
+    is_active = current_user.get("is_active", False)
+    if isinstance(is_active, bool):
+        active = is_active
+    else:
+        active = str(is_active).lower() in ("true", "1", "yes")
+
+    # Also check status field (admin_users table)
+    status_val = current_user.get("status", "active")
+    if status_val != "active":
+        active = False
+
+    if not active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
+def get_current_super_admin(current_user: dict = Depends(get_current_active_user)) -> dict:
+    """Dependency that only allows SUPER_ADMIN role."""
+    role = current_user.get("role", "")
+    if role != "SUPER_ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. SUPER_ADMIN role required.",
+        )
+    return current_user

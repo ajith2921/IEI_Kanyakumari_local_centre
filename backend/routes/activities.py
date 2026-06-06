@@ -2,12 +2,13 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ActivityOut
 from routes.utils import optional_value, require_value
+from audit import log_action
 
 router = APIRouter(prefix="/activities", tags=["Activities"])
 
@@ -44,6 +45,7 @@ def get_activity(activity_id: int) -> dict:
 
 @router.post("", response_model=ActivityOut, status_code=status.HTTP_201_CREATED)
 def create_activity(
+    request: Request,
     title: str = Form(default=""),
     description: str = Form(default=""),
     event_date: str = Form(default=""),
@@ -51,7 +53,7 @@ def create_activity(
     image: Optional[UploadFile] = File(default=None),
     pdf: Optional[UploadFile] = File(default=None),
     colab: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Create activity with file uploads to Supabase Storage"""
     try:
@@ -131,8 +133,17 @@ def create_activity(
         }
         
         created_activity = admin_db.insert("activities", activity_data)
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="CREATE",
+            module="activities",
+            record_id=created_activity.get("id"),
+            new_data=created_activity,
+        )
         return created_activity
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -142,6 +153,7 @@ def create_activity(
 @router.put("/{activity_id}", response_model=ActivityOut)
 def update_activity(
     activity_id: int,
+    request: Request,
     title: str = Form(default=""),
     description: str = Form(default=""),
     event_date: str = Form(default=""),
@@ -149,7 +161,7 @@ def update_activity(
     image: Optional[UploadFile] = File(default=None),
     pdf: Optional[UploadFile] = File(default=None),
     colab: Optional[UploadFile] = File(default=None),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ) -> dict:
     """Update activity with optional file uploads to Supabase Storage"""
     try:
@@ -223,8 +235,18 @@ def update_activity(
 
         # Update in Supabase
         updated_activity = admin_db.update("activities", update_data, {"id": activity_id})
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="UPDATE",
+            module="activities",
+            record_id=activity_id,
+            old_data=activity,
+            new_data=updated_activity,
+        )
         return updated_activity
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -238,13 +260,24 @@ def update_activity(
 )
 def delete_activity(
     activity_id: int,
-    _current_user = Depends(get_current_active_user),
+    request: Request,
+    current_user: dict = Depends(get_current_active_user),
 ) -> None:
     """Delete activity"""
     try:
+        activity = admin_db.select_one("activities", {"id": activity_id})
         count = admin_db.delete("activities", {"id": activity_id})
         if count == 0:
             raise HTTPException(status_code=404, detail="Activity not found")
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="DELETE",
+            module="activities",
+            record_id=activity_id,
+            old_data=activity,
+        )
         return None
     except HTTPException:
         raise

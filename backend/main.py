@@ -18,15 +18,18 @@ from supabase_db import admin_db
 
 from routes import (
     activities,
+    admin_users,
+    audit_logs,
     auth,
+    conferences,
     contact,
     downloads,
     facilities,
     gallery,
     image_audit,
+    login_logs,
     members,
     newsletters,
-    conferences,
 )
 
 # ─────────────────────────────────────────────────────────────────
@@ -82,12 +85,39 @@ for origin in list(origins):
     if alias and alias not in origins:
         origins.append(alias)
 
+# Security Headers Middleware
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        
+        # CSP: Default restrictive, allows React/Vite dev server and Supabase
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' data: https://fonts.gstatic.com; "
+            "img-src 'self' data: blob: https://*.supabase.co; "
+            "connect-src 'self' https://*.supabase.co ws://localhost:5173 wss://localhost:5173; "
+            "frame-ancestors 'none';"
+        )
+        response.headers["Content-Security-Policy"] = csp
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 PROGRAM_OFFICE_BEARERS = [
@@ -157,18 +187,34 @@ def seed_admin_user() -> None:
 
     try:
         user_data = {
+            "name": username,
             "username": username,
-            "hashed_password": hash_password(password),
-            "is_active": True,
+            "email": f"{username}@iei.local",
+            "password_hash": hash_password(password),
+            "role": "SUPER_ADMIN",
+            "status": "active",
         }
-        existing_user = admin_db.select_one("users", {"username": username})
+        existing_user = admin_db.select_one("admin_users", {"username": username})
 
         if existing_user:
-            admin_db.update("users", user_data, {"username": username})
+            admin_db.update("admin_users", user_data, {"username": username})
         else:
-            admin_db.insert("users", user_data)
+            admin_db.insert("admin_users", user_data)
     except Exception as exc:
-        print(f"Warning: could not seed admin user: {exc}")
+        print(f"Warning: could not seed admin user into admin_users: {exc}")
+        # Fallback to legacy
+        try:
+            legacy_data = {
+                "username": username,
+                "hashed_password": hash_password(password),
+                "is_active": True,
+            }
+            if admin_db.select_one("users", {"username": username}):
+                admin_db.update("users", legacy_data, {"username": username})
+            else:
+                admin_db.insert("users", legacy_data)
+        except Exception as e2:
+            pass
 
 
 def _env_flag(name: str, default: str = "true") -> bool:
@@ -196,6 +242,9 @@ upload_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(upload_dir)), name="uploads")
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(admin_users.router, prefix="/api")
+app.include_router(audit_logs.router, prefix="/api")
+app.include_router(login_logs.router, prefix="/api")
 app.include_router(members.router, prefix="/api")
 app.include_router(gallery.router, prefix="/api")
 app.include_router(image_audit.router, prefix="/api")

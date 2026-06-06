@@ -2,11 +2,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 
 from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client
 from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
+from audit import log_action
 
 router = APIRouter(prefix="/conferences", tags=["Conferences"])
 
@@ -82,6 +83,7 @@ def get_all_conferences(page: int = Query(1, ge=1), limit: int = Query(10, ge=1,
 
 @router.post("/", response_model=ConferenceOut, status_code=status.HTTP_201_CREATED)
 def create_conference(
+    request: Request,
     title: str = Form(...),
     short_title: str = Form(...),
     description: str = Form(default=""),
@@ -97,7 +99,7 @@ def create_conference(
     pdf: Optional[UploadFile] = File(default=None),
     status: str = Form(default="active"),
     is_new: bool = Form(default=True),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ):
     """Create new conference"""
     try:
@@ -133,6 +135,15 @@ def create_conference(
                 admin_db.update("conferences", {"status": "inactive"}, {"id": conf["id"]})
 
         new_conf = admin_db.insert("conferences", payload.model_dump())
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="CREATE",
+            module="conferences",
+            record_id=new_conf.get("id"),
+            new_data=new_conf,
+        )
         return new_conf
     except HTTPException:
         raise
@@ -142,6 +153,7 @@ def create_conference(
 @router.put("/{conf_id}", response_model=ConferenceOut)
 def update_conference(
     conf_id: int,
+    request: Request,
     title: str = Form(...),
     short_title: str = Form(...),
     description: str = Form(default=""),
@@ -157,7 +169,7 @@ def update_conference(
     pdf: Optional[UploadFile] = File(default=None),
     status: str = Form(default="active"),
     is_new: bool = Form(default=True),
-    _current_user = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_active_user),
 ):
     """Update conference"""
     try:
@@ -195,6 +207,16 @@ def update_conference(
                     admin_db.update("conferences", {"status": "inactive"}, {"id": other_conf["id"]})
         
         updated_conf = admin_db.update("conferences", update_data, {"id": conf_id})
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="UPDATE",
+            module="conferences",
+            record_id=conf_id,
+            old_data=conf,
+            new_data=updated_conf,
+        )
         return updated_conf
     except HTTPException:
         raise
@@ -204,15 +226,25 @@ def update_conference(
 @router.delete("/{conf_id}")
 def delete_conference(
     conf_id: int,
-    _current_user = Depends(get_current_active_user),
+    request: Request,
+    current_user: dict = Depends(get_current_active_user),
 ):
     """Delete conference"""
     try:
         conf = admin_db.select_one("conferences", {"id": conf_id})
         if not conf:
             raise HTTPException(status_code=404, detail="Conference not found")
-        
+
         admin_db.delete("conferences", {"id": conf_id})
+
+        log_action(
+            request=request,
+            current_user=current_user,
+            action="DELETE",
+            module="conferences",
+            record_id=conf_id,
+            old_data=conf,
+        )
         return {"message": "Conference deleted"}
     except HTTPException:
         raise
