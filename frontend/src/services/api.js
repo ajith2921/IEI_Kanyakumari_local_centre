@@ -4,9 +4,10 @@ import axiosRetry from "axios-retry";
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:8000/api";
+  (import.meta.env.PROD ? "https://iei-kanyakumari-backend.onrender.com/api" : "http://localhost:8000/api");
 const UPLOADS_BASE_URL =
-  import.meta.env.VITE_UPLOADS_BASE_URL || "http://localhost:8000";
+  import.meta.env.VITE_UPLOADS_BASE_URL || 
+  (import.meta.env.PROD ? "https://iei-kanyakumari-backend.onrender.com" : "http://localhost:8000");
 
 // ───────────────────────────────────────────────────────────────────────────
 // Retry Configuration (Exponential Backoff)
