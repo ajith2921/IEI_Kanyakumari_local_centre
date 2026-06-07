@@ -255,6 +255,7 @@ export const publicApi = {
   getFacilities: () => cachedGet("/facilities", CACHE_TTL),
   submitContact: (payload) => api.post("/contact", payload),
   getActiveConference: () => cachedGet("/conferences/active", ACTIVE_CONFERENCE_CACHE_TTL),
+  getConferenceById: (id) => cachedGet(`/conferences/${id}`, CONFERENCE_CACHE_TTL),
   getConferences: (params = {}) => {
     const url = `/conferences/?page=${params.page || 1}&limit=${params.limit || 10}`;
     return cachedGet(url, CONFERENCE_CACHE_TTL);

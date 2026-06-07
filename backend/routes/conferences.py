@@ -81,6 +81,19 @@ def get_all_conferences(page: int = Query(1, ge=1), limit: int = Query(10, ge=1,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/{conf_id}", response_model=ConferenceOut)
+def get_conference_by_id(conf_id: int):
+    """Get conference by specific ID"""
+    try:
+        conf = admin_db.select_one("conferences", {"id": conf_id})
+        if not conf:
+            raise HTTPException(status_code=404, detail="Conference not found")
+        return _normalize_conference_status(conf)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/", response_model=ConferenceOut, status_code=status.HTTP_201_CREATED)
 def create_conference(
     request: Request,

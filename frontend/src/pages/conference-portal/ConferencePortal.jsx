@@ -1,32 +1,33 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useParams } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { publicApi } from "../../services/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
 
-const PRIMARY_LINKS = [
-  { to: "/conference-portal", label: "Home", exact: true },
-  { to: "/conference-portal/about", label: "About" },
-  { to: "/conference-portal/dates", label: "Important Dates" },
-  { to: "/conference-portal/call-for-papers", label: "Call for Papers" },
-  { to: "/conference-portal/speakers", label: "Speakers" },
-  { to: "/conference-portal/program", label: "Program Schedule" },
-  { to: "/conference-portal/registration", label: "Registration" },
+const getPrimaryLinks = (confId) => [
+  { to: `/conference-portal/${confId}`, label: "Home", exact: true },
+  { to: `/conference-portal/${confId}/about`, label: "About" },
+  { to: `/conference-portal/${confId}/dates`, label: "Important Dates" },
+  { to: `/conference-portal/${confId}/call-for-papers`, label: "Call for Papers" },
+  { to: `/conference-portal/${confId}/speakers`, label: "Speakers" },
+  { to: `/conference-portal/${confId}/program`, label: "Program Schedule" },
+  { to: `/conference-portal/${confId}/registration`, label: "Registration" },
 ];
 
-const MORE_LINKS = [
-  { to: "/conference-portal/committees", label: "Committees" },
-  { to: "/conference-portal/venue", label: "Venue" },
-  { to: "/conference-portal/sponsors", label: "Sponsors" },
-  { to: "/conference-portal/submission", label: "Paper Submission" },
-  { to: "/conference-portal/gallery", label: "Gallery" },
-  { to: "/conference-portal/downloads", label: "Downloads" },
-  { to: "/conference-portal/faq", label: "FAQ" },
-  { to: "/conference-portal/contact", label: "Contact Us" },
+const getMoreLinks = (confId) => [
+  { to: `/conference-portal/${confId}/committees`, label: "Committees" },
+  { to: `/conference-portal/${confId}/venue`, label: "Venue" },
+  { to: `/conference-portal/${confId}/sponsors`, label: "Sponsors" },
+  { to: `/conference-portal/${confId}/submission`, label: "Paper Submission" },
+  { to: `/conference-portal/${confId}/gallery`, label: "Gallery" },
+  { to: `/conference-portal/${confId}/downloads`, label: "Downloads" },
+  { to: `/conference-portal/${confId}/faq`, label: "FAQ" },
+  { to: `/conference-portal/${confId}/contact`, label: "Contact Us" },
 ];
 
 export default function ConferencePortal() {
+  const { confId } = useParams();
   const [activeConference, setActiveConference] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
@@ -39,8 +40,12 @@ export default function ConferencePortal() {
   useEffect(() => {
     let mounted = true;
     const fetchActive = async () => {
+      setLoading(true);
       try {
-        const res = await publicApi.getActiveConference();
+        const res = confId === "active" 
+          ? await publicApi.getActiveConference()
+          : await publicApi.getConferenceById(confId);
+          
         if (mounted) {
           setActiveConference(res.data);
         }
@@ -52,7 +57,7 @@ export default function ConferencePortal() {
     };
     fetchActive();
     return () => { mounted = false; };
-  }, []);
+  }, [confId]);
 
   if (loading) {
     return (
@@ -104,7 +109,7 @@ export default function ConferencePortal() {
             {/* Desktop Navigation - No Scroll */}
             <nav className="hidden lg:block flex-1 w-full max-w-full">
               <ul className="flex items-center justify-end gap-1">
-                {PRIMARY_LINKS.map((link) => (
+                {getPrimaryLinks(confId).map((link) => (
                   <li key={link.to} className="shrink-0">
                     <NavLink
                       to={link.to}
@@ -132,7 +137,7 @@ export default function ConferencePortal() {
                   </button>
                   <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-white/10 bg-[#061412]/95 backdrop-blur-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100">
                     <div className="py-2 flex flex-col">
-                      {MORE_LINKS.map(link => (
+                      {getMoreLinks(confId).map(link => (
                         <NavLink 
                           key={link.to} 
                           to={link.to} 
@@ -152,7 +157,7 @@ export default function ConferencePortal() {
             <div className="lg:hidden relative -mx-4 px-4 overflow-hidden">
               <nav className="no-scrollbar flex overflow-x-auto pb-2">
                 <ul className="flex items-center gap-1">
-                  {[...PRIMARY_LINKS, ...MORE_LINKS].map((link) => (
+                  {[...getPrimaryLinks(confId), ...getMoreLinks(confId)].map((link) => (
                     <li key={link.to} className="shrink-0">
                       <NavLink
                         to={link.to}

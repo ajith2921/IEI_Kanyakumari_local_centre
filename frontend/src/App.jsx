@@ -120,9 +120,26 @@ export default function App() {
       <Route path="/conference" element={<Navigate to="/conferences" replace />} />
       <Route path="/conference-overview" element={<Navigate to="/conferences" replace />} />
       
+      {/* Legacy Fallbacks for Conference Portal */}
+      <Route path="/conference-portal" element={<Navigate to="/conference-portal/active" replace />} />
+      <Route path="/conference-portal/about" element={<Navigate to="/conference-portal/active/about" replace />} />
+      <Route path="/conference-portal/dates" element={<Navigate to="/conference-portal/active/dates" replace />} />
+      <Route path="/conference-portal/call-for-papers" element={<Navigate to="/conference-portal/active/call-for-papers" replace />} />
+      <Route path="/conference-portal/speakers" element={<Navigate to="/conference-portal/active/speakers" replace />} />
+      <Route path="/conference-portal/committees" element={<Navigate to="/conference-portal/active/committees" replace />} />
+      <Route path="/conference-portal/venue" element={<Navigate to="/conference-portal/active/venue" replace />} />
+      <Route path="/conference-portal/sponsors" element={<Navigate to="/conference-portal/active/sponsors" replace />} />
+      <Route path="/conference-portal/registration" element={<Navigate to="/conference-portal/active/registration" replace />} />
+      <Route path="/conference-portal/submission" element={<Navigate to="/conference-portal/active/submission" replace />} />
+      <Route path="/conference-portal/program" element={<Navigate to="/conference-portal/active/program" replace />} />
+      <Route path="/conference-portal/gallery" element={<Navigate to="/conference-portal/active/gallery" replace />} />
+      <Route path="/conference-portal/downloads" element={<Navigate to="/conference-portal/active/downloads" replace />} />
+      <Route path="/conference-portal/faq" element={<Navigate to="/conference-portal/active/faq" replace />} />
+      <Route path="/conference-portal/contact" element={<Navigate to="/conference-portal/active/contact" replace />} />
+
       {/* Active Conference Portal */}
       <Route
-        path="/conference-portal"
+        path="/conference-portal/:confId"
         element={
           <Suspense fallback={<PageFallback />}>
             <ConferencePortal />
@@ -150,7 +167,7 @@ export default function App() {
       </Route>
       {/* Redirect old /about links to the home page */}
       <Route path="/about" element={<Navigate to="/" replace />} />
-      <Route path="/register" element={<Navigate to="/conference-portal/registration" replace />} />
+      <Route path="/register" element={<Navigate to="/conference-portal/active/registration" replace />} />
       <Route
         path="/members"
         element={

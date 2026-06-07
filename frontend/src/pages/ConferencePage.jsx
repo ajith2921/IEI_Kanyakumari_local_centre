@@ -82,7 +82,7 @@ export default function ConferencePage() {
       conference.pdf_url ||
       (conference.link && conference.link.trim() !== "/conference-overview" && conference.link.trim() !== "/conference"
         ? conference.link
-        : "/conferences"),
+        : `/conference-portal/${conference.id}`),
     resource_label: conference.pdf_url ? (conference.button_text || "View PDF") : (conference.button_text || "View More Details"),
     secondary_resource_url:
       conference.pdf_url &&
@@ -90,7 +90,7 @@ export default function ConferencePage() {
       conference.link.trim() !== "/conference-overview" &&
       conference.link.trim() !== "/conference"
         ? conference.link
-        : "",
+        : `/conference-portal/${conference.id}`,
     secondary_resource_label: "Visit Conference Page",
     details_button_text: "View Conference Details →",
     collapse_button_text: "Hide Conference Details ↑",
