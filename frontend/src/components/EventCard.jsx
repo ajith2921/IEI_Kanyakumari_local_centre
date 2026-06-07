@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { toAbsoluteUploadUrl } from "../services/api";
 import ImageMedia from "./ImageMedia";
 import Card from "./ui/Card";
@@ -81,27 +82,51 @@ export default function EventCard({ activity }) {
   const secondaryResourceUrl = activity.secondary_resource_url || activity.colab_url || "";
   const secondaryResourceLabel = activity.secondary_resource_label?.trim() || "Colab / Resources";
   const eventDate = formatEventDate(activity.event_date);
+  
+  const isInternalLink = (url) => {
+    if (!url) return false;
+    return url.startsWith('/') && !url.match(/\.(pdf|jpg|png|jpeg|gif)$/i);
+  };
+
   return (
     <Card interactive padded={false} className={"group overflow-hidden"}>
       <div className={"relative aspect-[4/3] w-full overflow-hidden bg-gray-50"}>
         {imageClickUrl ? (
-          <a
-            href={toAbsoluteUploadUrl(imageClickUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Open PDF for ${title}`}
-            className="block h-full w-full"
-          >
-            <ImageMedia
-              src={imageSrc}
-              alt={title}
-              fit="cover"
-              position="50% 50%"
-              loading="lazy"
-              className="h-full w-full cursor-pointer transition-transform duration-300 group-hover:scale-[1.02]"
-              fallback={<EventImageFallback title={title} category={category} />}
-            />
-          </a>
+          isInternalLink(imageClickUrl) ? (
+            <Link
+              to={imageClickUrl}
+              aria-label={`Open details for ${title}`}
+              className="block h-full w-full"
+            >
+              <ImageMedia
+                src={imageSrc}
+                alt={title}
+                fit="cover"
+                position="50% 50%"
+                loading="lazy"
+                className="h-full w-full cursor-pointer transition-transform duration-300 group-hover:scale-[1.02]"
+                fallback={<EventImageFallback title={title} category={category} />}
+              />
+            </Link>
+          ) : (
+            <a
+              href={toAbsoluteUploadUrl(imageClickUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open PDF for ${title}`}
+              className="block h-full w-full"
+            >
+              <ImageMedia
+                src={imageSrc}
+                alt={title}
+                fit="cover"
+                position="50% 50%"
+                loading="lazy"
+                className="h-full w-full cursor-pointer transition-transform duration-300 group-hover:scale-[1.02]"
+                fallback={<EventImageFallback title={title} category={category} />}
+              />
+            </a>
+          )
         ) : (
           <ImageMedia
             src={imageSrc}
@@ -138,30 +163,54 @@ export default function EventCard({ activity }) {
             {(primaryResourceUrl || secondaryResourceUrl) && (
               <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-slate-100">
                 {primaryResourceUrl && (
-                  <a
-                    href={toAbsoluteUploadUrl(primaryResourceUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
-                  >
-                    <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M4 1.5A1.5 1.5 0 0 0 2.5 3v10A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V5.5L9.5 1.5H4zM10 2v3.5a.5.5 0 0 0 .5.5H14L10 2zM5.5 11v-1h5v1h-5zm0-2V8h5v1h-5z"/>
-                    </svg>
-                    {primaryResourceLabel}
-                  </a>
+                  isInternalLink(primaryResourceUrl) ? (
+                    <Link
+                      to={primaryResourceUrl}
+                      className="inline-flex items-center gap-1.5 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4 1.5A1.5 1.5 0 0 0 2.5 3v10A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V5.5L9.5 1.5H4zM10 2v3.5a.5.5 0 0 0 .5.5H14L10 2zM5.5 11v-1h5v1h-5zm0-2V8h5v1h-5z"/>
+                      </svg>
+                      {primaryResourceLabel}
+                    </Link>
+                  ) : (
+                    <a
+                      href={toAbsoluteUploadUrl(primaryResourceUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4 1.5A1.5 1.5 0 0 0 2.5 3v10A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V5.5L9.5 1.5H4zM10 2v3.5a.5.5 0 0 0 .5.5H14L10 2zM5.5 11v-1h5v1h-5zm0-2V8h5v1h-5z"/>
+                      </svg>
+                      {primaryResourceLabel}
+                    </a>
+                  )
                 )}
                 {secondaryResourceUrl && (
-                  <a
-                    href={toAbsoluteUploadUrl(secondaryResourceUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-100"
-                  >
-                    <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4zm3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM8 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                    </svg>
-                    {secondaryResourceLabel}
-                  </a>
+                  isInternalLink(secondaryResourceUrl) ? (
+                    <Link
+                      to={secondaryResourceUrl}
+                      className="inline-flex items-center gap-1.5 rounded bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-100"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4zm3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM8 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                      </svg>
+                      {secondaryResourceLabel}
+                    </Link>
+                  ) : (
+                    <a
+                      href={toAbsoluteUploadUrl(secondaryResourceUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-100"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4zm3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM8 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                      </svg>
+                      {secondaryResourceLabel}
+                    </a>
+                  )
                 )}
               </div>
             )}
