@@ -56,7 +56,6 @@ def _safe_json(data: Any) -> Optional[dict]:
 
 
 def log_action(
-    *,
     request: Request,
     current_user: dict,
     action: str,

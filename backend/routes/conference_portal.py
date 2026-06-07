@@ -90,18 +90,22 @@ async def create_resource(resource: str, request: Request, current_user: dict = 
     # Wait, the `get_current_active_user` is applied to all generic POSTs.
     
     table = VALID_RESOURCES[resource]
-    form_data = await request.form()
-    payload = {}
     
-    # Process form data
-    for key, value in form_data.items():
-        if isinstance(value, UploadFile):
-            if value.filename:
-                # Handle file upload
-                url = _upload_file(value, f"{resource}_{key}")
-                payload[key] = url
-        else:
-            payload[key] = value
+    if request.headers.get("content-type", "").startswith("application/json"):
+        payload = await request.json()
+    else:
+        form_data = await request.form()
+        payload = {}
+        
+        # Process form data
+        for key, value in form_data.items():
+            if isinstance(value, UploadFile):
+                if value.filename:
+                    # Handle file upload
+                    url = _upload_file(value, f"{resource}_{key}")
+                    payload[key] = url
+            else:
+                payload[key] = value
 
     if "conference_id" not in payload:
         raise HTTPException(status_code=400, detail="conference_id is required")
@@ -120,21 +124,24 @@ async def update_resource(resource: str, item_id: int, request: Request, current
         raise HTTPException(status_code=404, detail="Resource not found")
         
     table = VALID_RESOURCES[resource]
-    form_data = await request.form()
-    payload = {}
-    
     old_record = admin_db.select_one(table, {"id": item_id})
     if not old_record:
         raise HTTPException(status_code=404, detail="Record not found")
     
-    # Process form data
-    for key, value in form_data.items():
-        if isinstance(value, UploadFile):
-            if value.filename:
-                url = _upload_file(value, f"{resource}_{key}")
-                payload[key] = url
-        else:
-            payload[key] = value
+    if request.headers.get("content-type", "").startswith("application/json"):
+        payload = await request.json()
+    else:
+        form_data = await request.form()
+        payload = {}
+        
+        # Process form data
+        for key, value in form_data.items():
+            if isinstance(value, UploadFile):
+                if value.filename:
+                    url = _upload_file(value, f"{resource}_{key}")
+                    payload[key] = url
+            else:
+                payload[key] = value
 
     try:
         updated_record = admin_db.update(table, payload, {"id": item_id})
