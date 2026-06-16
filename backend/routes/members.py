@@ -110,11 +110,19 @@ def _optional_value(value: str) -> Optional[str]:
 
 
 @router.get("")
-def list_members(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100)):
-    """Get paginated list of members (server-side pagination via Supabase)"""
+def list_members(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    position: Optional[str] = Query(None, description="Filter by member position (e.g. 'Chairman')"),
+):
+    """Get paginated list of members with optional position filter (server-side pagination)"""
     try:
+        # Build optional filters dict for position lookup
+        filters = {"position": position} if position else None
+
         result = admin_db.select_paginated(
             "members",
+            filters=filters,
             order_by="created_at",
             ascending=False,
             page=page,

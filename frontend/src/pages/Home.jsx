@@ -24,14 +24,15 @@ export default function Home() {
   useEffect(() => {
     const fetchChairmanImage = async () => {
       try {
-        // Fetch up to 100 members so the Chairman is found regardless of insertion order
-        const response = await publicApi.getMembers({ page: 1, limit: 100 });
+        // Use position-filtered endpoint — only fetches 1 record instead of 100
+        const response = await publicApi.getMembersByPosition("Chairman");
         const members = response.data?.items || response.data || [];
         // Match exact "Chairman" to avoid matching "Immediate Past Chairman"
-        const chairman = members.find(m => m.position?.trim().toLowerCase() === "chairman");
+        const chairman = members.find(
+          (m) => m.position?.trim().toLowerCase() === "chairman"
+        );
         if (chairman && chairman.image_url) {
-          const processedUrl = toAbsoluteUploadUrl(chairman.image_url);
-          setChairmanImage(processedUrl);
+          setChairmanImage(toAbsoluteUploadUrl(chairman.image_url));
         } else {
           setImageError(true);
         }
@@ -51,6 +52,8 @@ export default function Home() {
           className="home-hero-image"
           src="/home-bg.webp"
           alt="IEI Kanyakumari Local Centre Event"
+          width="1920"
+          height="1080"
           fetchpriority="high"
           decoding="sync"
         />
@@ -90,7 +93,7 @@ export default function Home() {
           <p className="home-premium-copy mb-4 max-w-none">
             The Institution of Engineers (India) is the first professional body to represent India in
             several international bodies, such as the World Mining Congress (WMC), the World Federation
-            of Engineering Organizations (WFEO), the Commonwealth Engineers' Council (CEC), the
+            of Engineering Organizations (WFEO), the Commonwealth Engineers&apos; Council (CEC), the
             Federation International du Beton (fib), and the Federation of Engineering Institutions of
             South and Central Asia (FEISCA). It also has bilateral agreements with a number of
             professional societies across the globe. IEI holds the International Professional Engineers
@@ -179,12 +182,6 @@ export default function Home() {
                   {cleanChairmanMessage}
                   <span className="text-4xl font-light text-cyan-500 ml-1">&rdquo;</span>
                 </blockquote>
-                
-                {/* <div className="mt-7 text-left border-l-4 border-cyan-400 pl-5">
-                  <p className="text-base font-bold text-gray-900">Dr. M. Marsaline Beno</p>
-                  <p className="mt-1 text-sm text-gray-500 font-medium">Chairman, IEI Kanyakumari Local Centre</p>
-                  <p className="mt-2 text-xs text-gray-400">2025–2027</p>
-                </div> */}
               </div>
 
               {/* Chairman Image */}

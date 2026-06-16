@@ -236,6 +236,11 @@ export const publicApi = {
     const url = `/members?page=${params.page || 1}&limit=${params.limit || 20}`;
     return cachedGet(url, CACHE_TTL);
   },
+  // Fetch members filtered by position — used by Home page for Chairman lookup
+  getMembersByPosition: (position) => {
+    const url = `/members?page=1&limit=5&position=${encodeURIComponent(position)}`;
+    return cachedGet(url, CACHE_TTL);
+  },
   getGallery: (params = {}) => {
     const url = `/gallery?page=${params.page || 1}&limit=${params.limit || 12}`;
     return cachedGet(url, CACHE_TTL);

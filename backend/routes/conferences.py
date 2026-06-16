@@ -8,6 +8,7 @@ from auth import get_current_active_user
 from supabase_db import admin_db, get_supabase_admin_client, delete_storage_file
 from schemas import ConferenceCreate, ConferenceUpdate, ConferenceOut
 from audit import log_action
+import main as _main_module  # for in-process cache
 
 router = APIRouter(prefix="/conferences", tags=["Conferences"])
 
@@ -44,18 +45,27 @@ def _upload_conference_file(file: UploadFile, prefix: str, bucket: str, content_
 
 @router.get("/active", response_model=ConferenceOut)
 def get_active_conference():
-    """Get active conference or most recent one"""
+    """Get active conference — cached in-memory for 2 minutes to avoid DB round-trips"""
     try:
+        # Check in-memory cache first (2-minute TTL)
+        cached = _main_module.get_from_cache("active_conference")
+        if cached is not None:
+            return cached
+
         # Try to get active conference
         conferences = admin_db.select("conferences", filters={"status": "active"})
         if conferences:
-            return _normalize_conference_status(conferences[0])
-        
+            result = _normalize_conference_status(conferences[0])
+            _main_module.set_in_cache("active_conference", result)
+            return result
+
         # If no active, get most recent
         conferences = admin_db.order_by("conferences", "created_at", ascending=False, limit=1)
         if conferences:
-            return _normalize_conference_status(conferences[0])
-        
+            result = _normalize_conference_status(conferences[0])
+            _main_module.set_in_cache("active_conference", result)
+            return result
+
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No conferences found"
@@ -141,11 +151,17 @@ def create_conference(
             is_new=is_new,
         )
 
-        # If this one is active, deactivate all others in one pass
+        # If this one is active, bulk-deactivate all other active conferences (single query)
         if payload.status == "active":
-            other_confs = admin_db.select("conferences", filters={"status": "active"})
-            for conf in other_confs:
-                admin_db.update("conferences", {"status": "inactive"}, {"id": conf["id"]})
+            (
+                get_supabase_admin_client()
+                .table("conferences")
+                .update({"status": "inactive"})
+                .eq("status", "active")
+                .execute()
+            )
+            # Invalidate the active-conference cache
+            _main_module.invalidate_cache("active_conference")
 
         new_conf = admin_db.insert("conferences", payload.model_dump())
 
@@ -212,12 +228,18 @@ def update_conference(
         if pdf and pdf.filename:
             update_data["pdf_url"] = _upload_conference_file(pdf, f"conference_{conf_id}_pdf", "conferences", "application/pdf")
         
-        # If setting to active, deactivate other active conferences
+        # If setting to active, bulk-deactivate other active conferences (single query)
         if update_data["status"] == "active" and conf.get("status") != "active":
-            other_active = admin_db.select("conferences", filters={"status": "active"})
-            for other_conf in other_active:
-                if other_conf["id"] != conf_id:
-                    admin_db.update("conferences", {"status": "inactive"}, {"id": other_conf["id"]})
+            (
+                get_supabase_admin_client()
+                .table("conferences")
+                .update({"status": "inactive"})
+                .eq("status", "active")
+                .neq("id", conf_id)
+                .execute()
+            )
+        # Invalidate the active-conference cache on any write
+        _main_module.invalidate_cache("active_conference")
         
         updated_conf = admin_db.update("conferences", update_data, {"id": conf_id})
 

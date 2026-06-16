@@ -161,21 +161,15 @@ class SupabaseDB:
         return result.data[0] if result.data else {}
     
     def delete(self, table: str, filters: Dict[str, Any]) -> int:
-        """DELETE records"""
-        # First, check if the record(s) exist
-        existing = self.select(table, filters=filters)
-        if not existing:
-            return 0
-        
-        # Delete the record(s)
+        """DELETE records — single query, returns number of deleted rows."""
         query = self.client.table(table).delete()
-        
+
         for key, value in filters.items():
             query = query.eq(key, value)
-        
+
         result = query.execute()
-        # Return the number of records that existed (which we deleted)
-        return len(existing)
+        # Supabase returns the deleted rows in result.data
+        return len(result.data or [])
     
     def order_by(self, table: str, column: str, ascending: bool = True, limit: Optional[int] = None) -> List[Dict]:
         """SELECT with ordering"""

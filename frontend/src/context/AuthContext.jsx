@@ -10,6 +10,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Only hit the backend if an admin_token cookie is present.
+      // This prevents every anonymous public visitor from triggering a
+      // backend request (and waking the Render free-tier service).
+      const hasToken = document.cookie
+        .split(";")
+        .some((c) => c.trim().startsWith("admin_token="));
+
+      if (!hasToken) {
+        // No session cookie — definitely not logged in, skip the network call
+        setIsAuthenticated(false);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await authApi.me();
         setIsAuthenticated(true);

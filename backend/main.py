@@ -9,9 +9,11 @@ from dotenv import load_dotenv
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from auth import hash_password
 from supabase_db import admin_db
@@ -39,8 +41,10 @@ from routes import (
 _query_cache = {}
 CACHE_TTL = 300  # 5 minutes
 
+
 def cache_key(name: str) -> str:
     return f"cache:{name}"
+
 
 def get_from_cache(name: str):
     """Get cached value if still valid"""
@@ -52,15 +56,18 @@ def get_from_cache(name: str):
         del _query_cache[key]
     return None
 
+
 def set_in_cache(name: str, value):
     """Cache a value for CACHE_TTL seconds"""
     _query_cache[cache_key(name)] = (value, time() + CACHE_TTL)
+
 
 def invalidate_cache(name: str):
     """Invalidate a cache entry"""
     key = cache_key(name)
     if key in _query_cache:
         del _query_cache[key]
+
 
 from limiter import limiter
 from slowapi.errors import RateLimitExceeded
@@ -69,6 +76,7 @@ from slowapi import _rate_limit_exceeded_handler
 app = FastAPI(title="Institution Website API", version="1.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 origins = [
     origin.strip()
     for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,https://iei-kanyakumari-local-centre.vercel.app").split(",")
@@ -86,10 +94,8 @@ for origin in list(origins):
     if alias and alias not in origins:
         origins.append(alias)
 
-# Security Headers Middleware
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
 
+# ── Security Headers Middleware ────────────────────────────────────
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response: Response = await call_next(request)
@@ -97,7 +103,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        
+
         # CSP: Default restrictive, allows React/Vite dev server and Supabase
         csp = (
             "default-src 'self'; "
@@ -111,6 +117,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = csp
         return response
 
+
 app.add_middleware(SecurityHeadersMiddleware)
 
 app.add_middleware(
@@ -120,6 +127,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept"],
 )
+
+# GZip compression — compresses JSON responses ≥ 1 KB (60–80% size reduction)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 
 PROGRAM_OFFICE_BEARERS = [
     {"role": "Chairman", "name": "Dr. M. Marsaline Beno"},
@@ -214,7 +225,7 @@ def seed_admin_user() -> None:
                 admin_db.update("users", legacy_data, {"username": username})
             else:
                 admin_db.insert("users", legacy_data)
-        except Exception as e2:
+        except Exception:
             pass
 
 
