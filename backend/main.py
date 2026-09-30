@@ -272,4 +272,10 @@ app.include_router(conference_portal.public_router, prefix="/api")
 
 @app.get("/api/health")
 def health_check() -> dict:
-    return {"status": "ok"}
+    try:
+        # Perform a lightweight query to ensure Supabase considers this active
+        # This keeps BOTH Render (HTTP request) and Supabase (DB query) awake
+        admin_db.client.table("admin_users").select("id").limit(1).execute()
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return {"status": "ok", "database": "error"}
